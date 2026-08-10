@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getListingById } from "@/lib/listings";
+import { getListingById, getPriceHistory } from "@/lib/listings";
 import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
+import { getSession } from "@/lib/session";
 import ListingDetail from "@/components/ListingDetail";
 
 export const dynamic = "force-dynamic";
@@ -25,10 +26,20 @@ export default async function AcheterListingPage({
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "VENTE") notFound();
 
-  const [dvfStats, dvfRecent] = await Promise.all([
+  const [dvfStats, dvfRecent, priceHistory, session] = await Promise.all([
     getDvfStatsForVillage(listing.villageSlug),
     getRecentDvfTransactions(listing.villageSlug),
+    getPriceHistory(listing.id),
+    getSession(),
   ]);
 
-  return <ListingDetail listing={listing} dvfStats={dvfStats} dvfRecent={dvfRecent} />;
+  return (
+    <ListingDetail
+      listing={listing}
+      dvfStats={dvfStats}
+      dvfRecent={dvfRecent}
+      priceHistory={priceHistory}
+      isOwner={session?.userId === listing.ownerId}
+    />
+  );
 }

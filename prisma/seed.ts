@@ -72,6 +72,7 @@ async function main() {
       description:
         "Longère typique de la Pévèle à rénover, sur un terrain arboré de 900 m². Belle opportunité pour un projet de rénovation : gros œuvre sain, toiture refaite il y a 8 ans, réseaux à revoir.",
       prix: 298000,
+      prixInitial: 325000,
       commune: "Bachy",
       villageSlug: villageSlug("Bachy"),
       pieces: 4,
@@ -155,7 +156,16 @@ async function main() {
     where: { ownerId: { in: [pvl.id, partenaire.id, particulier.id] } },
   });
 
-  for (const { photos, ...data } of listingsData) {
+  const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  for (const { photos, prixInitial, ...data } of listingsData) {
+    const priceHistory = prixInitial
+      ? [
+          { prix: prixInitial, changedAt: THIRTY_DAYS_AGO },
+          { prix: data.prix, changedAt: new Date() },
+        ]
+      : [{ prix: data.prix }];
+
     await prisma.listing.create({
       data: {
         ...data,
@@ -163,6 +173,7 @@ async function main() {
         photos: photos
           ? { create: photos.map((url, order) => ({ url, order })) }
           : undefined,
+        priceHistory: { create: priceHistory },
       },
     });
   }

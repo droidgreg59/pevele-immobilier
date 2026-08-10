@@ -42,6 +42,7 @@ model Listing {
   equipements  String          @default("")
   badge        String?
   photos       ListingPhoto[]
+  priceHistory PriceHistory[]
   createdAt    DateTime        @default(now())
 
   @@index([ownerId])
@@ -55,6 +56,18 @@ model ListingPhoto {
   listingId String
   url       String
   order     Int     @default(0)
+
+  @@index([listingId])
+}
+
+/// Un enregistrement à chaque prix connu de l'annonce, y compris le prix
+/// initial à sa création — permet de reconstituer l'historique complet.
+model PriceHistory {
+  id        String   @id @default(cuid())
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  prix      Int
+  changedAt DateTime @default(now())
 
   @@index([listingId])
 }

@@ -60,7 +60,15 @@ export default async function ComptePage() {
         {mesAnnonces.length > 0 ? (
           <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {mesAnnonces.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <div key={listing.id} className="flex flex-col gap-2">
+                <ListingCard listing={listing} />
+                <Link
+                  href={`/compte/annonces/${listing.id}`}
+                  className="self-start font-mono text-[11px] font-medium text-blue"
+                >
+                  MODIFIER CETTE ANNONCE →
+                </Link>
+              </div>
             ))}
           </div>
         ) : (

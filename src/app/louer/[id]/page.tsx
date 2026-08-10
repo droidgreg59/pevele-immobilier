@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getListingById } from "@/lib/listings";
+import { getListingById, getPriceHistory } from "@/lib/listings";
+import { getSession } from "@/lib/session";
 import ListingDetail from "@/components/ListingDetail";
 
 export const dynamic = "force-dynamic";
@@ -24,5 +25,18 @@ export default async function LouerListingPage({
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "LOCATION") notFound();
 
-  return <ListingDetail listing={listing} dvfStats={null} dvfRecent={[]} />;
+  const [priceHistory, session] = await Promise.all([
+    getPriceHistory(listing.id),
+    getSession(),
+  ]);
+
+  return (
+    <ListingDetail
+      listing={listing}
+      dvfStats={null}
+      dvfRecent={[]}
+      priceHistory={priceHistory}
+      isOwner={session?.userId === listing.ownerId}
+    />
+  );
 }

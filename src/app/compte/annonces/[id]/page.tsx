@@ -1,0 +1,49 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect, notFound } from "next/navigation";
+import { getSession } from "@/lib/session";
+import { getListingForEdit } from "@/lib/listings";
+import EditListingForm from "@/components/EditListingForm";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Modifier mon annonce — Pévèle Immobilier",
+};
+
+export default async function ModifierAnnoncePage({
+  params,
+}: PageProps<"/compte/annonces/[id]">) {
+  const { id } = await params;
+  const session = await getSession();
+  if (!session) redirect(`/connexion?next=/compte/annonces/${id}`);
+
+  const listing = await getListingForEdit(id, session.userId);
+  if (!listing) notFound();
+
+  return (
+    <div className="animate-view-in max-w-[900px] px-9 py-8">
+      <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
+        MON COMPTE
+      </span>
+      <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
+        MODIFIER L&apos;ANNONCE
+      </h1>
+      <div className="flex flex-wrap gap-4">
+        <Link href="/compte" className="font-mono text-[11.5px] font-medium text-blue">
+          ← MON COMPTE
+        </Link>
+        <Link
+          href={`/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`}
+          className="font-mono text-[11.5px] font-medium text-blue"
+        >
+          VOIR LA FICHE →
+        </Link>
+      </div>
+
+      <div className="mt-7">
+        <EditListingForm listing={listing} />
+      </div>
+    </div>
+  );
+}

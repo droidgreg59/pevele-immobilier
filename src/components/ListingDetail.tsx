@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ListingWithOwner } from "@/lib/listings";
+import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2 } from "@/lib/format";
@@ -28,10 +28,14 @@ export default function ListingDetail({
   listing,
   dvfStats,
   dvfRecent,
+  priceHistory,
+  isOwner,
 }: {
   listing: ListingWithOwner;
   dvfStats: DvfVillageStats | null;
   dvfRecent: DvfTransactionSummary[];
+  priceHistory: PriceHistoryEntry[];
+  isOwner: boolean;
 }) {
   const particulier = listing.owner.type === "PARTICULIER";
   const enVerification = listing.statut === "EN_VERIFICATION";
@@ -46,6 +50,11 @@ export default function ListingDetail({
   const equipements = listing.equipements
     ? listing.equipements.split(",").filter(Boolean)
     : [];
+  const prixInitial = priceHistory[0]?.prix ?? listing.prix;
+  const enBaisse = priceHistory.length > 1 && listing.prix < prixInitial;
+  const baissePct = enBaisse
+    ? Math.round(((prixInitial - listing.prix) / prixInitial) * 100)
+    : 0;
 
   return (
     <div className="animate-view-in max-w-[1200px] px-9 py-8">
@@ -228,18 +237,62 @@ export default function ListingDetail({
                 soit {prixM2}
               </span>
             ) : null}
+            {enBaisse ? (
+              <span className="ml-2 border border-green px-1.5 py-0.5 font-mono text-[10px] font-semibold text-green">
+                ↓ PRIX EN BAISSE (-{baissePct}%)
+              </span>
+            ) : null}
             <div className="mt-4 border-2 border-dashed border-muted-2 p-3.5">
               <span className="font-mono text-[10px] font-medium text-muted-2">
                 HISTORIQUE DU PRIX
               </span>
-              <p className="m-0 mt-1.5 font-sans text-[12.5px] text-muted-2">
-                Bientôt disponible : chaque évolution de prix sera enregistrée
-                et affichée ici.
-              </p>
+              {priceHistory.length > 0 ? (
+                <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+                  {priceHistory.map((h, i) => {
+                    const prev = priceHistory[i - 1];
+                    const delta = prev ? h.prix - prev.prix : null;
+                    return (
+                      <li
+                        key={h.id}
+                        className="flex items-center justify-between gap-2 font-mono text-[11.5px]"
+                      >
+                        <span className="text-muted-2">
+                          {new Date(h.changedAt).toLocaleDateString("fr-FR")}
+                        </span>
+                        <span className="text-ink">
+                          {h.prix.toLocaleString("fr-FR")} €
+                          {delta ? (
+                            <span
+                              className="ml-1.5"
+                              style={{ color: delta < 0 ? "var(--pvl-green)" : "var(--pvl-gold)" }}
+                            >
+                              ({delta > 0 ? "+" : ""}
+                              {delta.toLocaleString("fr-FR")} €)
+                            </span>
+                          ) : null}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="m-0 mt-1.5 font-sans text-[12.5px] text-muted-2">
+                  Aucun changement de prix enregistré depuis la publication.
+                </p>
+              )}
             </div>
-            <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
-              Contact et demande de visite : bientôt disponibles.
-            </p>
+            {isOwner ? (
+              <Link
+                href={`/compte/annonces/${listing.id}`}
+                className="mt-4 inline-block border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+              >
+                MODIFIER L&apos;ANNONCE
+              </Link>
+            ) : (
+              <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
+                Contact et demande de visite : bientôt disponibles.
+              </p>
+            )}
             {enVerification ? (
               <span className="animate-stamp-in pointer-events-none absolute right-5 top-5 flex h-[92px] w-[92px] items-center justify-center rounded-full border-[3px] border-blue text-center font-mono text-[9.5px] font-medium leading-tight text-blue">
                 EN COURS DE

@@ -1,10 +1,8 @@
 import "server-only";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, rm, unlink } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-
-export const MAX_PHOTOS = 8;
-export const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "./photo-constants";
 
 const EXT_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -18,8 +16,8 @@ export function pickPhotoFiles(formData: FormData): File[] {
     .filter((entry): entry is File => entry instanceof File && entry.size > 0);
 }
 
-export function validatePhotoFiles(files: File[]): string | null {
-  if (files.length > MAX_PHOTOS) {
+export function validatePhotoFiles(files: File[], existingCount = 0): string | null {
+  if (existingCount + files.length > MAX_PHOTOS) {
     return `Maximum ${MAX_PHOTOS} photos par annonce.`;
   }
   for (const file of files) {
@@ -57,4 +55,24 @@ export async function savePhotoFiles(
     urls.push(`/uploads/listings/${listingId}/${filename}`);
   }
   return urls;
+}
+
+/** Supprime tous les fichiers d'une annonce (best-effort, ne lève pas si absent). */
+export async function deleteListingUploadDir(listingId: string): Promise<void> {
+  const dir = join(process.cwd(), "public", "uploads", "listings", listingId);
+  await rm(dir, { recursive: true, force: true });
+}
+
+/** Supprime des fichiers photo individuels par leur URL publique (best-effort). */
+export async function deletePhotoFilesByUrl(urls: string[]): Promise<void> {
+  await Promise.all(
+    urls.map(async (url) => {
+      if (!url.startsWith("/uploads/listings/")) return;
+      try {
+        await unlink(join(process.cwd(), "public", url));
+      } catch {
+        // fichier déjà absent — sans conséquence
+      }
+    })
+  );
 }

@@ -8,6 +8,7 @@ export default function ListingCard({ listing }: { listing: ListingWithOwner }) 
   const enVerification = listing.statut === "EN_VERIFICATION";
   const detailHref = `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`;
   const cover = listing.photos[0];
+  const enBaisse = (listing.priceHistory[0]?.prix ?? listing.prix) > listing.prix;
 
   return (
     <article className="animate-draw-in flex flex-col border-[2.5px] border-ink bg-white shadow-[6px_6px_0_rgba(39,67,166,.22)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5">
@@ -34,8 +35,15 @@ export default function ListingCard({ listing }: { listing: ListingWithOwner }) 
           {particulier ? "ENTRE VOISINS" : "AGENCE"}
         </span>
         <FavoriteButton className="absolute right-2.5 top-2.5 flex items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue" />
-        <span className="absolute bottom-2.5 left-2.5 bg-ink px-3.5 py-1.5 font-display text-[26px] tracking-[.02em] text-yellow">
-          {formatPrix(listing.prix, listing.transaction)}
+        <span className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
+          <span className="bg-ink px-3.5 py-1.5 font-display text-[26px] tracking-[.02em] text-yellow">
+            {formatPrix(listing.prix, listing.transaction)}
+          </span>
+          {enBaisse ? (
+            <span className="border-2 border-ink bg-white px-1.5 py-1 font-mono text-[9px] font-semibold text-green">
+              ↓ BAISSE
+            </span>
+          ) : null}
         </span>
         {enVerification ? (
           <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-blue px-2.5 py-1.5 font-mono text-[9px] font-semibold text-white">

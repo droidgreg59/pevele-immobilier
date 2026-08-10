@@ -3,8 +3,22 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { getVillageBySlug } from "@/data/villages";
-import { createListing, addListingPhotos } from "./listings";
-import { pickPhotoFiles, validatePhotoFiles, savePhotoFiles } from "./photo-upload";
+import {
+  createListing,
+  updateListing,
+  deleteListing,
+  addListingPhotos,
+  removeListingPhotos,
+  getListingForEdit,
+  type ListingFieldsInput,
+} from "./listings";
+import {
+  pickPhotoFiles,
+  validatePhotoFiles,
+  savePhotoFiles,
+  deletePhotoFilesByUrl,
+  deleteListingUploadDir,
+} from "./photo-upload";
 
 export type ListingFormState = { error?: string };
 
@@ -13,25 +27,15 @@ function parsePositiveInt(value: FormDataEntryValue | null): number | null {
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
-export async function createListingAction(
-  _prevState: ListingFormState,
+function parseListingFields(
   formData: FormData
-): Promise<ListingFormState> {
-  const session = await getSession();
-  if (!session) {
-    redirect("/connexion?next=/vendre/deposer");
-  }
-
+): { error: string } | { fields: ListingFieldsInput } {
   const transaction = formData.get("transaction") === "LOCATION" ? "LOCATION" : "VENTE";
   const villageSlug = String(formData.get("villageSlug") ?? "");
   const titre = String(formData.get("titre") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const exterieur = String(formData.get("exterieur") ?? "").trim();
   const dpe = String(formData.get("dpe") ?? "").trim();
-
-  const photoFiles = pickPhotoFiles(formData);
-  const photoError = validatePhotoFiles(photoFiles);
-  if (photoError) return { error: photoError };
 
   const village = getVillageBySlug(villageSlug);
   if (!village) return { error: "Merci de choisir un village dans la liste." };
@@ -48,25 +52,94 @@ export async function createListingAction(
   if (!chambres) return { error: "Le nombre de chambres doit être un nombre positif." };
   if (!surface) return { error: "La surface doit être un nombre positif (en m²)." };
 
-  const listing = await createListing({
-    ownerId: session.userId,
-    transaction,
-    titre,
-    description,
-    prix,
-    villageSlug: village.slug,
-    commune: village.nom,
-    pieces,
-    chambres,
-    surface,
-    exterieur: exterieur || "—",
-    dpe: dpe || undefined,
-  });
+  return {
+    fields: {
+      transaction,
+      titre,
+      description,
+      prix,
+      villageSlug: village.slug,
+      commune: village.nom,
+      pieces,
+      chambres,
+      surface,
+      exterieur: exterieur || "—",
+      dpe: dpe || undefined,
+    },
+  };
+}
+
+export async function createListingAction(
+  _prevState: ListingFormState,
+  formData: FormData
+): Promise<ListingFormState> {
+  const session = await getSession();
+  if (!session) {
+    redirect("/connexion?next=/vendre/deposer");
+  }
+
+  const photoFiles = pickPhotoFiles(formData);
+  const photoError = validatePhotoFiles(photoFiles);
+  if (photoError) return { error: photoError };
+
+  const parsed = parseListingFields(formData);
+  if ("error" in parsed) return parsed;
+
+  const listing = await createListing({ ownerId: session.userId, ...parsed.fields });
 
   if (photoFiles.length > 0) {
     const urls = await savePhotoFiles(listing.id, photoFiles);
     await addListingPhotos(listing.id, urls);
   }
 
-  redirect(`/${transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`);
+  redirect(`/${parsed.fields.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`);
+}
+
+export async function updateListingAction(
+  _prevState: ListingFormState,
+  formData: FormData
+): Promise<ListingFormState> {
+  const session = await getSession();
+  if (!session) {
+    redirect("/connexion");
+  }
+
+  const listingId = String(formData.get("listingId") ?? "");
+  const existing = await getListingForEdit(listingId, session.userId);
+  if (!existing) return { error: "Annonce introuvable." };
+
+  const removePhotoIds = formData.getAll("removePhotoIds").map(String);
+  const photoFiles = pickPhotoFiles(formData);
+  const remainingExisting = existing.photos.length - removePhotoIds.length;
+  const photoError = validatePhotoFiles(photoFiles, remainingExisting);
+  if (photoError) return { error: photoError };
+
+  const parsed = parseListingFields(formData);
+  if ("error" in parsed) return parsed;
+
+  await updateListing(listingId, session.userId, parsed.fields);
+
+  if (removePhotoIds.length > 0) {
+    const removed = await removeListingPhotos(removePhotoIds);
+    await deletePhotoFilesByUrl(removed.map((p) => p.url));
+  }
+  if (photoFiles.length > 0) {
+    const urls = await savePhotoFiles(listingId, photoFiles);
+    await addListingPhotos(listingId, urls);
+  }
+
+  redirect(`/${parsed.fields.transaction === "VENTE" ? "acheter" : "louer"}/${listingId}`);
+}
+
+export async function deleteListingAction(formData: FormData) {
+  const session = await getSession();
+  if (!session) redirect("/connexion");
+
+  const listingId = String(formData.get("listingId") ?? "");
+  const deleted = await deleteListing(listingId, session.userId);
+  if (deleted) {
+    await deleteListingUploadDir(listingId);
+  }
+
+  redirect("/compte");
 }
