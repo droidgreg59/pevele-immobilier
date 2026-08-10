@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { AccountType } from "@prisma/client";
+
+type SessionUser = { nom: string; type: AccountType; email: string };
 
 const NAV_ITEMS = [
   { label: "ACHETER", href: "/acheter" },
@@ -16,6 +20,22 @@ const NAV_ITEMS = [
 
 export default function Header() {
   const pathname = usePathname();
+  const [user, setUser] = useState<SessionUser | null | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/session")
+      .then((res) => res.json())
+      .then((data: { user: SessionUser | null }) => {
+        if (!cancelled) setUser(data.user);
+      })
+      .catch(() => {
+        if (!cancelled) setUser(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-5 border-b-[3px] border-blue bg-cream px-8 py-3">
@@ -52,12 +72,30 @@ export default function Header() {
         })}
       </nav>
 
-      <Link
-        href="/vendre/deposer"
-        className="shrink-0 bg-yellow px-4.5 py-3 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] transition-transform hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_var(--pvl-blue)]"
-      >
-        + DÉPOSER UNE ANNONCE
-      </Link>
+      <div className="flex shrink-0 items-center gap-4">
+        {user ? (
+          <Link
+            href="/compte"
+            className="whitespace-nowrap font-mono text-[10.5px] font-medium text-blue"
+          >
+            MON COMPTE
+          </Link>
+        ) : user === null ? (
+          <Link
+            href="/connexion"
+            className="whitespace-nowrap font-mono text-[10.5px] font-medium text-blue"
+          >
+            SE CONNECTER
+          </Link>
+        ) : null}
+
+        <Link
+          href="/vendre/deposer"
+          className="bg-yellow px-4.5 py-3 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] transition-transform hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_var(--pvl-blue)]"
+        >
+          + DÉPOSER UNE ANNONCE
+        </Link>
+      </div>
     </header>
   );
 }

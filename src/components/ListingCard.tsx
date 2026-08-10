@@ -1,12 +1,10 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import type { Listing } from "@/data/listings";
+import FavoriteButton from "./FavoriteButton";
 
 export default function ListingCard({ listing }: { listing: Listing }) {
-  const [fav, setFav] = useState(false);
   const particulier = listing.type === "particulier";
+  const detailHref = `/${listing.transaction === "vente" ? "acheter" : "louer"}/${listing.id}`;
 
   return (
     <article className="animate-draw-in flex flex-col border-[2.5px] border-ink bg-white shadow-[6px_6px_0_rgba(39,67,166,.22)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5">
@@ -31,14 +29,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         >
           {particulier ? "ENTRE VOISINS" : "AGENCE"}
         </span>
-        <button
-          type="button"
-          onClick={() => setFav((f) => !f)}
-          aria-label="Ajouter aux favoris"
-          className="absolute right-2.5 top-2.5 flex h-[34px] w-[34px] items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue"
-        >
-          {fav ? "♥" : "♡"}
-        </button>
+        <FavoriteButton className="absolute right-2.5 top-2.5 flex items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue" />
         <span className="absolute bottom-2.5 left-2.5 bg-ink px-3.5 py-1.5 font-display text-[26px] tracking-[.02em] text-yellow">
           {listing.prix}
         </span>
@@ -48,9 +39,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       </div>
       <div className="flex flex-1 flex-col gap-2.5 px-4 pb-4 pt-3.5">
         <div className="flex flex-col gap-0.5">
-          <span className="font-sans text-[17.5px] font-bold text-ink">
+          <Link
+            href={detailHref}
+            className="font-sans text-[17.5px] font-bold text-ink"
+          >
             {listing.titre}
-          </span>
+          </Link>
           <Link
             href={`/villages/${listing.villageSlug}`}
             className="font-mono text-[10.5px] font-medium text-blue"
@@ -84,10 +78,13 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             </span>
           </span>
         </div>
-        <span className="flex cursor-pointer justify-between border-t-2 border-line pt-2.5 font-mono text-[11px] font-semibold text-blue hover:text-ink">
+        <Link
+          href={detailHref}
+          className="flex justify-between border-t-2 border-line pt-2.5 font-mono text-[11px] font-semibold text-blue hover:text-ink"
+        >
           VOIR LA FICHE COMPLÈTE
           <span>→</span>
-        </span>
+        </Link>
       </div>
     </article>
   );
