@@ -41,13 +41,22 @@ model Listing {
   dpe          String?
   equipements  String          @default("")
   badge        String?
-  photo        String?
-  photoLabel   String?
+  photos       ListingPhoto[]
   createdAt    DateTime        @default(now())
 
   @@index([ownerId])
   @@index([transaction, statut])
   @@index([villageSlug])
+}
+
+model ListingPhoto {
+  id        String  @id @default(cuid())
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  url       String
+  order     Int     @default(0)
+
+  @@index([listingId])
 }
 
 enum TransactionType {

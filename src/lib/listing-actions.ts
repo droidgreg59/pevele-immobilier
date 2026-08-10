@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { getVillageBySlug } from "@/data/villages";
-import { createListing } from "./listings";
+import { createListing, addListingPhotos } from "./listings";
+import { pickPhotoFiles, validatePhotoFiles, savePhotoFiles } from "./photo-upload";
 
 export type ListingFormState = { error?: string };
 
@@ -27,6 +28,10 @@ export async function createListingAction(
   const description = String(formData.get("description") ?? "").trim();
   const exterieur = String(formData.get("exterieur") ?? "").trim();
   const dpe = String(formData.get("dpe") ?? "").trim();
+
+  const photoFiles = pickPhotoFiles(formData);
+  const photoError = validatePhotoFiles(photoFiles);
+  if (photoError) return { error: photoError };
 
   const village = getVillageBySlug(villageSlug);
   if (!village) return { error: "Merci de choisir un village dans la liste." };
@@ -57,6 +62,11 @@ export async function createListingAction(
     exterieur: exterieur || "—",
     dpe: dpe || undefined,
   });
+
+  if (photoFiles.length > 0) {
+    const urls = await savePhotoFiles(listing.id, photoFiles);
+    await addListingPhotos(listing.id, urls);
+  }
 
   redirect(`/${transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`);
 }

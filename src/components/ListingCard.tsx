@@ -7,21 +7,23 @@ export default function ListingCard({ listing }: { listing: ListingWithOwner }) 
   const particulier = listing.owner.type === "PARTICULIER";
   const enVerification = listing.statut === "EN_VERIFICATION";
   const detailHref = `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`;
+  const cover = listing.photos[0];
 
   return (
     <article className="animate-draw-in flex flex-col border-[2.5px] border-ink bg-white shadow-[6px_6px_0_rgba(39,67,166,.22)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5">
       <div className="relative h-[215px] overflow-hidden border-b-[2.5px] border-ink">
-        <div className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,#EDEAE1_0_14px,#E4E0D3_14px_28px)] px-4 text-center font-mono text-[10.5px] text-muted-2">
-          {listing.photoLabel}
-        </div>
-        {listing.photo ? (
+        {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={listing.photo}
+            src={cover.url}
             alt={listing.titre}
             className="absolute inset-0 h-full w-full object-cover"
           />
-        ) : null}
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,#EDEAE1_0_14px,#E4E0D3_14px_28px)] px-4 text-center font-mono text-[10.5px] text-muted-2">
+            Aucune photo pour le moment
+          </div>
+        )}
         <span
           className="absolute left-2.5 top-2.5 whitespace-nowrap border-2 border-ink px-2.5 py-1.5 font-mono text-[9.5px] font-semibold"
           style={{

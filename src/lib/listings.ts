@@ -4,7 +4,10 @@ import type { TransactionType } from "@prisma/client";
 import { prisma } from "./prisma";
 
 const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
-  include: { owner: { select: { nom: true, entreprise: true, type: true } } },
+  include: {
+    owner: { select: { nom: true, entreprise: true, type: true } },
+    photos: { orderBy: { order: "asc" } },
+  },
 });
 
 export type ListingWithOwner = Prisma.ListingGetPayload<typeof listingWithOwner>;
@@ -63,5 +66,12 @@ export type CreateListingInput = {
 export async function createListing(input: CreateListingInput) {
   return prisma.listing.create({
     data: { ...input, dpe: input.dpe || null },
+  });
+}
+
+export async function addListingPhotos(listingId: string, urls: string[]) {
+  if (urls.length === 0) return;
+  await prisma.listingPhoto.createMany({
+    data: urls.map((url, order) => ({ listingId, url, order })),
   });
 }

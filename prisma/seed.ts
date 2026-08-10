@@ -62,7 +62,7 @@ async function main() {
       exterieur: "685 M² JARD.",
       dpe: "C",
       equipements: "Poêle à bois,Garage,Dépendance,Double vitrage",
-      photo: "/images/camphin-en-pevele.png",
+      photos: ["/images/camphin-en-pevele.png"],
     },
     {
       ownerId: particulier.id,
@@ -80,7 +80,6 @@ async function main() {
       exterieur: "900 M² TER.",
       dpe: "E",
       equipements: "Terrain clos,Puits,Abri de jardin",
-      photoLabel: "photos du propriétaire",
     },
     {
       ownerId: partenaire.id,
@@ -98,7 +97,6 @@ async function main() {
       exterieur: "1 250 M² TER.",
       dpe: "B",
       equipements: "Pompe à chaleur,Dépendances,Piscine,Alarme",
-      photoLabel: "photo pro — ferme rénovée",
     },
     {
       ownerId: particulier.id,
@@ -116,7 +114,6 @@ async function main() {
       exterieur: "COUR 60 M²",
       dpe: "D",
       equipements: "Garage,Cour privative,Chaudière récente",
-      photoLabel: "photos du propriétaire",
     },
     {
       ownerId: partenaire.id,
@@ -134,7 +131,6 @@ async function main() {
       exterieur: "520 M² JARD.",
       dpe: "A",
       equipements: "Cuisine équipée,Garage attenant,Domotique",
-      photoLabel: "photo pro — plain-pied",
     },
     {
       ownerId: particulier.id,
@@ -152,7 +148,6 @@ async function main() {
       exterieur: "BALCON",
       dpe: "D",
       equipements: "Cuisine équipée,Parking privatif,Balcon",
-      photoLabel: "photos du propriétaire",
     },
   ];
 
@@ -160,8 +155,16 @@ async function main() {
     where: { ownerId: { in: [pvl.id, partenaire.id, particulier.id] } },
   });
 
-  for (const data of listingsData) {
-    await prisma.listing.create({ data: { ...data, statut: "PUBLIEE" } });
+  for (const { photos, ...data } of listingsData) {
+    await prisma.listing.create({
+      data: {
+        ...data,
+        statut: "PUBLIEE",
+        photos: photos
+          ? { create: photos.map((url, order) => ({ url, order })) }
+          : undefined,
+      },
+    });
   }
 
   console.log(`Seed terminé — ${listingsData.length} annonces de démonstration créées.`);

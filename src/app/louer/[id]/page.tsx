@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getListingById } from "@/lib/listings";
-import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
 import ListingDetail from "@/components/ListingDetail";
 
 export const dynamic = "force-dynamic";
@@ -25,10 +24,5 @@ export default async function LouerListingPage({
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "LOCATION") notFound();
 
-  const [dvfStats, dvfRecent] = await Promise.all([
-    getDvfStatsForVillage(listing.villageSlug),
-    getRecentDvfTransactions(listing.villageSlug),
-  ]);
-
-  return <ListingDetail listing={listing} dvfStats={dvfStats} dvfRecent={dvfRecent} />;
+  return <ListingDetail listing={listing} dvfStats={null} dvfRecent={[]} />;
 }

@@ -1,11 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { createListingAction, type ListingFormState } from "@/lib/listing-actions";
 import { villages } from "@/data/villages";
 
 const initialState: ListingFormState = {};
 const DPE_OPTIONS = ["A", "B", "C", "D", "E", "F", "G"];
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_PHOTOS = 8;
+
+type PhotoPick = { file: File; url: string };
 
 export default function PublishForm({
   accountLabel,
@@ -17,6 +21,45 @@ export default function PublishForm({
     initialState
   );
   const [transaction, setTransaction] = useState<"VENTE" | "LOCATION">("VENTE");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photos, setPhotos] = useState<PhotoPick[]>([]);
+
+  useEffect(() => {
+    return () => {
+      photos.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function syncFileInput(files: File[]) {
+    const dt = new DataTransfer();
+    files.forEach((f) => dt.items.add(f));
+    if (fileInputRef.current) fileInputRef.current.files = dt.files;
+  }
+
+  function addFiles(incoming: FileList | File[]) {
+    const accepted = Array.from(incoming).filter((f) =>
+      ACCEPTED_TYPES.includes(f.type)
+    );
+    if (accepted.length === 0) return;
+    setPhotos((prev) => {
+      const next = [
+        ...prev,
+        ...accepted.map((file) => ({ file, url: URL.createObjectURL(file) })),
+      ].slice(0, MAX_PHOTOS);
+      syncFileInput(next.map((p) => p.file));
+      return next;
+    });
+  }
+
+  function removePhoto(index: number) {
+    setPhotos((prev) => {
+      URL.revokeObjectURL(prev[index].url);
+      const next = prev.filter((_, i) => i !== index);
+      syncFileInput(next.map((p) => p.file));
+      return next;
+    });
+  }
 
   return (
     <form action={formAction} className="flex max-w-[720px] flex-col gap-5">
@@ -172,15 +215,69 @@ export default function PublishForm({
         />
       </label>
 
-      <div className="flex items-center justify-center gap-3.5 border-2 border-dashed border-muted-2 bg-white p-7">
-        <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-blue font-sans text-xl font-semibold text-blue">
-          ↑
-        </span>
-        <span className="font-sans text-[14px] leading-[1.5] text-muted">
-          Glissez vos photos ici — et votre plan 2D si vous en avez un.
-          <br />
-          <b className="text-ink">Bientôt disponible : l&apos;envoi de photos.</b>
-        </span>
+      <div className="flex flex-col gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          name="photos"
+          multiple
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files) addFiles(e.target.files);
+          }}
+        />
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click();
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            addFiles(e.dataTransfer.files);
+          }}
+          className="flex cursor-pointer items-center justify-center gap-3.5 border-2 border-dashed border-muted-2 bg-white p-7 hover:border-blue"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-blue font-sans text-xl font-semibold text-blue">
+            ↑
+          </span>
+          <span className="font-sans text-[14px] leading-[1.5] text-muted">
+            Glissez vos photos ici, ou cliquez pour les choisir.
+            <br />
+            <b className="text-ink">
+              JPEG, PNG ou WebP, 5 Mo max chacune — {MAX_PHOTOS} photos maximum.
+            </b>
+          </span>
+        </div>
+
+        {photos.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {photos.map((p, i) => (
+              <div
+                key={p.url}
+                className="relative h-20 w-20 overflow-hidden border-2 border-ink"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  aria-label="Retirer cette photo"
+                  className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[11px] leading-none text-white"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {state.error ? (

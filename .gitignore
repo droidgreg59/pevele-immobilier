@@ -44,3 +44,6 @@ next-env.d.ts
 # prisma
 /prisma/*.db
 /prisma/*.db-journal
+
+# fichiers uploadés par les utilisateurs (stockage local, non versionné)
+/public/uploads

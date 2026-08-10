@@ -4,6 +4,7 @@ import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2 } from "@/lib/format";
 import FavoriteButton from "./FavoriteButton";
+import PhotoGallery from "./PhotoGallery";
 
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
   if (owner.type === "PARTICULIER") return "ENTRE VOISINS — PARTICULIER";
@@ -59,40 +60,35 @@ export default function ListingDetail({
 
       <div className="mt-5 grid grid-cols-1 gap-9 lg:grid-cols-[1.4fr_1fr]">
         <div>
-          <div className="relative h-[360px] overflow-hidden border-[2.5px] border-ink">
-            <div className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,#EDEAE1_0_14px,#E4E0D3_14px_28px)] px-4 text-center font-mono text-[10.5px] text-muted-2">
-              {listing.photoLabel}
-            </div>
-            {listing.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={listing.photo}
-                alt={listing.titre}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            ) : null}
-            <span
-              className="absolute left-3 top-3 whitespace-nowrap border-2 border-ink px-2.5 py-1.5 font-mono text-[9.5px] font-semibold"
-              style={{
-                background: particulier ? "#FBF3DC" : "#EDF1FB",
-                color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
-              }}
-            >
-              {sourceLabel(listing.owner)}
-            </span>
-            <FavoriteButton className="absolute right-3 top-3 flex items-center justify-center rounded-full border-2 border-ink bg-white text-lg leading-none text-blue" />
-            {enVerification ? (
-              <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-blue px-3 py-2 font-mono text-[10px] font-semibold text-white">
-                EN VÉRIFICATION
-              </span>
-            ) : listing.badge ? (
-              <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-yellow px-3 py-2 font-mono text-[10px] font-semibold text-ink">
-                {listing.badge}
-              </span>
-            ) : null}
-          </div>
+          <PhotoGallery
+            photos={listing.photos}
+            alt={listing.titre}
+            overlay={
+              <>
+                <span
+                  className="absolute left-3 top-3 whitespace-nowrap border-2 border-ink px-2.5 py-1.5 font-mono text-[9.5px] font-semibold"
+                  style={{
+                    background: particulier ? "#FBF3DC" : "#EDF1FB",
+                    color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
+                  }}
+                >
+                  {sourceLabel(listing.owner)}
+                </span>
+                <FavoriteButton className="absolute right-3 top-3 flex items-center justify-center rounded-full border-2 border-ink bg-white text-lg leading-none text-blue" />
+                {enVerification ? (
+                  <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-blue px-3 py-2 font-mono text-[10px] font-semibold text-white">
+                    EN VÉRIFICATION
+                  </span>
+                ) : listing.badge ? (
+                  <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-yellow px-3 py-2 font-mono text-[10px] font-semibold text-ink">
+                    {listing.badge}
+                  </span>
+                ) : null}
+              </>
+            }
+          />
           <p className="mt-2 font-mono text-[10px] text-muted-2">
-            Galerie complète et visite virtuelle — bientôt disponibles.
+            Visite virtuelle — bientôt disponible.
           </p>
 
           <section className="mt-8">
@@ -137,66 +133,68 @@ export default function ListingDetail({
             </div>
           </section>
 
-          <section className="mt-8">
-            <h2 className="m-0 font-display text-2xl text-ink">LE MARCHÉ</h2>
-            {dvfStats ? (
-              <div className="mt-3 flex flex-col gap-4">
-                <div className="border-2 border-ink bg-[#F7F4EA] p-5">
-                  <p className="m-0 font-sans text-[14.5px] leading-[1.6] text-ink">
-                    Prix moyen constaté à <b>{village?.nom}</b> :{" "}
-                    <b>{dvfStats.avgPrixM2.toLocaleString("fr-FR")} € / m²</b>{" "}
-                    ({dvfStats.count} vente{dvfStats.count > 1 ? "s" : ""},{" "}
-                    {dvfStats.minAnnee}–{dvfStats.maxAnnee}).
-                  </p>
-                  {comparisonText ? (
-                    <p className="m-0 mt-2 font-mono text-[11.5px] text-blue">
-                      {comparisonText}
+          {listing.transaction === "VENTE" ? (
+            <section className="mt-8">
+              <h2 className="m-0 font-display text-2xl text-ink">LE MARCHÉ</h2>
+              {dvfStats ? (
+                <div className="mt-3 flex flex-col gap-4">
+                  <div className="border-2 border-ink bg-[#F7F4EA] p-5">
+                    <p className="m-0 font-sans text-[14.5px] leading-[1.6] text-ink">
+                      Prix moyen constaté à <b>{village?.nom}</b> :{" "}
+                      <b>{dvfStats.avgPrixM2.toLocaleString("fr-FR")} € / m²</b>{" "}
+                      ({dvfStats.count} vente{dvfStats.count > 1 ? "s" : ""},{" "}
+                      {dvfStats.minAnnee}–{dvfStats.maxAnnee}).
                     </p>
-                  ) : null}
-                </div>
-                {dvfRecent.length > 0 ? (
-                  <div className="border-2 border-line bg-white">
-                    <div className="border-b-2 border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
-                      DERNIÈRES VENTES À {village?.nom.toUpperCase()}
-                    </div>
-                    <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
-                      {dvfRecent.map((t) => (
-                        <li
-                          key={t.id}
-                          className="flex items-center justify-between gap-3 px-4 py-2.5 font-mono text-[11.5px]"
-                        >
-                          <span className="text-muted">
-                            {new Date(t.dateMutation).toLocaleDateString("fr-FR")} ·{" "}
-                            {t.typeLocal} · {t.surfaceBati} m²
-                          </span>
-                          <span className="font-semibold text-ink">
-                            {t.valeurFonciere.toLocaleString("fr-FR")} €
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                    {comparisonText ? (
+                      <p className="m-0 mt-2 font-mono text-[11.5px] text-blue">
+                        {comparisonText}
+                      </p>
+                    ) : null}
                   </div>
-                ) : null}
-                <p className="m-0 font-mono text-[10px] text-muted-2">
-                  Source : DVF (data.gouv.fr / Etalab) —{" "}
-                  <Link href="/prix" className="text-blue">
-                    voir tous les villages →
-                  </Link>
-                </p>
-              </div>
-            ) : (
-              <div className="mt-3 border-2 border-dashed border-blue bg-white p-6">
-                <span className="font-mono text-[10.5px] font-medium text-blue">
-                  DONNÉES INSUFFISANTES
-                </span>
-                <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
-                  Pas assez de ventes DVF enregistrées à{" "}
-                  {village ? village.nom : "cette commune"} pour établir une
-                  moyenne fiable.
-                </p>
-              </div>
-            )}
-          </section>
+                  {dvfRecent.length > 0 ? (
+                    <div className="border-2 border-line bg-white">
+                      <div className="border-b-2 border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
+                        DERNIÈRES VENTES À {village?.nom.toUpperCase()}
+                      </div>
+                      <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
+                        {dvfRecent.map((t) => (
+                          <li
+                            key={t.id}
+                            className="flex items-center justify-between gap-3 px-4 py-2.5 font-mono text-[11.5px]"
+                          >
+                            <span className="text-muted">
+                              {new Date(t.dateMutation).toLocaleDateString("fr-FR")} ·{" "}
+                              {t.typeLocal} · {t.surfaceBati} m²
+                            </span>
+                            <span className="font-semibold text-ink">
+                              {t.valeurFonciere.toLocaleString("fr-FR")} €
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <p className="m-0 font-mono text-[10px] text-muted-2">
+                    Source : DVF (data.gouv.fr / Etalab) —{" "}
+                    <Link href="/prix" className="text-blue">
+                      voir tous les villages →
+                    </Link>
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-3 border-2 border-dashed border-blue bg-white p-6">
+                  <span className="font-mono text-[10.5px] font-medium text-blue">
+                    DONNÉES INSUFFISANTES
+                  </span>
+                  <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
+                    Pas assez de ventes DVF enregistrées à{" "}
+                    {village ? village.nom : "cette commune"} pour établir une
+                    moyenne fiable.
+                  </p>
+                </div>
+              )}
+            </section>
+          ) : null}
 
           <section className="mt-8">
             <h2 className="m-0 font-display text-2xl text-ink">
