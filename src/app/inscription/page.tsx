@@ -8,7 +8,12 @@ export const metadata: Metadata = {
     "Créez votre compte particulier ou agence sur Pévèle Immobilier.",
 };
 
-export default function InscriptionPage() {
+export default async function InscriptionPage({
+  searchParams,
+}: PageProps<"/inscription">) {
+  const params = await searchParams;
+  const next = typeof params.next === "string" ? params.next : undefined;
+
   return (
     <div className="animate-view-in max-w-[640px] px-9 py-8">
       <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
@@ -27,12 +32,15 @@ export default function InscriptionPage() {
       </p>
 
       <div className="mt-7">
-        <RegisterForm />
+        <RegisterForm next={next} />
       </div>
 
       <p className="mt-6 font-mono text-[11.5px] text-muted">
         Déjà un compte ?{" "}
-        <Link href="/connexion" className="text-blue">
+        <Link
+          href={next ? `/connexion?next=${encodeURIComponent(next)}` : "/connexion"}
+          className="text-blue"
+        >
           Se connecter →
         </Link>
       </p>

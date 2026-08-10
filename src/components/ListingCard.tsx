@@ -1,10 +1,12 @@
 import Link from "next/link";
-import type { Listing } from "@/data/listings";
+import type { ListingWithOwner } from "@/lib/listings";
+import { formatPrix } from "@/lib/format";
 import FavoriteButton from "./FavoriteButton";
 
-export default function ListingCard({ listing }: { listing: Listing }) {
-  const particulier = listing.type === "particulier";
-  const detailHref = `/${listing.transaction === "vente" ? "acheter" : "louer"}/${listing.id}`;
+export default function ListingCard({ listing }: { listing: ListingWithOwner }) {
+  const particulier = listing.owner.type === "PARTICULIER";
+  const enVerification = listing.statut === "EN_VERIFICATION";
+  const detailHref = `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`;
 
   return (
     <article className="animate-draw-in flex flex-col border-[2.5px] border-ink bg-white shadow-[6px_6px_0_rgba(39,67,166,.22)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5">
@@ -31,11 +33,17 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         </span>
         <FavoriteButton className="absolute right-2.5 top-2.5 flex items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue" />
         <span className="absolute bottom-2.5 left-2.5 bg-ink px-3.5 py-1.5 font-display text-[26px] tracking-[.02em] text-yellow">
-          {listing.prix}
+          {formatPrix(listing.prix, listing.transaction)}
         </span>
-        <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-yellow px-2.5 py-1.5 font-mono text-[9px] font-semibold text-ink">
-          {listing.badge}
-        </span>
+        {enVerification ? (
+          <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-blue px-2.5 py-1.5 font-mono text-[9px] font-semibold text-white">
+            EN VÉRIFICATION
+          </span>
+        ) : listing.badge ? (
+          <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-yellow px-2.5 py-1.5 font-mono text-[9px] font-semibold text-ink">
+            {listing.badge}
+          </span>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-2.5 px-4 pb-4 pt-3.5">
         <div className="flex flex-col gap-0.5">
@@ -55,7 +63,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         <div className="mt-auto flex text-center">
           <span className="flex-1 border-2 border-ink bg-[#F7F4EA] px-1 py-1.5">
             <b className="block font-sans text-[13px] font-semibold text-ink">
-              {listing.pieces}
+              {listing.pieces} P.
             </b>
             <span className="font-mono text-[8px] font-medium text-muted">
               PIÈCES
@@ -63,7 +71,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           </span>
           <span className="flex-1 border-2 border-l-0 border-ink bg-[#F7F4EA] px-1 py-1.5">
             <b className="block font-sans text-[13px] font-semibold text-ink">
-              {listing.surface}
+              {listing.surface} M²
             </b>
             <span className="font-mono text-[8px] font-medium text-muted">
               SURFACE

@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { listings, type ListingType, type TransactionType } from "@/data/listings";
+import type { ListingWithOwner } from "@/lib/listings";
 import { slugify } from "@/lib/slugify";
 import ListingCard from "./ListingCard";
 
-type Filtre = "tout" | ListingType;
+type Filtre = "tout" | "agence" | "particulier";
 
 const FILTRE_LABEL: Record<Filtre, string> = {
   tout: "TOUT",
@@ -14,27 +14,30 @@ const FILTRE_LABEL: Record<Filtre, string> = {
   particulier: "ENTRE VOISINS",
 };
 
+function matchesFiltre(listing: ListingWithOwner, filtre: Filtre): boolean {
+  if (filtre === "tout") return true;
+  return filtre === "agence"
+    ? listing.owner.type === "AGENCE"
+    : listing.owner.type === "PARTICULIER";
+}
+
 export default function ListingsBrowser({
-  transaction,
+  listings,
   pieceBadge,
   titre,
   initialQuery,
 }: {
-  transaction: TransactionType;
+  listings: ListingWithOwner[];
   pieceBadge: string;
   titre: string;
   initialQuery?: string;
 }) {
   const [filtre, setFiltre] = useState<Filtre>("tout");
-  const base = useMemo(
-    () => listings.filter((l) => l.transaction === transaction),
-    [transaction]
-  );
 
   const querySlug = initialQuery ? slugify(initialQuery) : "";
-  const list = base.filter(
+  const list = listings.filter(
     (l) =>
-      (filtre === "tout" || l.type === filtre) &&
+      matchesFiltre(l, filtre) &&
       (querySlug === "" || l.villageSlug.includes(querySlug))
   );
 
@@ -58,9 +61,7 @@ export default function ListingsBrowser({
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {(Object.keys(FILTRE_LABEL) as Filtre[]).map((key) => {
-          const count = base.filter(
-            (l) => key === "tout" || l.type === key
-          ).length;
+          const count = listings.filter((l) => matchesFiltre(l, key)).length;
           const active = filtre === key;
           return (
             <button

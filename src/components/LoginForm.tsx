@@ -5,7 +5,7 @@ import { loginAction, type AuthState } from "@/lib/auth-actions";
 
 const initialState: AuthState = {};
 
-export default function LoginForm() {
+export default function LoginForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(
     loginAction,
     initialState
@@ -13,6 +13,7 @@ export default function LoginForm() {
 
   return (
     <form action={formAction} className="flex max-w-[440px] flex-col gap-4">
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <label className="flex flex-col gap-1.5">
         <span className="font-mono text-[10.5px] font-medium text-muted">
           EMAIL

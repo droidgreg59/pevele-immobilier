@@ -7,7 +7,12 @@ export const metadata: Metadata = {
   description: "Connectez-vous à votre compte Pévèle Immobilier.",
 };
 
-export default function ConnexionPage() {
+export default async function ConnexionPage({
+  searchParams,
+}: PageProps<"/connexion">) {
+  const params = await searchParams;
+  const next = typeof params.next === "string" ? params.next : undefined;
+
   return (
     <div className="animate-view-in max-w-[640px] px-9 py-8">
       <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
@@ -21,12 +26,15 @@ export default function ConnexionPage() {
       </Link>
 
       <div className="mt-7">
-        <LoginForm />
+        <LoginForm next={next} />
       </div>
 
       <p className="mt-6 font-mono text-[11.5px] text-muted">
         Pas encore de compte ?{" "}
-        <Link href="/inscription" className="text-blue">
+        <Link
+          href={next ? `/inscription?next=${encodeURIComponent(next)}` : "/inscription"}
+          className="text-blue"
+        >
           Créer un compte →
         </Link>
       </p>

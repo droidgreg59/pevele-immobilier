@@ -5,7 +5,7 @@ import { registerAction, type AuthState } from "@/lib/auth-actions";
 
 const initialState: AuthState = {};
 
-export default function RegisterForm() {
+export default function RegisterForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(
     registerAction,
     initialState
@@ -15,6 +15,7 @@ export default function RegisterForm() {
   return (
     <form action={formAction} className="flex max-w-[520px] flex-col gap-4">
       <input type="hidden" name="type" value={type} />
+      {next ? <input type="hidden" name="next" value={next} /> : null}
 
       <div className="grid grid-cols-2 gap-3">
         <button

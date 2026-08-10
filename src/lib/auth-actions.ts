@@ -10,6 +10,11 @@ export type AuthState = { error?: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function safeNextPath(formData: FormData): string {
+  const next = String(formData.get("next") ?? "");
+  return next.startsWith("/") && !next.startsWith("//") ? next : "/compte";
+}
+
 export async function registerAction(
   _prevState: AuthState,
   formData: FormData
@@ -52,7 +57,7 @@ export async function registerAction(
     type: user.type,
   });
 
-  redirect("/compte");
+  redirect(safeNextPath(formData));
 }
 
 export async function loginAction(
@@ -79,7 +84,7 @@ export async function loginAction(
     type: user.type,
   });
 
-  redirect("/compte");
+  redirect(safeNextPath(formData));
 }
 
 export async function logoutAction() {

@@ -4,6 +4,8 @@ export type Village = {
   slug: string;
   labelCourt: string;
   nom: string;
+  /** Code INSEE de la commune, utilisé pour rattacher les données DVF. */
+  insee: string;
   /** Coordinates of the dot on the 420x560 SVG map viewBox. */
   mapX: number;
   mapY: number;
@@ -13,10 +15,11 @@ export type Village = {
   description: string;
 };
 
-const RAW: [string, string, number, number, number, number, string][] = [
+const RAW: [string, string, string, number, number, number, number, string][] = [
   [
     "SAINGHIN-EN-MÉL.",
     "Sainghin-en-Mélantois",
+    "59523",
     146,
     195,
     146,
@@ -26,6 +29,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "GRUSON",
     "Gruson",
+    "59275",
     219,
     166,
     222,
@@ -35,6 +39,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "CHÉRENG",
     "Chéreng",
+    "59146",
     219,
     124,
     219,
@@ -44,6 +49,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "BAISIEUX",
     "Baisieux",
+    "59044",
     310,
     124,
     310,
@@ -53,6 +59,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "WILLEMS",
     "Willems",
+    "59660",
     283,
     53,
     283,
@@ -62,6 +69,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "CAMPHIN-EN-PÉV.",
     "Camphin-en-Pévèle",
+    "59124",
     310,
     181,
     310,
@@ -71,6 +79,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "WANNEHAIN",
     "Wannehain",
+    "59638",
     328,
     237,
     336,
@@ -80,6 +89,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "BOURGHELLES",
     "Bourghelles",
+    "59096",
     283,
     262,
     283,
@@ -89,6 +99,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "CYSOING",
     "Cysoing",
+    "59168",
     237,
     237,
     230,
@@ -98,6 +109,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "LOUVIL",
     "Louvil",
+    "59364",
     201,
     290,
     196,
@@ -107,6 +119,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "BACHY",
     "Bachy",
+    "59042",
     310,
     308,
     310,
@@ -116,6 +129,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "MOUCHIN",
     "Mouchin",
+    "59419",
     374,
     379,
     374,
@@ -125,6 +139,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "TEMPLEUVE-EN-PÉV.",
     "Templeuve-en-Pévèle",
+    "59586",
     155,
     365,
     155,
@@ -134,6 +149,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "GENECH",
     "Genech",
+    "59258",
     246,
     351,
     246,
@@ -143,6 +159,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "NOMAIN",
     "Nomain",
+    "59435",
     292,
     436,
     292,
@@ -152,6 +169,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "ORCHIES",
     "Orchies",
+    "59449",
     292,
     522,
     292,
@@ -161,6 +179,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "BERSÉE",
     "Bersée",
+    "59071",
     128,
     493,
     128,
@@ -170,6 +189,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "MÉRIGNIES",
     "Mérignies",
+    "59398",
     55,
     422,
     60,
@@ -179,6 +199,7 @@ const RAW: [string, string, number, number, number, number, string][] = [
   [
     "CAPPELLE-EN-PÉV.",
     "Cappelle-en-Pévèle",
+    "59129",
     146,
     422,
     146,
@@ -188,10 +209,11 @@ const RAW: [string, string, number, number, number, number, string][] = [
 ];
 
 export const villages: Village[] = RAW.map(
-  ([labelCourt, nom, mapX, mapY, labelX, labelY, description]) => ({
+  ([labelCourt, nom, insee, mapX, mapY, labelX, labelY, description]) => ({
     slug: slugify(nom),
     labelCourt,
     nom,
+    insee,
     mapX,
     mapY,
     labelX,
@@ -199,6 +221,10 @@ export const villages: Village[] = RAW.map(
     description,
   })
 );
+
+export function getVillageByInsee(insee: string): Village | undefined {
+  return villages.find((v) => v.insee === insee);
+}
 
 export function getVillageBySlug(slug: string): Village | undefined {
   return villages.find((v) => v.slug === slug);

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import ListingsBrowser from "@/components/ListingsBrowser";
+import { getPublicListings } from "@/lib/listings";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Louer en Pévèle — Pévèle Immobilier",
@@ -12,10 +15,11 @@ export default async function LouerPage({
 }: PageProps<"/louer">) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
+  const listings = await getPublicListings("LOCATION");
 
   return (
     <ListingsBrowser
-      transaction="location"
+      listings={listings}
       pieceBadge="PIÈCE 02"
       titre="L'ENTRÉE — LOUER"
       initialQuery={q}

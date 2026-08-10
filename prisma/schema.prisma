@@ -15,9 +15,65 @@ model User {
   entreprise   String?
   type         AccountType
   createdAt    DateTime    @default(now())
+  listings     Listing[]
 }
 
 enum AccountType {
   PARTICULIER
   AGENCE
+}
+
+model Listing {
+  id           String          @id @default(cuid())
+  owner        User            @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  transaction  TransactionType
+  statut       ListingStatus   @default(EN_VERIFICATION)
+  titre        String
+  description  String
+  prix         Int
+  commune      String
+  villageSlug  String
+  pieces       Int
+  chambres     Int
+  surface      Int
+  exterieur    String
+  dpe          String?
+  equipements  String          @default("")
+  badge        String?
+  photo        String?
+  photoLabel   String?
+  createdAt    DateTime        @default(now())
+
+  @@index([ownerId])
+  @@index([transaction, statut])
+  @@index([villageSlug])
+}
+
+enum TransactionType {
+  VENTE
+  LOCATION
+}
+
+enum ListingStatus {
+  EN_VERIFICATION
+  PUBLIEE
+}
+
+/// Transactions immobilières issues des DVF (Demandes de Valeurs Foncières,
+/// data.gouv.fr / Etalab), filtrées aux communes de la Pévèle. Réimporté
+/// périodiquement via `npm run dvf:import` — pas de saisie manuelle.
+model DvfTransaction {
+  id              String   @id @default(cuid())
+  villageSlug     String
+  dateMutation    DateTime
+  typeLocal       String
+  valeurFonciere  Int
+  surfaceBati     Int
+  prixM2          Int
+  nombrePieces    Int?
+  adresse         String?
+  sourceAnnee     Int
+
+  @@index([villageSlug])
 }
