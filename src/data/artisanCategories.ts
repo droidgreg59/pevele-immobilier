@@ -1,0 +1,17 @@
+export const artisanCategories: string[] = [
+  "Rénovation",
+  "Maçonnerie",
+  "Toiture",
+  "Électricité",
+  "Plomberie",
+  "Chauffage",
+  "Menuiserie",
+  "Peinture",
+  "Isolation",
+  "Jardin",
+  "Terrassement",
+  "Architecture",
+  "Décoration",
+  "Diagnostics",
+  "Déménagement",
+];

@@ -1,26 +1,133 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --pvl-ink: #22242c;
+  --pvl-blue: #2743a6;
+  --pvl-yellow: #f5b52e;
+  --pvl-cream: #f5f2e9;
+  --pvl-muted: #6b6e7e;
+  --pvl-muted-2: #9da2b3;
+  --pvl-green: #417c3e;
+  --pvl-gold: #b08a2e;
+  --pvl-line: #e3e0d4;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ink: var(--pvl-ink);
+  --color-blue: var(--pvl-blue);
+  --color-yellow: var(--pvl-yellow);
+  --color-cream: var(--pvl-cream);
+  --color-muted: var(--pvl-muted);
+  --color-muted-2: var(--pvl-muted-2);
+  --color-green: var(--pvl-green);
+  --color-gold: var(--pvl-gold);
+  --color-line: var(--pvl-line);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-anton);
+  --font-sans: var(--font-archivo);
+  --font-mono: var(--font-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--pvl-cream);
+  color: var(--pvl-ink);
+  font-family: var(--font-archivo), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@keyframes pinPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 181, 46, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(245, 181, 46, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 181, 46, 0);
+  }
+}
+
+@keyframes roomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes viewIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stampIn {
+  0% {
+    opacity: 0;
+    transform: scale(2.2) rotate(-18deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.92) rotate(-8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-8deg);
+  }
+}
+
+@keyframes dotIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-pin-pulse {
+  animation: pinPulse 2.4s infinite;
+}
+
+.animate-room-in {
+  animation: roomIn 0.55s both;
+}
+
+.animate-view-in {
+  animation: viewIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.animate-draw-in {
+  animation: drawIn 0.6s both;
+}
+
+.animate-stamp-in {
+  animation: stampIn 0.55s 0.2s both;
+}
+
+.animate-dot-in {
+  animation: dotIn 0.4s both;
 }
