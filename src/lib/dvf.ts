@@ -20,11 +20,31 @@ export type DvfTransactionSummary = {
   adresse: string | null;
 };
 
+const MIN_SAMPLE_FOR_TYPE_FILTER = 3;
+
+/**
+ * Si `typeLocal` est fourni (ex. "Maison") et qu'il reste assez de ventes de
+ * ce type pour être fiable, la moyenne est calculée sur ce seul type.
+ * Sinon, on retombe sur la moyenne toutes catégories confondues plutôt que
+ * d'afficher « données insuffisantes » alors qu'on a des données utilisables.
+ */
 export async function getDvfStatsForVillage(
-  villageSlug: string
+  villageSlug: string,
+  typeLocal?: string
+): Promise<DvfVillageStats | null> {
+  if (typeLocal) {
+    const filtered = await aggregateVillageStats(villageSlug, typeLocal);
+    if (filtered && filtered.count >= MIN_SAMPLE_FOR_TYPE_FILTER) return filtered;
+  }
+  return aggregateVillageStats(villageSlug);
+}
+
+async function aggregateVillageStats(
+  villageSlug: string,
+  typeLocal?: string
 ): Promise<DvfVillageStats | null> {
   const agg = await prisma.dvfTransaction.aggregate({
-    where: { villageSlug },
+    where: { villageSlug, ...(typeLocal ? { typeLocal } : {}) },
     _count: { _all: true },
     _avg: { prixM2: true },
     _min: { sourceAnnee: true },
