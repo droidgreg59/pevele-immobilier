@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getListingById, getPriceHistory } from "@/lib/listings";
 import { getSession } from "@/lib/session";
+import { isListingFavorited } from "@/lib/favorites";
 import ListingDetail from "@/components/ListingDetail";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,9 @@ export default async function LouerListingPage({
     getPriceHistory(listing.id),
     getSession(),
   ]);
+  const isFavorited = session
+    ? await isListingFavorited(session.userId, listing.id)
+    : false;
 
   return (
     <ListingDetail
@@ -37,6 +41,7 @@ export default async function LouerListingPage({
       dvfRecent={[]}
       priceHistory={priceHistory}
       isOwner={session?.userId === listing.ownerId}
+      isFavorited={isFavorited}
     />
   );
 }

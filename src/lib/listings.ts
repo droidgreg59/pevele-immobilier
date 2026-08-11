@@ -53,6 +53,16 @@ export async function getListingsByUser(
   });
 }
 
+export async function getListingsFavoritedBy(
+  userId: string
+): Promise<ListingWithOwner[]> {
+  return prisma.listing.findMany({
+    where: { favorites: { some: { userId } } },
+    orderBy: { createdAt: "desc" },
+    ...listingWithOwner,
+  });
+}
+
 export async function getListingForEdit(
   id: string,
   ownerId: string

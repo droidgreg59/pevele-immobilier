@@ -3,7 +3,13 @@ import type { ListingWithOwner } from "@/lib/listings";
 import { formatPrix } from "@/lib/format";
 import FavoriteButton from "./FavoriteButton";
 
-export default function ListingCard({ listing }: { listing: ListingWithOwner }) {
+export default function ListingCard({
+  listing,
+  isFavorited = false,
+}: {
+  listing: ListingWithOwner;
+  isFavorited?: boolean;
+}) {
   const particulier = listing.owner.type === "PARTICULIER";
   const enVerification = listing.statut === "EN_VERIFICATION";
   const detailHref = `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`;
@@ -34,7 +40,11 @@ export default function ListingCard({ listing }: { listing: ListingWithOwner }) 
         >
           {particulier ? "ENTRE VOISINS" : "AGENCE"}
         </span>
-        <FavoriteButton className="absolute right-2.5 top-2.5 flex items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue" />
+        <FavoriteButton
+          listingId={listing.id}
+          initialFavorited={isFavorited}
+          className="absolute right-2.5 top-2.5 flex items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue"
+        />
         <span className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
           <span className="bg-ink px-3.5 py-1.5 font-display text-[26px] tracking-[.02em] text-yellow">
             {formatPrix(listing.prix, listing.transaction)}

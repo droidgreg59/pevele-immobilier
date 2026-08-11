@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import ListingsBrowser from "@/components/ListingsBrowser";
 import { getPublicListings } from "@/lib/listings";
+import { getFavoriteListingIds } from "@/lib/favorites";
+import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,13 @@ export default async function LouerPage({
 }: PageProps<"/louer">) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
-  const listings = await getPublicListings("LOCATION");
+  const [listings, session] = await Promise.all([
+    getPublicListings("LOCATION"),
+    getSession(),
+  ]);
+  const favoriteIds = session
+    ? Array.from(await getFavoriteListingIds(session.userId))
+    : [];
 
   return (
     <ListingsBrowser
@@ -23,6 +31,7 @@ export default async function LouerPage({
       pieceBadge="PIÈCE 02"
       titre="L'ENTRÉE — LOUER"
       initialQuery={q}
+      favoriteIds={favoriteIds}
     />
   );
 }

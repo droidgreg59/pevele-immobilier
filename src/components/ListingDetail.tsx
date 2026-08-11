@@ -30,12 +30,14 @@ export default function ListingDetail({
   dvfRecent,
   priceHistory,
   isOwner,
+  isFavorited,
 }: {
   listing: ListingWithOwner;
   dvfStats: DvfVillageStats | null;
   dvfRecent: DvfTransactionSummary[];
   priceHistory: PriceHistoryEntry[];
   isOwner: boolean;
+  isFavorited: boolean;
 }) {
   const particulier = listing.owner.type === "PARTICULIER";
   const enVerification = listing.statut === "EN_VERIFICATION";
@@ -83,7 +85,11 @@ export default function ListingDetail({
                 >
                   {sourceLabel(listing.owner)}
                 </span>
-                <FavoriteButton className="absolute right-3 top-3 flex items-center justify-center rounded-full border-2 border-ink bg-white text-lg leading-none text-blue" />
+                <FavoriteButton
+                  listingId={listing.id}
+                  initialFavorited={isFavorited}
+                  className="absolute right-3 top-3 flex items-center justify-center rounded-full border-2 border-ink bg-white text-lg leading-none text-blue"
+                />
                 {enVerification ? (
                   <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-blue px-3 py-2 font-mono text-[10px] font-semibold text-white">
                     EN VÉRIFICATION

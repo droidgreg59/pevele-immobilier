@@ -1,20 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { usePathname } from "next/navigation";
+import { toggleFavoriteAction } from "@/lib/favorite-actions";
 
 export default function FavoriteButton({
+  listingId,
+  initialFavorited = false,
   className,
   size = 34,
 }: {
+  listingId: string;
+  initialFavorited?: boolean;
   className?: string;
   size?: number;
 }) {
-  const [fav, setFav] = useState(false);
+  const pathname = usePathname();
+  const [favorited, setFavorited] = useState(initialFavorited);
+  const [isPending, startTransition] = useTransition();
 
   return (
     <button
       type="button"
-      onClick={() => setFav((f) => !f)}
+      disabled={isPending}
+      onClick={() => {
+        setFavorited((f) => !f);
+        startTransition(async () => {
+          await toggleFavoriteAction(listingId, pathname);
+        });
+      }}
       aria-label="Ajouter aux favoris"
       className={
         className ??
@@ -22,7 +36,7 @@ export default function FavoriteButton({
       }
       style={{ width: size, height: size }}
     >
-      {fav ? "♥" : "♡"}
+      {favorited ? "♥" : "♡"}
     </button>
   );
 }

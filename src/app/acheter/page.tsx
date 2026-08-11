@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import ListingsBrowser from "@/components/ListingsBrowser";
 import { getPublicListings } from "@/lib/listings";
+import { getFavoriteListingIds } from "@/lib/favorites";
+import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,13 @@ export default async function AcheterPage({
 }: PageProps<"/acheter">) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
-  const listings = await getPublicListings("VENTE");
+  const [listings, session] = await Promise.all([
+    getPublicListings("VENTE"),
+    getSession(),
+  ]);
+  const favoriteIds = session
+    ? Array.from(await getFavoriteListingIds(session.userId))
+    : [];
 
   return (
     <ListingsBrowser
@@ -23,6 +31,7 @@ export default async function AcheterPage({
       pieceBadge="PIÈCE 01"
       titre="LE SÉJOUR — ACHETER"
       initialQuery={q}
+      favoriteIds={favoriteIds}
     />
   );
 }

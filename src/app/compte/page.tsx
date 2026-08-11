@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { logoutAction } from "@/lib/auth-actions";
-import { getListingsByUser } from "@/lib/listings";
+import { getListingsByUser, getListingsFavoritedBy } from "@/lib/listings";
+import { getFavoriteListingIds } from "@/lib/favorites";
 import ListingCard from "@/components/ListingCard";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   title: "Mon compte — Pévèle Immobilier",
 };
 
-const STUBS_PARTICULIER = ["Mes favoris", "Mes alertes", "Mes recherches sauvegardées"];
+const STUBS_PARTICULIER = ["Mes alertes", "Mes recherches sauvegardées"];
 
 const STUBS_AGENCE = ["Mes collaborateurs", "Statistiques et leads", "Ma page agence"];
 
@@ -22,7 +23,11 @@ export default async function ComptePage() {
 
   const isAgence = session.type === "AGENCE";
   const stubs = isAgence ? STUBS_AGENCE : STUBS_PARTICULIER;
-  const mesAnnonces = await getListingsByUser(session.userId);
+  const [mesAnnonces, mesFavoris, favoriteIds] = await Promise.all([
+    getListingsByUser(session.userId),
+    getListingsFavoritedBy(session.userId),
+    getFavoriteListingIds(session.userId),
+  ]);
 
   return (
     <div className="animate-view-in max-w-[900px] px-9 py-8">
@@ -61,7 +66,10 @@ export default async function ComptePage() {
           <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {mesAnnonces.map((listing) => (
               <div key={listing.id} className="flex flex-col gap-2">
-                <ListingCard listing={listing} />
+                <ListingCard
+                  listing={listing}
+                  isFavorited={favoriteIds.has(listing.id)}
+                />
                 <Link
                   href={`/compte/annonces/${listing.id}`}
                   className="self-start font-mono text-[11px] font-medium text-blue"
@@ -74,6 +82,23 @@ export default async function ComptePage() {
         ) : (
           <p className="mt-3 font-sans text-[14px] text-muted">
             Vous n&apos;avez pas encore déposé d&apos;annonce.
+          </p>
+        )}
+      </div>
+
+      <div className="mt-8">
+        <span className="font-mono text-[10.5px] font-medium text-ink">
+          MES FAVORIS ({mesFavoris.length})
+        </span>
+        {mesFavoris.length > 0 ? (
+          <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {mesFavoris.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} isFavorited />
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 font-sans text-[14px] text-muted">
+            Cliquez sur ♡ sur une annonce pour l&apos;ajouter à vos favoris.
           </p>
         )}
       </div>

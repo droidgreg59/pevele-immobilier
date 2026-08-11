@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getVillageBySlug } from "@/data/villages";
 import { getPublicListingsByVillage } from "@/lib/listings";
 import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
+import { getFavoriteListingIds } from "@/lib/favorites";
+import { getSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 
 export const dynamic = "force-dynamic";
@@ -29,11 +31,15 @@ export default async function VillagePage({
   const village = getVillageBySlug(slug);
   if (!village) notFound();
 
-  const [villageListings, dvfStats, dvfRecent] = await Promise.all([
+  const [villageListings, dvfStats, dvfRecent, session] = await Promise.all([
     getPublicListingsByVillage(village.slug),
     getDvfStatsForVillage(village.slug),
     getRecentDvfTransactions(village.slug, 4),
+    getSession(),
   ]);
+  const favoriteIds = session
+    ? await getFavoriteListingIds(session.userId)
+    : new Set<string>();
 
   return (
     <div className="animate-view-in max-w-[1200px] px-9 py-8">
@@ -72,7 +78,11 @@ export default async function VillagePage({
         {villageListings.length > 0 ? (
           <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {villageListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isFavorited={favoriteIds.has(listing.id)}
+              />
             ))}
           </div>
         ) : (

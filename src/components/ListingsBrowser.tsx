@@ -26,11 +26,13 @@ export default function ListingsBrowser({
   pieceBadge,
   titre,
   initialQuery,
+  favoriteIds = [],
 }: {
   listings: ListingWithOwner[];
   pieceBadge: string;
   titre: string;
   initialQuery?: string;
+  favoriteIds?: string[];
 }) {
   const [filtre, setFiltre] = useState<Filtre>("tout");
 
@@ -89,7 +91,11 @@ export default function ListingsBrowser({
       {list.length > 0 ? (
         <div className="mt-6 grid grid-cols-1 gap-6.5 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              isFavorited={favoriteIds.includes(listing.id)}
+            />
           ))}
         </div>
       ) : (

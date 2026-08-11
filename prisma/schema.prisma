@@ -16,6 +16,7 @@ model User {
   type         AccountType
   createdAt    DateTime    @default(now())
   listings     Listing[]
+  favorites    Favorite[]
 }
 
 enum AccountType {
@@ -43,6 +44,7 @@ model Listing {
   badge        String?
   photos       ListingPhoto[]
   priceHistory PriceHistory[]
+  favorites    Favorite[]
   createdAt    DateTime        @default(now())
 
   @@index([ownerId])
@@ -69,6 +71,18 @@ model PriceHistory {
   prix      Int
   changedAt DateTime @default(now())
 
+  @@index([listingId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
   @@index([listingId])
 }
 
