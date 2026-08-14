@@ -63,6 +63,16 @@ export async function getListingsFavoritedBy(
   });
 }
 
+export async function getPublicListingsByOwner(
+  ownerId: string
+): Promise<ListingWithOwner[]> {
+  return prisma.listing.findMany({
+    where: { ownerId, statut: "PUBLIEE" },
+    orderBy: { createdAt: "desc" },
+    ...listingWithOwner,
+  });
+}
+
 export async function getListingForEdit(
   id: string,
   ownerId: string

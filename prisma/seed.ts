@@ -10,13 +10,23 @@ async function upsertUser(input: {
   email: string;
   nom: string;
   entreprise?: string;
-  type: "PARTICULIER" | "AGENCE";
+  telephone?: string;
+  adresse?: string;
+  codePostal?: string;
+  ville?: string;
+  siteWeb?: string;
+  googleAvisUrl?: string;
+  description?: string;
+  categories?: string;
+  communesDesservies?: string;
+  type: "PARTICULIER" | "AGENCE" | "ARTISAN";
 }) {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  const { email, ...rest } = input;
   return prisma.user.upsert({
-    where: { email: input.email },
-    update: {},
-    create: { ...input, passwordHash, entreprise: input.entreprise ?? null },
+    where: { email },
+    update: { ...rest },
+    create: { email, ...rest, passwordHash },
   });
 }
 
@@ -31,18 +41,67 @@ async function main() {
     email: "pvl-immobilier@example.com",
     nom: "Agence PVL Immobilier",
     entreprise: "PVL Immobilier",
+    telephone: "03 20 79 00 12",
+    adresse: "8 Grand Place",
+    codePostal: "59830",
+    ville: "Cysoing",
+    siteWeb: "https://pvl-immobilier.fr",
+    googleAvisUrl: "https://g.page/r/exemple-pvl-immobilier/review",
     type: "AGENCE",
   });
   const partenaire = await upsertUser({
     email: "partenaire@example.com",
     nom: "Agence Partenaire Pévèle",
     entreprise: "Agence Partenaire Pévèle",
+    telephone: "03 20 79 45 60",
+    adresse: "22 rue de Lille",
+    codePostal: "59252",
+    ville: "Templeuve-en-Pévèle",
+    siteWeb: "https://agence-partenaire-pevele.fr",
+    googleAvisUrl: "https://g.page/r/exemple-partenaire-pevele/review",
     type: "AGENCE",
   });
   const particulier = await upsertUser({
     email: "demo@example.com",
     nom: "Compte démo particulier",
     type: "PARTICULIER",
+  });
+  await upsertUser({
+    email: "artisan-couverture@example.com",
+    nom: "Julien Deram",
+    entreprise: "Deram Couverture",
+    telephone: "03 20 79 12 34",
+    adresse: "14 rue du Moulin",
+    codePostal: "59830",
+    ville: "Cysoing",
+    siteWeb: "https://deram-couverture.fr",
+    description:
+      "Couvreur-zingueur en Pévèle depuis 15 ans : rénovation de toiture, zinguerie, isolation de combles. Devis gratuit sous 48h.",
+    categories: "Toiture,Isolation",
+    communesDesservies: [
+      villageSlug("Cysoing"),
+      villageSlug("Camphin-en-Pévèle"),
+      villageSlug("Bachy"),
+    ].join(","),
+    type: "ARTISAN",
+  });
+  await upsertUser({
+    email: "artisan-electricite@example.com",
+    nom: "Sophie Cambier",
+    entreprise: "SC Élec",
+    telephone: "03 20 79 56 78",
+    adresse: "3 place de l'Église",
+    codePostal: "59310",
+    ville: "Orchies",
+    description:
+      "Électricienne certifiée Qualifelec, mises aux normes, rénovation électrique et installation de bornes de recharge.",
+    categories: "Électricité,Diagnostics",
+    communesDesservies: [
+      villageSlug("Orchies"),
+      villageSlug("Nomain"),
+      villageSlug("Templeuve-en-Pévèle"),
+    ].join(","),
+    type: "ARTISAN",
   });
 
   const listingsData = [
@@ -177,6 +236,29 @@ async function main() {
       },
     });
   }
+
+  await prisma.review.upsert({
+    where: { agencyId_authorId: { agencyId: pvl.id, authorId: particulier.id } },
+    update: {},
+    create: {
+      agencyId: pvl.id,
+      authorId: particulier.id,
+      note: 5,
+      commentaire:
+        "Accompagnement au top pour la vente de notre maison à Camphin, réactifs et de bon conseil.",
+    },
+  });
+  await prisma.review.upsert({
+    where: { agencyId_authorId: { agencyId: partenaire.id, authorId: particulier.id } },
+    update: {},
+    create: {
+      agencyId: partenaire.id,
+      authorId: particulier.id,
+      note: 4,
+      commentaire:
+        "Bon suivi sur notre projet à Cysoing, quelques délais de retour un peu longs mais le résultat est là.",
+    },
+  });
 
   console.log(`Seed terminé — ${listingsData.length} annonces de démonstration créées.`);
   console.log(`Comptes démo (mot de passe : "${DEMO_PASSWORD}") :`);

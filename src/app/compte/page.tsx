@@ -14,17 +14,24 @@ export const metadata: Metadata = {
 };
 
 const STUBS_PARTICULIER = ["Mes alertes", "Mes recherches sauvegardées"];
+const STUBS_AGENCE = ["Mes collaborateurs", "Statistiques et leads"];
+const STUBS_ARTISAN = ["Demandes de devis"];
 
-const STUBS_AGENCE = ["Mes collaborateurs", "Statistiques et leads", "Ma page agence"];
+const TYPE_LABEL: Record<string, string> = {
+  PARTICULIER: "PARTICULIER",
+  AGENCE: "AGENCE",
+  ARTISAN: "ARTISAN",
+};
 
 export default async function ComptePage() {
   const session = await getSession();
   if (!session) redirect("/connexion");
 
   const isAgence = session.type === "AGENCE";
-  const stubs = isAgence ? STUBS_AGENCE : STUBS_PARTICULIER;
+  const isArtisan = session.type === "ARTISAN";
+  const stubs = isAgence ? STUBS_AGENCE : isArtisan ? STUBS_ARTISAN : STUBS_PARTICULIER;
   const [mesAnnonces, mesFavoris, favoriteIds] = await Promise.all([
-    getListingsByUser(session.userId),
+    isArtisan ? Promise.resolve([]) : getListingsByUser(session.userId),
     getListingsFavoritedBy(session.userId),
     getFavoriteListingIds(session.userId),
   ]);
@@ -44,9 +51,7 @@ export default async function ComptePage() {
       <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-[2.5px] border-ink bg-white p-6 shadow-[6px_6px_0_rgba(39,67,166,.18)]">
         <div className="flex flex-col gap-1.5 font-mono text-[12px] text-ink">
           <span>EMAIL — {session.email}</span>
-          <span>
-            TYPE DE COMPTE — {isAgence ? "AGENCE" : "PARTICULIER"}
-          </span>
+          <span>TYPE DE COMPTE — {TYPE_LABEL[session.type]}</span>
         </div>
         <form action={logoutAction}>
           <button
@@ -58,33 +63,69 @@ export default async function ComptePage() {
         </form>
       </div>
 
-      <div className="mt-8">
-        <span className="font-mono text-[10.5px] font-medium text-ink">
-          MES ANNONCES ({mesAnnonces.length})
-        </span>
-        {mesAnnonces.length > 0 ? (
-          <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {mesAnnonces.map((listing) => (
-              <div key={listing.id} className="flex flex-col gap-2">
-                <ListingCard
-                  listing={listing}
-                  isFavorited={favoriteIds.has(listing.id)}
-                />
-                <Link
-                  href={`/compte/annonces/${listing.id}`}
-                  className="self-start font-mono text-[11px] font-medium text-blue"
-                >
-                  MODIFIER CETTE ANNONCE →
-                </Link>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-3 font-sans text-[14px] text-muted">
-            Vous n&apos;avez pas encore déposé d&apos;annonce.
-          </p>
-        )}
-      </div>
+      {isAgence ? (
+        <div className="mt-4 flex flex-wrap gap-4">
+          <Link
+            href={`/professionnels/${session.userId}`}
+            className="font-mono text-[11.5px] font-medium text-blue"
+          >
+            VOIR MA PAGE AGENCE PUBLIQUE →
+          </Link>
+          <Link
+            href="/compte/agence"
+            className="font-mono text-[11.5px] font-medium text-blue"
+          >
+            MODIFIER MES COORDONNÉES →
+          </Link>
+        </div>
+      ) : null}
+
+      {isArtisan ? (
+        <div className="mt-4 flex flex-wrap gap-4">
+          <Link
+            href={`/artisans/${session.userId}`}
+            className="font-mono text-[11.5px] font-medium text-blue"
+          >
+            VOIR MA FICHE PUBLIQUE →
+          </Link>
+          <Link
+            href="/compte/artisan"
+            className="font-mono text-[11.5px] font-medium text-blue"
+          >
+            MODIFIER MA FICHE →
+          </Link>
+        </div>
+      ) : null}
+
+      {!isArtisan ? (
+        <div className="mt-8">
+          <span className="font-mono text-[10.5px] font-medium text-ink">
+            MES ANNONCES ({mesAnnonces.length})
+          </span>
+          {mesAnnonces.length > 0 ? (
+            <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {mesAnnonces.map((listing) => (
+                <div key={listing.id} className="flex flex-col gap-2">
+                  <ListingCard
+                    listing={listing}
+                    isFavorited={favoriteIds.has(listing.id)}
+                  />
+                  <Link
+                    href={`/compte/annonces/${listing.id}`}
+                    className="self-start font-mono text-[11px] font-medium text-blue"
+                  >
+                    MODIFIER CETTE ANNONCE →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 font-sans text-[14px] text-muted">
+              Vous n&apos;avez pas encore déposé d&apos;annonce.
+            </p>
+          )}
+        </div>
+      ) : null}
 
       <div className="mt-8">
         <span className="font-mono text-[10.5px] font-medium text-ink">
@@ -119,17 +160,19 @@ export default async function ComptePage() {
         ))}
       </div>
 
-      <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-2 border-dashed border-blue px-6 py-5">
-        <span className="font-sans text-[15px] text-ink">
-          Prêt à publier votre premier bien sur le plan ?
-        </span>
-        <Link
-          href="/vendre/deposer"
-          className="bg-yellow px-5 py-3.5 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
-        >
-          + DÉPOSER UNE ANNONCE
-        </Link>
-      </div>
+      {!isArtisan ? (
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-2 border-dashed border-blue px-6 py-5">
+          <span className="font-sans text-[15px] text-ink">
+            Prêt à publier votre premier bien sur le plan ?
+          </span>
+          <Link
+            href="/vendre/deposer"
+            className="bg-yellow px-5 py-3.5 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
+          >
+            + DÉPOSER UNE ANNONCE
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }

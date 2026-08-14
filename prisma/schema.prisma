@@ -8,20 +8,32 @@ datasource db {
 }
 
 model User {
-  id           String      @id @default(cuid())
-  email        String      @unique
-  passwordHash String
-  nom          String
-  entreprise   String?
-  type         AccountType
-  createdAt    DateTime    @default(now())
-  listings     Listing[]
-  favorites    Favorite[]
+  id                 String      @id @default(cuid())
+  email              String      @unique
+  passwordHash       String
+  nom                String
+  entreprise         String?
+  telephone          String?
+  adresse            String?
+  codePostal         String?
+  ville              String?
+  siteWeb            String?
+  googleAvisUrl      String?
+  description        String?
+  categories         String?
+  communesDesservies String?
+  type               AccountType
+  createdAt          DateTime    @default(now())
+  listings           Listing[]
+  favorites          Favorite[]
+  agencyReviews      Review[]    @relation("AgencyReviews")
+  authoredReviews    Review[]    @relation("AuthoredReviews")
 }
 
 enum AccountType {
   PARTICULIER
   AGENCE
+  ARTISAN
 }
 
 model Listing {
@@ -86,6 +98,23 @@ model Favorite {
   @@index([listingId])
 }
 
+/// Avis « Pévèle » : postés directement par les utilisateurs sur une agence,
+/// publiés immédiatement (pas de back-office de modération pour l'instant).
+model Review {
+  id          String   @id @default(cuid())
+  agency      User     @relation("AgencyReviews", fields: [agencyId], references: [id], onDelete: Cascade)
+  agencyId    String
+  author      User     @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+  note        Int
+  commentaire String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([agencyId, authorId])
+  @@index([agencyId])
+}
+
 enum TransactionType {
   VENTE
   LOCATION
@@ -100,16 +129,16 @@ enum ListingStatus {
 /// data.gouv.fr / Etalab), filtrées aux communes de la Pévèle. Réimporté
 /// périodiquement via `npm run dvf:import` — pas de saisie manuelle.
 model DvfTransaction {
-  id              String   @id @default(cuid())
-  villageSlug     String
-  dateMutation    DateTime
-  typeLocal       String
-  valeurFonciere  Int
-  surfaceBati     Int
-  prixM2          Int
-  nombrePieces    Int?
-  adresse         String?
-  sourceAnnee     Int
+  id             String   @id @default(cuid())
+  villageSlug    String
+  dateMutation   DateTime
+  typeLocal      String
+  valeurFonciere Int
+  surfaceBati    Int
+  prixM2         Int
+  nombrePieces   Int?
+  adresse        String?
+  sourceAnnee    Int
 
   @@index([villageSlug])
 }

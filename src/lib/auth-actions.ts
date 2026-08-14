@@ -19,7 +19,9 @@ export async function registerAction(
   _prevState: AuthState,
   formData: FormData
 ): Promise<AuthState> {
-  const type = formData.get("type") === "AGENCE" ? "AGENCE" : "PARTICULIER";
+  const rawType = formData.get("type");
+  const type: AccountType =
+    rawType === "AGENCE" ? "AGENCE" : rawType === "ARTISAN" ? "ARTISAN" : "PARTICULIER";
   const nom = String(formData.get("nom") ?? "").trim();
   const entreprise = String(formData.get("entreprise") ?? "").trim();
   const email = String(formData.get("email") ?? "")
@@ -35,6 +37,9 @@ export async function registerAction(
   if (type === "AGENCE" && !entreprise) {
     return { error: "Merci d'indiquer le nom de votre agence." };
   }
+  if (type === "ARTISAN" && !entreprise) {
+    return { error: "Merci d'indiquer le nom de votre entreprise." };
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return { error: "Cet email est déjà utilisé." };
@@ -45,8 +50,8 @@ export async function registerAction(
       email,
       passwordHash,
       nom,
-      entreprise: type === "AGENCE" ? entreprise : null,
-      type: type as AccountType,
+      entreprise: type === "PARTICULIER" ? null : entreprise,
+      type,
     },
   });
 

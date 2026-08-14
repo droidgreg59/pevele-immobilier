@@ -1,20 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getAgencies } from "@/lib/agencies";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Professionnels — Pévèle Immobilier",
   description:
-    "Agences immobilières de la Pévèle : rejoignez le portail local et gagnez en visibilité auprès des acheteurs et vendeurs.",
+    "Les agences immobilières partenaires de la Pévèle et leurs annonces en ligne.",
 };
 
 const AVANTAGES = [
-  "Page agence avec coordonnées, collaborateurs et secteur d'activité",
-  "Toutes vos annonces réunies au même endroit que celles des particuliers",
-  "Outils de génération de contacts et statistiques",
-  "Visibilité renforcée possible sur certaines communes ou catégories",
+  "Une page agence publique, avec vos annonces réunies au même endroit que celles des particuliers",
+  "Le même processus de vérification que pour les particuliers — pas de passe-droit",
+  "Outils de génération de contacts et statistiques (à venir)",
+  "Visibilité renforcée possible sur certaines communes ou catégories (à venir)",
 ];
 
-export default function ProfessionnelsPage() {
+export default async function ProfessionnelsPage() {
+  const agencies = await getAgencies();
+
   return (
     <div className="animate-view-in max-w-[1100px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
@@ -35,7 +40,38 @@ export default function ProfessionnelsPage() {
         intérêt à être présentes.
       </p>
 
-      <ul className="mt-7 flex max-w-[60ch] list-none flex-col gap-2.5 p-0">
+      <div className="mt-9">
+        <h3 className="m-0 font-display text-xl text-ink">
+          LES AGENCES SUR LE PLAN ({agencies.length})
+        </h3>
+        {agencies.length > 0 ? (
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {agencies.map((a) => (
+              <Link
+                key={a.id}
+                href={`/professionnels/${a.id}`}
+                className="flex flex-col gap-2 border-2 border-ink bg-white p-5 transition-colors hover:bg-[#FDEBC2]"
+              >
+                <span className="font-display text-xl text-blue">
+                  {a.entreprise ?? a.nom}
+                </span>
+                <span className="font-mono text-[10.5px] font-medium text-muted">
+                  {a.listingCount} annonce{a.listingCount > 1 ? "s" : ""} en ligne
+                </span>
+                <span className="mt-auto font-mono text-[10.5px] font-medium text-blue">
+                  VOIR LA PAGE →
+                </span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 font-sans text-[14px] text-muted">
+            Aucune agence inscrite pour le moment.
+          </p>
+        )}
+      </div>
+
+      <ul className="mt-9 flex max-w-[60ch] list-none flex-col gap-2.5 p-0">
         {AVANTAGES.map((item) => (
           <li
             key={item}
@@ -51,10 +87,11 @@ export default function ProfessionnelsPage() {
           BIENTÔT DISPONIBLE
         </span>
         <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
-          Le compte professionnel (gestion des annonces, synchronisation de
-          catalogue, statistiques, leads) arrive dans une prochaine étape.
-          Vous êtes une agence en Pévèle ? Contactez-nous pour rejoindre les
-          premiers partenaires.
+          Synchronisation de catalogue, statistiques et leads. Vous êtes une
+          agence en Pévèle ?{" "}
+          <Link href="/inscription" className="text-blue">
+            Créez votre compte professionnel →
+          </Link>
         </p>
       </div>
     </div>

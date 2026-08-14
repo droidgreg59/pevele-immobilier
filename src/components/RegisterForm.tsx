@@ -5,23 +5,26 @@ import { registerAction, type AuthState } from "@/lib/auth-actions";
 
 const initialState: AuthState = {};
 
+type AccountType = "PARTICULIER" | "AGENCE" | "ARTISAN";
+
 export default function RegisterForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(
     registerAction,
     initialState
   );
-  const [type, setType] = useState<"PARTICULIER" | "AGENCE">("PARTICULIER");
+  const [type, setType] = useState<AccountType>("PARTICULIER");
+  const isPro = type === "AGENCE" || type === "ARTISAN";
 
   return (
     <form action={formAction} className="flex max-w-[520px] flex-col gap-4">
       <input type="hidden" name="type" value={type} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <button
           type="button"
           onClick={() => setType("PARTICULIER")}
-          className="border-2 border-ink px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
+          className="border-2 border-ink px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
           style={{ background: type === "PARTICULIER" ? "#FBF3DC" : "#fff" }}
         >
           PARTICULIER
@@ -29,16 +32,24 @@ export default function RegisterForm({ next }: { next?: string }) {
         <button
           type="button"
           onClick={() => setType("AGENCE")}
-          className="border-2 border-ink px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
+          className="border-2 border-ink px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
           style={{ background: type === "AGENCE" ? "#FBF3DC" : "#fff" }}
         >
           AGENCE
+        </button>
+        <button
+          type="button"
+          onClick={() => setType("ARTISAN")}
+          className="border-2 border-ink px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
+          style={{ background: type === "ARTISAN" ? "#FBF3DC" : "#fff" }}
+        >
+          ARTISAN
         </button>
       </div>
 
       <label className="flex flex-col gap-1.5">
         <span className="font-mono text-[10.5px] font-medium text-muted">
-          {type === "AGENCE" ? "NOM DU CONTACT" : "NOM"}
+          {isPro ? "NOM DU CONTACT" : "NOM"}
         </span>
         <input
           name="nom"
@@ -47,10 +58,10 @@ export default function RegisterForm({ next }: { next?: string }) {
         />
       </label>
 
-      {type === "AGENCE" ? (
+      {isPro ? (
         <label className="flex flex-col gap-1.5">
           <span className="font-mono text-[10.5px] font-medium text-muted">
-            NOM DE L&apos;AGENCE
+            {type === "AGENCE" ? "NOM DE L'AGENCE" : "NOM DE L'ENTREPRISE"}
           </span>
           <input
             name="entreprise"
