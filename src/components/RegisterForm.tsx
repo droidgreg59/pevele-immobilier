@@ -7,12 +7,18 @@ const initialState: AuthState = {};
 
 type AccountType = "PARTICULIER" | "AGENCE" | "ARTISAN";
 
-export default function RegisterForm({ next }: { next?: string }) {
+export default function RegisterForm({
+  next,
+  initialType,
+}: {
+  next?: string;
+  initialType?: AccountType;
+}) {
   const [state, formAction, pending] = useActionState(
     registerAction,
     initialState
   );
-  const [type, setType] = useState<AccountType>("PARTICULIER");
+  const [type, setType] = useState<AccountType>(initialType ?? "PARTICULIER");
   const isPro = type === "AGENCE" || type === "ARTISAN";
 
   return (

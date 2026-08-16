@@ -1,5 +1,5 @@
-import PlanHub from "@/components/PlanHub";
+import HomeTunnel from "@/components/HomeTunnel";
 
 export default function Home() {
-  return <PlanHub />;
+  return <HomeTunnel />;
 }

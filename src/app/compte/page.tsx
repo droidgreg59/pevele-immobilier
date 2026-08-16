@@ -24,6 +24,12 @@ const MANDATE_LABEL: Record<string, string> = {
   REFUSEE: "refusée",
 };
 
+const TYPE_BIEN_LABEL: Record<string, string> = {
+  MAISON: "Maison",
+  APPARTEMENT: "Appartement",
+  TERRAIN: "Terrain",
+};
+
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -259,9 +265,17 @@ export default async function ComptePage() {
       </div>
 
       <div className="mt-8">
-        <span className="font-mono text-[10.5px] font-medium text-ink">
-          MES RECHERCHES SAUVEGARDÉES ({mesRecherches.length})
-        </span>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="font-mono text-[10.5px] font-medium text-ink">
+            MES RECHERCHES SAUVEGARDÉES ({mesRecherches.length})
+          </span>
+          <Link
+            href="/mon-projet"
+            className="font-mono text-[11px] font-medium text-blue"
+          >
+            + DÉFINIR UN NOUVEAU PROJET →
+          </Link>
+        </div>
         {mesRecherches.length > 0 ? (
           <div className="mt-3 flex flex-col gap-3">
             {mesRecherches.map((s) => {
@@ -277,10 +291,15 @@ export default async function ComptePage() {
                     <div className="flex flex-col gap-1">
                       <span className="font-sans text-[14px] text-ink">
                         {s.transaction === "VENTE" ? "Achat" : "Location"}
+                        {s.typeBien ? ` · ${TYPE_BIEN_LABEL[s.typeBien]}` : ""}
                         {s.q ? ` · ${s.q}` : " · toute la Pévèle"}
-                        {s.budgetMax != null
-                          ? ` · ≤ ${s.budgetMax.toLocaleString("fr-FR")} €`
-                          : ""}
+                        {s.budgetMin != null && s.budgetMax != null
+                          ? ` · ${s.budgetMin.toLocaleString("fr-FR")} – ${s.budgetMax.toLocaleString("fr-FR")} €`
+                          : s.budgetMax != null
+                            ? ` · ≤ ${s.budgetMax.toLocaleString("fr-FR")} €`
+                            : s.budgetMin != null
+                              ? ` · ≥ ${s.budgetMin.toLocaleString("fr-FR")} €`
+                              : ""}
                       </span>
                       <span className="font-mono text-[10.5px] font-medium text-blue">
                         {s.newMatches > 0

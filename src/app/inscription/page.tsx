@@ -8,11 +8,20 @@ export const metadata: Metadata = {
     "Créez votre compte particulier ou agence sur Pévèle Immobilier.",
 };
 
+const VALID_TYPES = ["PARTICULIER", "AGENCE", "ARTISAN"] as const;
+type AccountType = (typeof VALID_TYPES)[number];
+
 export default async function InscriptionPage({
   searchParams,
 }: PageProps<"/inscription">) {
   const params = await searchParams;
   const next = typeof params.next === "string" ? params.next : undefined;
+  const rawType = typeof params.type === "string" ? params.type : undefined;
+  const initialType: AccountType | undefined = VALID_TYPES.includes(
+    rawType as AccountType
+  )
+    ? (rawType as AccountType)
+    : undefined;
 
   return (
     <div className="animate-view-in max-w-[640px] px-9 py-8">
@@ -23,7 +32,7 @@ export default async function InscriptionPage({
         CRÉER UN COMPTE
       </h1>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <p className="mt-6 max-w-[60ch] font-sans text-[14.5px] leading-[1.6] text-muted">
@@ -32,7 +41,7 @@ export default async function InscriptionPage({
       </p>
 
       <div className="mt-7">
-        <RegisterForm next={next} />
+        <RegisterForm next={next} initialType={initialType} />
       </div>
 
       <p className="mt-6 font-mono text-[11.5px] text-muted">

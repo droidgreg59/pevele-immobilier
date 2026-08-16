@@ -41,6 +41,7 @@ export default function ListingsBrowser({
   titre,
   transaction,
   initialQuery,
+  initialBudgetMin,
   initialBudgetMax,
   initialTypeBien,
   isLoggedIn = false,
@@ -51,6 +52,7 @@ export default function ListingsBrowser({
   titre: string;
   transaction: "VENTE" | "LOCATION";
   initialQuery?: string;
+  initialBudgetMin?: number;
   initialBudgetMax?: number;
   initialTypeBien?: TypeBienFiltre;
   isLoggedIn?: boolean;
@@ -59,6 +61,9 @@ export default function ListingsBrowser({
   const pathname = usePathname();
   const [filtre, setFiltre] = useState<Filtre>("tout");
   const [typeBien, setTypeBien] = useState<TypeBienFiltre>(initialTypeBien ?? "TOUS");
+  const [budgetMin, setBudgetMin] = useState<number | undefined>(
+    initialBudgetMin
+  );
   const [budgetMax, setBudgetMax] = useState<number | undefined>(
     initialBudgetMax
   );
@@ -71,6 +76,7 @@ export default function ListingsBrowser({
       matchesFiltre(l, filtre) &&
       matchesTypeBien(l, typeBien) &&
       (querySlug === "" || l.villageSlug.includes(querySlug)) &&
+      (budgetMin === undefined || l.prix >= budgetMin) &&
       (budgetMax === undefined || l.prix <= budgetMax)
   );
 
@@ -79,7 +85,9 @@ export default function ListingsBrowser({
     startTransition(async () => {
       await createSavedSearchAction({
         transaction,
+        typeBien: typeBien === "TOUS" ? undefined : typeBien,
         q: initialQuery,
+        budgetMin,
         budgetMax,
         next: pathname,
       });
@@ -144,6 +152,22 @@ export default function ListingsBrowser({
             </button>
           );
         })}
+        <label className="flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
+          BUDGET MIN
+          <input
+            type="number"
+            min={0}
+            step={1000}
+            placeholder="€"
+            defaultValue={initialBudgetMin ?? ""}
+            onChange={(e) => {
+              setSaved(false);
+              const v = e.target.value;
+              setBudgetMin(v === "" ? undefined : Number(v));
+            }}
+            className="w-[110px] border-2 border-ink bg-white px-3 py-2.5 font-sans text-[13px] text-ink outline-none focus:border-blue"
+          />
+        </label>
         <label className="flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
           BUDGET MAX
           <input

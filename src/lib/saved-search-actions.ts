@@ -3,11 +3,13 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
-import type { TransactionType } from "@prisma/client";
+import type { TransactionType, TypeBien } from "@prisma/client";
 
 export async function createSavedSearchAction(input: {
   transaction: TransactionType;
+  typeBien?: TypeBien;
   q?: string;
+  budgetMin?: number;
   budgetMax?: number;
   next?: string;
 }) {
@@ -20,7 +22,9 @@ export async function createSavedSearchAction(input: {
     data: {
       userId: session.userId,
       transaction: input.transaction,
+      typeBien: input.typeBien ?? null,
       q: input.q?.trim() || null,
+      budgetMin: input.budgetMin ?? null,
       budgetMax: input.budgetMax ?? null,
     },
   });

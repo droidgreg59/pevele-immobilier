@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { slugify } from "./slugify";
-import type { TransactionType } from "@prisma/client";
+import type { TransactionType, TypeBien } from "@prisma/client";
 
 export type ProposedListing = {
   proposalId: string;
@@ -23,7 +23,9 @@ export type SavedSearchMandate = {
 export type SavedSearchSummary = {
   id: string;
   transaction: TransactionType;
+  typeBien: TypeBien | null;
   q: string | null;
+  budgetMin: number | null;
   budgetMax: number | null;
   createdAt: Date;
   newMatches: number;
@@ -66,7 +68,15 @@ export async function getSavedSearchesByUser(
           statut: "PUBLIEE",
           createdAt: { gt: row.createdAt },
           ...(qSlug ? { villageSlug: { contains: qSlug } } : {}),
-          ...(row.budgetMax != null ? { prix: { lte: row.budgetMax } } : {}),
+          ...(row.typeBien ? { typeBien: row.typeBien } : {}),
+          ...(row.budgetMin != null || row.budgetMax != null
+            ? {
+                prix: {
+                  ...(row.budgetMin != null ? { gte: row.budgetMin } : {}),
+                  ...(row.budgetMax != null ? { lte: row.budgetMax } : {}),
+                },
+              }
+            : {}),
         },
       });
       const mandates = row.mandates.map((m) => ({
@@ -89,11 +99,16 @@ export async function getSavedSearchesByUser(
 }
 
 export function savedSearchUrl(
-  search: Pick<SavedSearchSummary, "transaction" | "q" | "budgetMax">
+  search: Pick<
+    SavedSearchSummary,
+    "transaction" | "typeBien" | "q" | "budgetMin" | "budgetMax"
+  >
 ): string {
   const base = search.transaction === "VENTE" ? "/acheter" : "/louer";
   const params = new URLSearchParams();
   if (search.q) params.set("q", search.q);
+  if (search.typeBien) params.set("type", search.typeBien);
+  if (search.budgetMin != null) params.set("budgetMin", String(search.budgetMin));
   if (search.budgetMax != null) params.set("budget", String(search.budgetMax));
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;

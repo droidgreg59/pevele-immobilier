@@ -38,24 +38,17 @@ export default function Header() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-5 border-b-[3px] border-blue bg-cream px-8 py-3">
-      <Link href="/" className="flex items-center gap-3.5">
-        <span className="relative flex h-11 w-11 items-center justify-center border-[3px] border-blue bg-white">
-          <span className="animate-pin-pulse h-3 w-3 rounded-full border-[2.5px] border-ink bg-yellow" />
-          <span className="absolute -left-[3px] top-3 h-[3px] w-2 bg-cream" />
-          <span className="absolute -right-[3px] bottom-2.5 h-[3px] w-2 bg-cream" />
+    <header className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-5 border-b border-line bg-cream/90 px-6 py-3 backdrop-blur">
+      <Link href="/" className="flex items-center gap-2.5">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue">
+          <span className="animate-pin-pulse h-2.5 w-2.5 rounded-full bg-yellow" />
         </span>
-        <span className="flex flex-col leading-none">
-          <span className="font-display text-[21px] font-normal tracking-[.02em] text-ink">
-            PÉVÈLE <span className="text-blue">IMMOBILIER</span>
-          </span>
-          <span className="mt-1 font-mono text-[8.5px] font-medium tracking-[.1em] text-muted">
-            LE PLAN DES ANNONCES DE LA PÉVÈLE
-          </span>
+        <span className="font-display text-[18px] font-extrabold tracking-tight text-ink">
+          Pévèle <span className="text-blue">Immobilier</span>
         </span>
       </Link>
 
-      <nav className="flex flex-wrap gap-x-4 gap-y-2 font-mono text-[10.5px] font-medium text-ink">
+      <nav className="flex flex-wrap gap-1 font-mono text-[10.5px] font-medium">
         {NAV_ITEMS.map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(item.href + "/");
@@ -63,8 +56,11 @@ export default function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="whitespace-nowrap border-b-2 pb-0.5"
-              style={{ borderColor: active ? "var(--pvl-yellow)" : "transparent" }}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 transition-colors ${
+                active
+                  ? "bg-surface text-ink"
+                  : "text-muted hover:bg-surface hover:text-ink"
+              }`}
             >
               {item.label}
             </Link>
@@ -91,7 +87,7 @@ export default function Header() {
 
         <Link
           href="/vendre/deposer"
-          className="bg-yellow px-4.5 py-3 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] transition-transform hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_var(--pvl-blue)]"
+          className="rounded-full bg-yellow px-4.5 py-2.5 font-mono text-[11.5px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
         >
           + DÉPOSER UNE ANNONCE
         </Link>

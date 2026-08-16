@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { Anton, Archivo, IBM_Plex_Mono } from "next/font/google";
+import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "./globals.css";
-
-const anton = Anton({
-  variable: "--font-anton",
-  subsets: ["latin"],
-  weight: "400",
-});
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -23,16 +17,16 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pévèle Immobilier — le plan des annonces de la Pévèle",
+  title: "Pévèle Immobilier — l'immobilier local de la Pévèle",
   description:
-    "Toutes les annonces immobilières de la Pévèle, agences et particuliers, sur un seul plan.",
+    "Toutes les annonces immobilières de la Pévèle, agences et particuliers, réunies en un seul endroit.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${anton.variable} ${archivo.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${archivo.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream">
         <Header />
