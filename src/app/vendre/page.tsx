@@ -13,15 +13,15 @@ export default function VendrePage() {
   return (
     <div className="animate-view-in max-w-[1200px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="border-2 border-gold px-3 py-1.5 font-mono text-sm text-gold">
-          PIÈCE 03
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-gold">
+          VENDRE
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          L&apos;ATELIER — VENDRE VOTRE BIEN
+          VENDRE VOTRE BIEN
         </h2>
       </div>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <p className="mt-6 max-w-[70ch] font-sans text-[15px] leading-[1.6] text-muted">
@@ -37,14 +37,14 @@ export default function VendrePage() {
         ))}
       </div>
 
-      <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-2 border-dashed border-blue px-6 py-5">
+      <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-surface px-6 py-5">
         <span className="font-sans text-[15px] text-ink">
           Pas sûr de votre choix ?{" "}
           <b>Déposez votre annonce, vous ajusterez l&apos;accompagnement après.</b>
         </span>
         <Link
           href="/vendre/deposer"
-          className="bg-yellow px-5 py-3.5 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
+          className="rounded-full bg-yellow px-5 py-3 font-mono text-[11.5px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
         >
           + DÉPOSER UNE ANNONCE
         </Link>

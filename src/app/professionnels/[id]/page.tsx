@@ -63,7 +63,7 @@ export default async function AgencyPage({
 
   return (
     <div className="animate-view-in max-w-[1200px] px-9 py-8">
-      <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
         AGENCE
       </span>
       <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
@@ -71,7 +71,7 @@ export default async function AgencyPage({
       </h1>
       <div className="flex flex-wrap gap-4">
         <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-          ← RETOUR AU PLAN
+          ← RETOUR À L&apos;ACCUEIL
         </Link>
         <Link
           href="/professionnels"
@@ -90,7 +90,7 @@ export default async function AgencyPage({
       </div>
 
       <div className="mt-6 flex flex-wrap items-start gap-4">
-        <div className="flex flex-1 flex-col gap-2 border-2 border-ink bg-white p-5" style={{ minWidth: 260 }}>
+        <div className="flex flex-1 flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm" style={{ minWidth: 260 }}>
           <span className="font-mono text-[10.5px] font-medium text-muted">
             COORDONNÉES
           </span>
@@ -131,7 +131,7 @@ export default async function AgencyPage({
             href={agency.googleAvisUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 self-start border-2 border-ink bg-white px-4 py-3.5 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+            className="flex items-center gap-2 self-start rounded-full border border-line bg-white px-4 py-3 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
           >
             VOIR NOS AVIS GOOGLE →
           </a>
@@ -181,7 +181,7 @@ export default async function AgencyPage({
         {reviews.length > 0 ? (
           <ul className="m-0 mt-4 flex list-none flex-col gap-3 p-0">
             {reviews.map((r) => (
-              <li key={r.id} className="border-2 border-ink bg-white p-4">
+              <li key={r.id} className="rounded-2xl border border-line bg-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-sans text-[13.5px] font-semibold text-ink">
                     {r.author.nom}
@@ -200,7 +200,7 @@ export default async function AgencyPage({
           </ul>
         ) : null}
 
-        <div className="mt-6 max-w-[560px] border-2 border-dashed border-blue bg-white p-5">
+        <div className="mt-6 max-w-[560px] rounded-2xl border border-dashed border-line bg-surface p-5">
           {isOwner ? (
             <p className="m-0 font-sans text-[13.5px] text-muted">
               Vous ne pouvez pas noter votre propre agence.

@@ -32,7 +32,7 @@ export default function FavoriteButton({
       aria-label="Ajouter aux favoris"
       className={
         className ??
-        "flex items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue"
+        "flex items-center justify-center rounded-full border border-line bg-white text-[16px] leading-none text-blue shadow-sm"
       }
       style={{ width: size, height: size }}
     >

@@ -29,7 +29,7 @@ export default function AgencyProfileForm({
           name="entreprise"
           required
           defaultValue={agency.entreprise ?? ""}
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -42,7 +42,7 @@ export default function AgencyProfileForm({
           type="tel"
           defaultValue={agency.telephone ?? ""}
           placeholder="ex. 03 20 00 00 00"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -54,7 +54,7 @@ export default function AgencyProfileForm({
           name="adresse"
           defaultValue={agency.adresse ?? ""}
           placeholder="ex. 12 place de la Mairie"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -67,7 +67,7 @@ export default function AgencyProfileForm({
             name="codePostal"
             defaultValue={agency.codePostal ?? ""}
             placeholder="ex. 59830"
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -78,7 +78,7 @@ export default function AgencyProfileForm({
             name="ville"
             defaultValue={agency.ville ?? ""}
             placeholder="ex. Cysoing"
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       </div>
@@ -92,7 +92,7 @@ export default function AgencyProfileForm({
           type="url"
           defaultValue={agency.siteWeb ?? ""}
           placeholder="https://…"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -105,7 +105,7 @@ export default function AgencyProfileForm({
           type="url"
           defaultValue={agency.googleAvisUrl ?? ""}
           placeholder="https://g.page/r/…"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
         <span className="font-sans text-[12px] text-muted-2">
           Le lien vers votre fiche Google (Maps ou Business). On affichera un
@@ -115,7 +115,7 @@ export default function AgencyProfileForm({
       </label>
 
       {state.error ? (
-        <p className="m-0 border-2 border-ink bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
           {state.error}
         </p>
       ) : null}
@@ -123,7 +123,7 @@ export default function AgencyProfileForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px disabled:opacity-60"
+        className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "ENREGISTREMENT…" : "ENREGISTRER →"}
       </button>

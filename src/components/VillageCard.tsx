@@ -5,7 +5,7 @@ export default function VillageCard({ village }: { village: Village }) {
   return (
     <Link
       href={`/villages/${village.slug}`}
-      className="flex flex-col gap-2.5 border-2 border-ink bg-white p-5 transition-colors hover:bg-[#FDEBC2]"
+      className="flex flex-col gap-2.5 rounded-2xl border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <span className="font-display text-[22px] text-green">
         {village.nom}

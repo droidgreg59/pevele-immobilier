@@ -23,15 +23,15 @@ export default async function ProfessionnelsPage() {
   return (
     <div className="animate-view-in max-w-[1100px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
-          PIÈCE 09
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
+          PROFESSIONNELS
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          LE BUREAU — PROFESSIONNELS
+          LES AGENCES DE LA PÉVÈLE
         </h2>
       </div>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <p className="mt-6 max-w-[70ch] font-sans text-[15px] leading-[1.6] text-muted">
@@ -42,7 +42,7 @@ export default async function ProfessionnelsPage() {
 
       <div className="mt-9">
         <h3 className="m-0 font-display text-xl text-ink">
-          LES AGENCES SUR LE PLAN ({agencies.length})
+          LES AGENCES ({agencies.length})
         </h3>
         {agencies.length > 0 ? (
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -50,7 +50,7 @@ export default async function ProfessionnelsPage() {
               <Link
                 key={a.id}
                 href={`/professionnels/${a.id}`}
-                className="flex flex-col gap-2 border-2 border-ink bg-white p-5 transition-colors hover:bg-[#FDEBC2]"
+                className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <span className="font-display text-xl text-blue">
                   {a.entreprise ?? a.nom}
@@ -75,14 +75,14 @@ export default async function ProfessionnelsPage() {
         {AVANTAGES.map((item) => (
           <li
             key={item}
-            className="border-2 border-ink bg-white px-4 py-3.5 font-sans text-[14px] text-ink"
+            className="rounded-xl bg-surface px-4 py-3.5 font-sans text-[14px] text-ink"
           >
             {item}
           </li>
         ))}
       </ul>
 
-      <div className="mt-8 border-2 border-dashed border-blue bg-white p-7">
+      <div className="mt-8 rounded-2xl border border-dashed border-line bg-surface p-7">
         <span className="font-mono text-[10.5px] font-medium text-blue">
           BIENTÔT DISPONIBLE
         </span>

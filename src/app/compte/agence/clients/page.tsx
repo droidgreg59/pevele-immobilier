@@ -40,7 +40,7 @@ export default async function AgenceClientsPage() {
 
   return (
     <div className="animate-view-in max-w-[1000px] px-9 py-8">
-      <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
         MON COMPTE
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
@@ -65,7 +65,7 @@ export default async function AgenceClientsPage() {
             {pending.map((m) => (
               <div
                 key={m.id}
-                className="flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-white px-5 py-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
               >
                 <div className="flex flex-col gap-1">
                   <span className="font-sans text-[14px] font-semibold text-ink">
@@ -81,7 +81,7 @@ export default async function AgenceClientsPage() {
                     type="submit"
                     name="decision"
                     value="accept"
-                    className="border-2 border-ink bg-yellow px-3.5 py-2 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+                    className="rounded-full bg-yellow px-3.5 py-2 font-mono text-[11px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
                   >
                     ACCEPTER
                   </button>
@@ -111,7 +111,7 @@ export default async function AgenceClientsPage() {
         {clients.length > 0 ? (
           <div className="mt-3 flex flex-col gap-4">
             {clients.map((c) => (
-              <div key={c.clientId} className="border-2 border-ink bg-white p-5">
+              <div key={c.clientId} className="rounded-2xl border border-line bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-sans text-[16.5px] font-bold text-ink">
                     {c.nom}
@@ -135,7 +135,7 @@ export default async function AgenceClientsPage() {
                     return (
                       <div
                         key={s.mandateId}
-                        className="flex flex-col gap-2 border border-line bg-[#F7F4EA] px-3 py-2.5"
+                        className="flex flex-col gap-2 rounded-xl bg-surface px-3 py-2.5"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="font-sans text-[13px] text-ink">
@@ -153,7 +153,7 @@ export default async function AgenceClientsPage() {
                             {s.proposals.map((p) => (
                               <div
                                 key={p.proposalId}
-                                className="flex flex-wrap items-center justify-between gap-2 border border-ink bg-white px-2.5 py-1.5"
+                                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-white px-2.5 py-1.5"
                               >
                                 <Link
                                   href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
@@ -193,7 +193,7 @@ export default async function AgenceClientsPage() {
                               name="listingId"
                               required
                               defaultValue=""
-                              className="border-2 border-ink bg-white px-2.5 py-1.5 font-mono text-[10.5px] text-ink outline-none focus:border-blue"
+                              className="rounded-full border border-line bg-white px-2.5 py-1.5 font-mono text-[10.5px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
                             >
                               <option value="" disabled>
                                 Proposer une de mes annonces…
@@ -206,7 +206,7 @@ export default async function AgenceClientsPage() {
                             </select>
                             <button
                               type="submit"
-                              className="border-2 border-ink px-3 py-1.5 font-mono text-[10.5px] font-medium text-ink hover:bg-white"
+                              className="rounded-full border border-line px-3 py-1.5 font-mono text-[10.5px] font-medium text-ink transition hover:bg-surface"
                             >
                               PROPOSER →
                             </button>

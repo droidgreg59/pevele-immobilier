@@ -22,7 +22,7 @@ export default function DevisList({ items }: { items: DevisItem[] }) {
       {list.map((d) => (
         <div
           key={d.id}
-          className="flex flex-col gap-2 border-2 border-ink bg-white px-5 py-4"
+          className="flex flex-col gap-2 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-sans text-[14px] font-semibold text-ink">

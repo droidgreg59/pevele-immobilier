@@ -30,24 +30,33 @@ export default function RegisterForm({
         <button
           type="button"
           onClick={() => setType("PARTICULIER")}
-          className="border-2 border-ink px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
-          style={{ background: type === "PARTICULIER" ? "#FBF3DC" : "#fff" }}
+          className="rounded-xl px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          style={{
+            background: type === "PARTICULIER" ? "#FBF3DC" : "#fff",
+            border: `1px solid ${type === "PARTICULIER" ? "transparent" : "var(--pvl-line)"}`,
+          }}
         >
           PARTICULIER
         </button>
         <button
           type="button"
           onClick={() => setType("AGENCE")}
-          className="border-2 border-ink px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
-          style={{ background: type === "AGENCE" ? "#FBF3DC" : "#fff" }}
+          className="rounded-xl px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          style={{
+            background: type === "AGENCE" ? "#FBF3DC" : "#fff",
+            border: `1px solid ${type === "AGENCE" ? "transparent" : "var(--pvl-line)"}`,
+          }}
         >
           AGENCE
         </button>
         <button
           type="button"
           onClick={() => setType("ARTISAN")}
-          className="border-2 border-ink px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
-          style={{ background: type === "ARTISAN" ? "#FBF3DC" : "#fff" }}
+          className="rounded-xl px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          style={{
+            background: type === "ARTISAN" ? "#FBF3DC" : "#fff",
+            border: `1px solid ${type === "ARTISAN" ? "transparent" : "var(--pvl-line)"}`,
+          }}
         >
           ARTISAN
         </button>
@@ -60,7 +69,7 @@ export default function RegisterForm({
         <input
           name="nom"
           required
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -72,7 +81,7 @@ export default function RegisterForm({
           <input
             name="entreprise"
             required
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       ) : null}
@@ -85,7 +94,7 @@ export default function RegisterForm({
           type="email"
           name="email"
           required
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -98,12 +107,12 @@ export default function RegisterForm({
           name="password"
           required
           minLength={8}
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       {state.error ? (
-        <p className="m-0 border-2 border-ink bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
           {state.error}
         </p>
       ) : null}
@@ -111,7 +120,7 @@ export default function RegisterForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px disabled:opacity-60"
+        className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "CRÉATION DU COMPTE…" : "CRÉER MON COMPTE →"}
       </button>

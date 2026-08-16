@@ -16,7 +16,7 @@ export default function PhotoGallery({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative h-[360px] overflow-hidden border-[2.5px] border-ink">
+      <div className="relative h-[360px] overflow-hidden rounded-2xl border border-line">
         {current ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -25,7 +25,7 @@ export default function PhotoGallery({
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,#EDEAE1_0_14px,#E4E0D3_14px_28px)] px-4 text-center font-mono text-[10.5px] text-muted-2">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface px-4 text-center font-mono text-[10.5px] text-muted-2">
             Aucune photo pour le moment
           </div>
         )}
@@ -38,9 +38,9 @@ export default function PhotoGallery({
               key={p.url}
               type="button"
               onClick={() => setActive(i)}
-              className="h-16 w-16 shrink-0 overflow-hidden border-2"
+              className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition"
               style={{
-                borderColor: i === active ? "var(--pvl-blue)" : "var(--pvl-ink)",
+                borderColor: i === active ? "var(--pvl-blue)" : "transparent",
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

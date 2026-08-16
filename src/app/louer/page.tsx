@@ -34,8 +34,8 @@ export default async function LouerPage({
   return (
     <ListingsBrowser
       listings={listings}
-      pieceBadge="PIÈCE 02"
-      titre="L'ENTRÉE — LOUER"
+      pieceBadge="LOCATION"
+      titre="LOUER EN PÉVÈLE"
       transaction="LOCATION"
       initialQuery={q}
       initialBudgetMin={

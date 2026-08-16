@@ -73,7 +73,7 @@ export default function ListingDetail({
           ← {listing.transaction === "VENTE" ? "TOUTES LES ANNONCES" : "TOUTES LES LOCATIONS"}
         </Link>
         <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-          ← RETOUR AU PLAN
+          ← RETOUR À L&apos;ACCUEIL
         </Link>
       </div>
 
@@ -85,7 +85,7 @@ export default function ListingDetail({
             overlay={
               <>
                 <span
-                  className="absolute left-3 top-3 whitespace-nowrap border-2 border-ink px-2.5 py-1.5 font-mono text-[9.5px] font-semibold"
+                  className="absolute left-3 top-3 whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-[9.5px] font-semibold shadow-sm"
                   style={{
                     background: particulier ? "#FBF3DC" : "#EDF1FB",
                     color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
@@ -96,14 +96,14 @@ export default function ListingDetail({
                 <FavoriteButton
                   listingId={listing.id}
                   initialFavorited={isFavorited}
-                  className="absolute right-3 top-3 flex items-center justify-center rounded-full border-2 border-ink bg-white text-lg leading-none text-blue"
+                  className="absolute right-3 top-3 flex items-center justify-center rounded-full border border-line bg-white text-lg leading-none text-blue shadow-sm"
                 />
                 {enVerification ? (
-                  <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-blue px-3 py-2 font-mono text-[10px] font-semibold text-white">
+                  <span className="absolute bottom-3 right-3 rounded-full bg-blue px-3 py-1.5 font-mono text-[10px] font-semibold text-white shadow-sm">
                     EN VÉRIFICATION
                   </span>
                 ) : listing.badge ? (
-                  <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-yellow px-3 py-2 font-mono text-[10px] font-semibold text-ink">
+                  <span className="absolute bottom-3 right-3 rounded-full bg-yellow px-3 py-1.5 font-mono text-[10px] font-semibold text-ink shadow-sm">
                     {listing.badge}
                   </span>
                 ) : null}
@@ -113,7 +113,7 @@ export default function ListingDetail({
           {listing.videoUrl || listing.visiteVirtuelleUrl ? (
             <div className="mt-3 flex flex-col gap-3">
               {listing.videoUrl && videoEmbedUrl ? (
-                <div className="relative aspect-video w-full overflow-hidden border-2 border-ink">
+                <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-line">
                   <iframe
                     src={videoEmbedUrl}
                     title="Vidéo du bien"
@@ -137,7 +137,7 @@ export default function ListingDetail({
                   href={listing.visiteVirtuelleUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-fit border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+                  className="w-fit rounded-full border border-line px-5 py-3 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
                 >
                   VOIR LA VISITE VIRTUELLE 360° →
                 </a>
@@ -159,7 +159,7 @@ export default function ListingDetail({
               ].map(([label, value]) => (
                 <span
                   key={label}
-                  className="flex flex-col gap-1 border-2 border-ink bg-[#F7F4EA] px-3 py-2.5 text-center"
+                  className="flex flex-col gap-1 rounded-xl bg-surface px-3 py-2.5 text-center"
                 >
                   <b className="font-sans text-sm font-semibold text-ink">
                     {value}
@@ -172,14 +172,14 @@ export default function ListingDetail({
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {listing.dpe ? (
-                <span className="border-2 border-ink px-3 py-1.5 font-mono text-[11px] font-semibold text-ink">
+                <span className="rounded-full border border-line px-3 py-1.5 font-mono text-[11px] font-semibold text-ink">
                   DPE {listing.dpe}
                 </span>
               ) : null}
               {equipements.map((eq) => (
                 <span
                   key={eq}
-                  className="border border-line bg-white px-2.5 py-1 font-mono text-[10.5px] text-muted"
+                  className="rounded-full bg-surface px-2.5 py-1 font-mono text-[10.5px] text-muted"
                 >
                   {eq}
                 </span>
@@ -192,7 +192,7 @@ export default function ListingDetail({
               <h2 className="m-0 font-display text-2xl text-ink">LE MARCHÉ</h2>
               {dvfStats ? (
                 <div className="mt-3 flex flex-col gap-4">
-                  <div className="border-2 border-ink bg-[#F7F4EA] p-5">
+                  <div className="rounded-2xl bg-surface p-5">
                     <p className="m-0 font-sans text-[14.5px] leading-[1.6] text-ink">
                       Prix moyen constaté à <b>{village?.nom}</b> :{" "}
                       <b>{dvfStats.avgPrixM2.toLocaleString("fr-FR")} € / m²</b>{" "}
@@ -206,8 +206,8 @@ export default function ListingDetail({
                     ) : null}
                   </div>
                   {dvfRecent.length > 0 ? (
-                    <div className="border-2 border-line bg-white">
-                      <div className="border-b-2 border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
+                    <div className="rounded-2xl border border-line bg-white">
+                      <div className="border-b border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
                         DERNIÈRES VENTES À {village?.nom.toUpperCase()}
                       </div>
                       <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
@@ -236,7 +236,7 @@ export default function ListingDetail({
                   </p>
                 </div>
               ) : (
-                <div className="mt-3 border-2 border-dashed border-blue bg-white p-6">
+                <div className="mt-3 rounded-2xl border border-dashed border-line bg-surface p-6">
                   <span className="font-mono text-[10.5px] font-medium text-blue">
                     DONNÉES INSUFFISANTES
                   </span>
@@ -254,7 +254,7 @@ export default function ListingDetail({
             <h2 className="m-0 font-display text-2xl text-ink">
               L&apos;ENVIRONNEMENT
             </h2>
-            <div className="mt-3 border-2 border-dashed border-muted-2 bg-white p-6">
+            <div className="mt-3 rounded-2xl border border-dashed border-line bg-surface p-6">
               <span className="font-mono text-[10.5px] font-medium text-muted">
                 BIENTÔT DISPONIBLE
               </span>
@@ -267,7 +267,7 @@ export default function ListingDetail({
         </div>
 
         <aside className="flex flex-col gap-5">
-          <div className="relative border-[2.5px] border-ink bg-white p-6 shadow-[6px_6px_0_rgba(39,67,166,.22)]">
+          <div className="relative rounded-2xl border border-line bg-white p-6 shadow-sm">
             <span className="font-mono text-[10.5px] font-medium text-muted">
               ◉ {listing.commune.toUpperCase()} · {listing.typeBien}
             </span>
@@ -283,11 +283,11 @@ export default function ListingDetail({
               </span>
             ) : null}
             {enBaisse ? (
-              <span className="ml-2 border border-green px-1.5 py-0.5 font-mono text-[10px] font-semibold text-green">
+              <span className="ml-2 rounded-full bg-[#EAF3E8] px-2 py-0.5 font-mono text-[10px] font-semibold text-green">
                 ↓ PRIX EN BAISSE (-{baissePct}%)
               </span>
             ) : null}
-            <div className="mt-4 border-2 border-dashed border-muted-2 p-3.5">
+            <div className="mt-4 rounded-xl bg-surface p-3.5">
               <span className="font-mono text-[10px] font-medium text-muted-2">
                 HISTORIQUE DU PRIX
               </span>
@@ -329,7 +329,7 @@ export default function ListingDetail({
             {isOwner ? (
               <Link
                 href={`/compte/annonces/${listing.id}`}
-                className="mt-4 inline-block border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+                className="mt-4 inline-block rounded-full border border-line px-5 py-3 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
               >
                 MODIFIER L&apos;ANNONCE
               </Link>
@@ -347,7 +347,7 @@ export default function ListingDetail({
               </p>
             )}
             {enVerification ? (
-              <span className="animate-stamp-in pointer-events-none absolute right-5 top-5 flex h-[92px] w-[92px] items-center justify-center rounded-full border-[3px] border-blue text-center font-mono text-[9.5px] font-medium leading-tight text-blue">
+              <span className="animate-stamp-in pointer-events-none absolute right-5 top-5 flex h-[92px] w-[92px] items-center justify-center rounded-full border-2 border-blue text-center font-mono text-[9.5px] font-medium leading-tight text-blue">
                 EN COURS DE
                 <br />
                 VÉRIFICATION
@@ -357,7 +357,7 @@ export default function ListingDetail({
           </div>
 
           {village ? (
-            <div className="border-2 border-ink bg-white p-6">
+            <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
               <span className="font-mono text-[10.5px] font-medium text-green">
                 LE VILLAGE
               </span>
@@ -376,27 +376,27 @@ export default function ListingDetail({
             </div>
           ) : null}
 
-          <div className="border-2 border-ink bg-white p-6">
+          <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
             <span className="font-mono text-[10.5px] font-medium text-gold">
               LES SERVICES
             </span>
             <div className="mt-2 flex flex-col gap-2">
               <Link
                 href="/estimer"
-                className="border-2 border-ink px-3.5 py-2.5 text-center font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2]"
+                className="rounded-full border border-line px-3.5 py-2.5 text-center font-mono text-[11px] font-medium text-ink transition hover:bg-surface"
               >
                 ESTIMER UN BIEN SIMILAIRE
               </Link>
               <Link
                 href="/vendre"
-                className="border-2 border-ink px-3.5 py-2.5 text-center font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2]"
+                className="rounded-full border border-line px-3.5 py-2.5 text-center font-mono text-[11px] font-medium text-ink transition hover:bg-surface"
               >
                 VOIR LES PACKS VENDEUR
               </Link>
             </div>
           </div>
 
-          <div className="border-2 border-ink bg-white p-6">
+          <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
             <span className="font-mono text-[10.5px] font-medium text-muted">
               ARTISANS AUTOUR DU BIEN
             </span>
@@ -406,7 +406,7 @@ export default function ListingDetail({
                   <Link
                     key={a.id}
                     href={`/artisans/${a.id}`}
-                    className="flex flex-col gap-0.5 border border-line bg-[#F7F4EA] px-3 py-2 hover:bg-[#FDEBC2]"
+                    className="flex flex-col gap-0.5 rounded-xl bg-surface px-3 py-2 transition hover:bg-[#FDEBC2]"
                   >
                     <span className="font-sans text-[13px] font-semibold text-ink">
                       {a.entreprise ?? a.nom}

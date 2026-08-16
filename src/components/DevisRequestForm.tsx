@@ -13,7 +13,7 @@ export default function DevisRequestForm({ artisanId }: { artisanId: string }) {
 
   if (state.success) {
     return (
-      <p className="m-0 max-w-[560px] border-2 border-ink bg-[#EAF3E8] px-4 py-3.5 font-sans text-[14px] text-ink">
+      <p className="m-0 max-w-[560px] rounded-xl bg-[#EAF3E8] px-4 py-3.5 font-sans text-[14px] text-ink">
         Votre demande a été envoyée — l&apos;artisan vous recontactera directement.
       </p>
     );
@@ -32,7 +32,7 @@ export default function DevisRequestForm({ artisanId }: { artisanId: string }) {
           required
           rows={4}
           placeholder="Décrivez les travaux envisagés, le délai souhaité…"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -44,12 +44,12 @@ export default function DevisRequestForm({ artisanId }: { artisanId: string }) {
           name="telephone"
           type="tel"
           placeholder="ex. 06 00 00 00 00"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       {state.error ? (
-        <p className="m-0 border-2 border-ink bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
           {state.error}
         </p>
       ) : null}
@@ -57,7 +57,7 @@ export default function DevisRequestForm({ artisanId }: { artisanId: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="self-start bg-yellow px-5 py-3 font-mono text-[11px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px disabled:opacity-60"
+        className="self-start rounded-full bg-yellow px-5 py-3 font-mono text-[11px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "ENVOI…" : "DEMANDER UN DEVIS →"}
       </button>

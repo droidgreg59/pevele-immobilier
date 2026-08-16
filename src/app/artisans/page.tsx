@@ -21,15 +21,15 @@ export default async function ArtisansPage({
   return (
     <div className="animate-view-in max-w-[1100px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="border-2 border-gold px-3 py-1.5 font-mono text-sm text-gold">
-          PIÈCE 08
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-gold">
+          ARTISANS
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
           ARTISANS &amp; HABITAT
         </h2>
       </div>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <p className="mt-6 max-w-[70ch] font-sans text-[15px] leading-[1.6] text-muted">
@@ -42,11 +42,11 @@ export default async function ArtisansPage({
       <div className="mt-8 flex flex-wrap gap-2">
         <Link
           href="/artisans"
-          className="border-[1.5px] px-3.5 py-2.5 font-mono text-[11px] font-medium"
+          className="rounded-full px-3.5 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
           style={{
-            borderColor: "var(--pvl-ink)",
             background: categorie === "" ? "var(--pvl-ink)" : "#fff",
             color: categorie === "" ? "#fff" : "var(--pvl-ink)",
+            border: `1px solid ${categorie === "" ? "transparent" : "var(--pvl-line)"}`,
           }}
         >
           TOUS
@@ -55,11 +55,11 @@ export default async function ArtisansPage({
           <Link
             key={cat}
             href={`/artisans?categorie=${encodeURIComponent(cat)}`}
-            className="border-[1.5px] px-3.5 py-2.5 font-mono text-[11px] font-medium"
+            className="rounded-full px-3.5 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
             style={{
-              borderColor: "var(--pvl-ink)",
               background: categorie === cat ? "var(--pvl-ink)" : "#fff",
               color: categorie === cat ? "#fff" : "var(--pvl-ink)",
+              border: `1px solid ${categorie === cat ? "transparent" : "var(--pvl-line)"}`,
             }}
           >
             {cat}
@@ -78,7 +78,7 @@ export default async function ArtisansPage({
               <Link
                 key={a.id}
                 href={`/artisans/${a.id}`}
-                className="flex flex-col gap-2 border-2 border-ink bg-white p-5 transition-colors hover:bg-[#FDEBC2]"
+                className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <span className="font-display text-xl text-gold">
                   {a.entreprise ?? a.nom}
@@ -92,7 +92,7 @@ export default async function ArtisansPage({
                   {a.categories.map((c) => (
                     <span
                       key={c}
-                      className="border border-line bg-[#F7F4EA] px-2 py-0.5 font-mono text-[9.5px] text-muted"
+                      className="rounded-full bg-surface px-2 py-0.5 font-mono text-[9.5px] text-muted"
                     >
                       {c}
                     </span>
@@ -112,7 +112,7 @@ export default async function ArtisansPage({
         )}
       </div>
 
-      <div className="mt-8 border-2 border-dashed border-gold bg-white p-7">
+      <div className="mt-8 rounded-2xl border border-dashed border-line bg-surface p-7">
         <span className="font-mono text-[10.5px] font-medium text-gold">
           VOUS ÊTES ARTISAN EN PÉVÈLE ?
         </span>

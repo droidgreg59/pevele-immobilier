@@ -13,11 +13,11 @@ export default function VillagesPage() {
   return (
     <div className="animate-view-in max-w-[1400px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="border-2 border-green px-3 py-1.5 font-mono text-sm text-green">
-          PIÈCE 05
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-green">
+          VILLAGES
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          LE JARDIN — LES 19 VILLAGES
+          LES 19 VILLAGES DE LA PÉVÈLE
         </h2>
         <Link
           href="/carte"
@@ -27,7 +27,7 @@ export default function VillagesPage() {
         </Link>
       </div>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

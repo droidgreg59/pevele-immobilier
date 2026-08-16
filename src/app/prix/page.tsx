@@ -24,15 +24,15 @@ export default async function PrixPage() {
   return (
     <div className="animate-view-in max-w-[1100px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
-          PIÈCE 07
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
+          PRIX
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
           PRIX DE L&apos;IMMOBILIER
         </h2>
       </div>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <p className="mt-6 max-w-[70ch] font-sans text-[15px] leading-[1.6] text-muted">
@@ -42,10 +42,10 @@ export default async function PrixPage() {
         chaque annonce arrivera dans une prochaine étape.
       </p>
 
-      <div className="mt-7 overflow-x-auto border-[2.5px] border-ink bg-white shadow-[6px_6px_0_rgba(39,67,166,.18)]">
+      <div className="mt-7 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm">
         <table className="w-full min-w-[560px] border-collapse font-mono text-[12.5px]">
           <thead>
-            <tr className="border-b-2 border-ink bg-[#F7F4EA] text-left">
+            <tr className="border-b border-line bg-surface text-left">
               <th className="px-4 py-3 font-medium text-muted">VILLAGE</th>
               <th className="px-4 py-3 font-medium text-muted">PRIX MOYEN / M²</th>
               <th className="px-4 py-3 font-medium text-muted">VENTES CONSTATÉES</th>

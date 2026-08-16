@@ -21,7 +21,7 @@ export default async function CompteArtisanPage() {
 
   return (
     <div className="animate-view-in max-w-[900px] px-9 py-8">
-      <span className="border-2 border-gold px-3 py-1.5 font-mono text-sm text-gold">
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-gold">
         MON COMPTE
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">

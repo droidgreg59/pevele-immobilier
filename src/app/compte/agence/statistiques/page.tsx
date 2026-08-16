@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 function StatTile({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex flex-col gap-1 border-2 border-ink bg-white px-5 py-4">
+    <div className="flex flex-col gap-1 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
       <span className="font-display text-[32px] leading-none text-blue">{value}</span>
       <span className="font-mono text-[10px] font-medium text-muted">{label}</span>
     </div>
@@ -37,7 +37,7 @@ export default async function AgenceStatistiquesPage() {
 
   return (
     <div className="animate-view-in max-w-[900px] px-9 py-8">
-      <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
         MON COMPTE
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">

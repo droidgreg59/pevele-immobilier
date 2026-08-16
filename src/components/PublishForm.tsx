@@ -31,16 +31,22 @@ export default function PublishForm({
         <button
           type="button"
           onClick={() => setTransaction("VENTE")}
-          className="border-2 border-ink px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
-          style={{ background: transaction === "VENTE" ? "#FBF3DC" : "#fff" }}
+          className="rounded-xl px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          style={{
+            background: transaction === "VENTE" ? "#FBF3DC" : "#fff",
+            border: `1px solid ${transaction === "VENTE" ? "transparent" : "var(--pvl-line)"}`,
+          }}
         >
           JE VENDS
         </button>
         <button
           type="button"
           onClick={() => setTransaction("LOCATION")}
-          className="border-2 border-ink px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
-          style={{ background: transaction === "LOCATION" ? "#FBF3DC" : "#fff" }}
+          className="rounded-xl px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          style={{
+            background: transaction === "LOCATION" ? "#FBF3DC" : "#fff",
+            border: `1px solid ${transaction === "LOCATION" ? "transparent" : "var(--pvl-line)"}`,
+          }}
         >
           JE LOUE
         </button>
@@ -54,7 +60,7 @@ export default function PublishForm({
           name="titre"
           required
           placeholder="ex. Longère rénovée, jardin clos"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -67,7 +73,7 @@ export default function PublishForm({
             name="villageSlug"
             required
             defaultValue=""
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           >
             <option value="" disabled>
               Choisir un village…
@@ -87,7 +93,7 @@ export default function PublishForm({
             name="typeBien"
             required
             defaultValue="MAISON"
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           >
             <option value="MAISON">Maison</option>
             <option value="APPARTEMENT">Appartement</option>
@@ -106,7 +112,7 @@ export default function PublishForm({
             name="prix"
             min={1}
             required
-            className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -118,7 +124,7 @@ export default function PublishForm({
             name="surface"
             min={1}
             required
-            className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -130,7 +136,7 @@ export default function PublishForm({
             name="pieces"
             min={1}
             required
-            className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -142,7 +148,7 @@ export default function PublishForm({
             name="chambres"
             min={1}
             required
-            className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       </div>
@@ -155,7 +161,7 @@ export default function PublishForm({
           <input
             name="exterieur"
             placeholder="ex. 500 M² JARDIN, BALCON…"
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -165,7 +171,7 @@ export default function PublishForm({
           <select
             name="dpe"
             defaultValue=""
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           >
             <option value="">Non renseigné</option>
             {DPE_OPTIONS.map((letter) => (
@@ -186,7 +192,7 @@ export default function PublishForm({
           required
           rows={4}
           placeholder="Quelques phrases sur le bien, son état, son environnement…"
-          className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -201,7 +207,7 @@ export default function PublishForm({
             name="videoUrl"
             type="url"
             placeholder="https://youtube.com/watch?v=…"
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -212,13 +218,13 @@ export default function PublishForm({
             name="visiteVirtuelleUrl"
             type="url"
             placeholder="https://…"
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       </div>
 
       {state.error ? (
-        <p className="m-0 border-2 border-ink bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
           {state.error}
         </p>
       ) : null}
@@ -226,7 +232,7 @@ export default function PublishForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px disabled:opacity-60"
+        className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "PUBLICATION…" : "PUBLIER MON ANNONCE →"}
       </button>

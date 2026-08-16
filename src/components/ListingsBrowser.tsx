@@ -97,7 +97,7 @@ export default function ListingsBrowser({
   return (
     <div className="animate-view-in max-w-[1400px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-xs font-medium text-blue">
           {pieceBadge}
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
@@ -109,7 +109,7 @@ export default function ListingsBrowser({
         </span>
       </div>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -121,10 +121,11 @@ export default function ListingsBrowser({
               key={key}
               type="button"
               onClick={() => setTypeBien(key)}
-              className="cursor-pointer border-2 border-ink px-4 py-2.5 font-mono text-[11px] font-medium transition-colors hover:bg-[#FDEBC2]"
+              className="cursor-pointer rounded-full px-4 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
               style={{
-                background: active ? "var(--pvl-gold)" : "#fff",
+                background: active ? "var(--pvl-gold)" : "transparent",
                 color: active ? "#fff" : "var(--pvl-ink)",
+                border: active ? "none" : "1px solid var(--pvl-line)",
               }}
             >
               {TYPE_BIEN_LABEL[key]} ({count})
@@ -142,10 +143,11 @@ export default function ListingsBrowser({
               key={key}
               type="button"
               onClick={() => setFiltre(key)}
-              className="cursor-pointer border-2 border-ink px-4 py-2.5 font-mono text-[11px] font-medium transition-colors hover:bg-[#FDEBC2]"
+              className="cursor-pointer rounded-full px-4 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
               style={{
-                background: active ? "var(--pvl-ink)" : "#fff",
+                background: active ? "var(--pvl-ink)" : "transparent",
                 color: active ? "#fff" : "var(--pvl-ink)",
+                border: active ? "none" : "1px solid var(--pvl-line)",
               }}
             >
               {FILTRE_LABEL[key]} ({count})
@@ -165,7 +167,7 @@ export default function ListingsBrowser({
               const v = e.target.value;
               setBudgetMin(v === "" ? undefined : Number(v));
             }}
-            className="w-[110px] border-2 border-ink bg-white px-3 py-2.5 font-sans text-[13px] text-ink outline-none focus:border-blue"
+            className="w-[110px] rounded-xl border border-line bg-white px-3 py-2 font-sans text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
@@ -181,12 +183,12 @@ export default function ListingsBrowser({
               const v = e.target.value;
               setBudgetMax(v === "" ? undefined : Number(v));
             }}
-            className="w-[110px] border-2 border-ink bg-white px-3 py-2.5 font-sans text-[13px] text-ink outline-none focus:border-blue"
+            className="w-[110px] rounded-xl border border-line bg-white px-3 py-2 font-sans text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <span className="ml-auto flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
           TRIER
-          <span className="cursor-pointer border-2 border-ink bg-white px-3.5 py-2.5 text-ink">
+          <span className="cursor-pointer rounded-full border border-line bg-white px-3.5 py-2 text-ink">
             PRIX ↓ ▾
           </span>
         </span>
@@ -195,14 +197,14 @@ export default function ListingsBrowser({
             type="button"
             disabled={isPending || saved}
             onClick={handleSaveSearch}
-            className="border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2] disabled:opacity-70"
+            className="rounded-full border border-line px-3.5 py-2 font-mono text-[11px] font-medium text-ink transition hover:bg-surface disabled:opacity-70"
           >
             {saved ? "★ RECHERCHE ENREGISTRÉE" : "☆ ENREGISTRER CETTE RECHERCHE"}
           </button>
         ) : (
           <Link
             href={`/connexion?next=${encodeURIComponent(pathname)}`}
-            className="border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2]"
+            className="rounded-full border border-line px-3.5 py-2 font-mono text-[11px] font-medium text-ink transition hover:bg-surface"
           >
             ☆ ENREGISTRER CETTE RECHERCHE
           </Link>
@@ -225,14 +227,14 @@ export default function ListingsBrowser({
         </p>
       )}
 
-      <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-2 border-dashed border-blue px-6 py-5">
+      <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-surface px-6 py-5">
         <span className="font-sans text-[15px] text-ink">
-          Votre bien mérite sa place sur le plan —{" "}
+          Votre bien mérite d&apos;être vu —{" "}
           <b>déposer une annonce prend 5 minutes.</b>
         </span>
         <Link
           href="/vendre/deposer"
-          className="bg-yellow px-5 py-3.5 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
+          className="rounded-full bg-yellow px-5 py-3 font-mono text-[11.5px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
         >
           + DÉPOSER UNE ANNONCE
         </Link>

@@ -17,8 +17,8 @@ export default function ListingCard({
   const enBaisse = (listing.priceHistory[0]?.prix ?? listing.prix) > listing.prix;
 
   return (
-    <article className="animate-draw-in flex flex-col border-[2.5px] border-ink bg-white shadow-[6px_6px_0_rgba(39,67,166,.22)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5">
-      <div className="relative h-[215px] overflow-hidden border-b-[2.5px] border-ink">
+    <article className="animate-draw-in flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="relative h-[215px] overflow-hidden">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -27,12 +27,12 @@ export default function ListingCard({
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,#EDEAE1_0_14px,#E4E0D3_14px_28px)] px-4 text-center font-mono text-[10.5px] text-muted-2">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface px-4 text-center font-mono text-[10.5px] text-muted-2">
             Aucune photo pour le moment
           </div>
         )}
         <span
-          className="absolute left-2.5 top-2.5 whitespace-nowrap border-2 border-ink px-2.5 py-1.5 font-mono text-[9.5px] font-semibold"
+          className="absolute left-2.5 top-2.5 whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-[9.5px] font-semibold shadow-sm"
           style={{
             background: particulier ? "#FBF3DC" : "#EDF1FB",
             color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
@@ -43,24 +43,24 @@ export default function ListingCard({
         <FavoriteButton
           listingId={listing.id}
           initialFavorited={isFavorited}
-          className="absolute right-2.5 top-2.5 flex items-center justify-center rounded-full border-2 border-ink bg-white text-[16px] leading-none text-blue"
+          className="absolute right-2.5 top-2.5 flex items-center justify-center rounded-full border border-line bg-white text-[16px] leading-none text-blue shadow-sm"
         />
         <span className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
-          <span className="bg-ink px-3.5 py-1.5 font-display text-[26px] tracking-[.02em] text-yellow">
+          <span className="rounded-xl bg-ink px-3.5 py-1.5 font-display text-[26px] tracking-[.02em] text-yellow">
             {formatPrix(listing.prix, listing.transaction)}
           </span>
           {enBaisse ? (
-            <span className="border-2 border-ink bg-white px-1.5 py-1 font-mono text-[9px] font-semibold text-green">
+            <span className="rounded-full bg-white px-2 py-1 font-mono text-[9px] font-semibold text-green shadow-sm">
               ↓ BAISSE
             </span>
           ) : null}
         </span>
         {enVerification ? (
-          <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-blue px-2.5 py-1.5 font-mono text-[9px] font-semibold text-white">
+          <span className="absolute bottom-2.5 right-2.5 rounded-full bg-blue px-2.5 py-1 font-mono text-[9px] font-semibold text-white shadow-sm">
             EN VÉRIFICATION
           </span>
         ) : listing.badge ? (
-          <span className="absolute bottom-0 right-0 border-l-2 border-t-2 border-ink bg-yellow px-2.5 py-1.5 font-mono text-[9px] font-semibold text-ink">
+          <span className="absolute bottom-2.5 right-2.5 rounded-full bg-yellow px-2.5 py-1 font-mono text-[9px] font-semibold text-ink shadow-sm">
             {listing.badge}
           </span>
         ) : null}
@@ -85,8 +85,8 @@ export default function ListingCard({
             </span>
           </span>
         </div>
-        <div className="mt-auto flex text-center">
-          <span className="flex-1 border-2 border-ink bg-[#F7F4EA] px-1 py-1.5">
+        <div className="mt-auto flex gap-1.5 text-center">
+          <span className="flex-1 rounded-xl bg-surface px-1 py-1.5">
             <b className="block font-sans text-[13px] font-semibold text-ink">
               {listing.pieces} P.
             </b>
@@ -94,7 +94,7 @@ export default function ListingCard({
               PIÈCES
             </span>
           </span>
-          <span className="flex-1 border-2 border-l-0 border-ink bg-[#F7F4EA] px-1 py-1.5">
+          <span className="flex-1 rounded-xl bg-surface px-1 py-1.5">
             <b className="block font-sans text-[13px] font-semibold text-ink">
               {listing.surface} M²
             </b>
@@ -102,7 +102,7 @@ export default function ListingCard({
               SURFACE
             </span>
           </span>
-          <span className="flex-1 border-2 border-l-0 border-ink bg-[#F7F4EA] px-1 py-1.5">
+          <span className="flex-1 rounded-xl bg-surface px-1 py-1.5">
             <b className="block font-sans text-[13px] font-semibold text-ink">
               {listing.exterieur}
             </b>
@@ -113,7 +113,7 @@ export default function ListingCard({
         </div>
         <Link
           href={detailHref}
-          className="flex justify-between border-t-2 border-line pt-2.5 font-mono text-[11px] font-semibold text-blue hover:text-ink"
+          className="flex justify-between border-t border-line pt-2.5 font-mono text-[11px] font-semibold text-blue hover:text-ink"
         >
           VOIR LA FICHE COMPLÈTE
           <span>→</span>

@@ -39,15 +39,15 @@ export default async function EstimerPage({
     >
       <div className="max-w-[1320px]">
         <div className="mb-1.5 flex flex-wrap items-baseline gap-4.5">
-          <span className="border-2 border-yellow px-3 py-1.5 font-mono text-sm text-yellow">
-            PIÈCE 04
+          <span className="rounded-full border border-yellow/40 px-3 py-1.5 font-mono text-sm text-yellow">
+            ESTIMER
           </span>
           <span className="font-mono text-xs font-medium text-[#B9C2E2]">
-            LA CUISINE — ON PARLE CHIFFRES ICI
+            ON PARLE CHIFFRES ICI
           </span>
         </div>
         <Link href="/" className="font-mono text-[11.5px] font-medium text-[#B9C2E2]">
-          ← RETOUR AU PLAN
+          ← RETOUR À L&apos;ACCUEIL
         </Link>
 
         <div className="mt-7.5 grid grid-cols-1 items-start gap-14 sm:grid-cols-[1.3fr_1fr]">
@@ -61,7 +61,7 @@ export default async function EstimerPage({
             </h2>
 
             {hasQuery ? (
-              <div className="mt-8 max-w-[540px] border-[2.5px] border-ink bg-cream p-6">
+              <div className="mt-8 max-w-[540px] rounded-2xl bg-cream p-6 shadow-sm">
                 {dvfStats && estimateBasse !== null && estimateHaute !== null ? (
                   <>
                     <span className="font-mono text-[10.5px] font-medium text-muted">
@@ -83,13 +83,13 @@ export default async function EstimerPage({
                     <div className="mt-4 flex flex-wrap gap-2.5">
                       <Link
                         href="/vendre/deposer"
-                        className="bg-yellow px-4 py-3 font-mono text-[11px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
+                        className="rounded-full bg-yellow px-4 py-3 font-mono text-[11px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
                       >
                         PUBLIER MON ANNONCE →
                       </Link>
                       <Link
                         href={`/villages/${village!.slug}`}
-                        className="border-2 border-ink px-4 py-3 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+                        className="rounded-full border border-line px-4 py-3 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
                       >
                         VOIR {village!.nom.toUpperCase()} →
                       </Link>
@@ -127,7 +127,7 @@ export default async function EstimerPage({
                 name="village"
                 required
                 defaultValue={villageSlug}
-                className="box-border w-full border-[2.5px] border-ink bg-cream px-4.5 py-4 font-sans text-[15px] text-ink outline-none"
+                className="box-border w-full rounded-xl border border-line bg-cream px-4.5 py-3.5 font-sans text-[15px] text-ink outline-none transition focus:border-yellow focus:ring-2 focus:ring-yellow/30"
               >
                 <option value="" disabled>
                   Choisir un village…
@@ -150,7 +150,7 @@ export default async function EstimerPage({
                 required
                 defaultValue={surfaceRaw}
                 placeholder="ex. 120"
-                className="box-border w-full border-[2.5px] border-ink bg-cream px-4.5 py-4 font-sans text-[15px] text-ink outline-none"
+                className="box-border w-full rounded-xl border border-line bg-cream px-4.5 py-3.5 font-sans text-[15px] text-ink outline-none transition focus:border-yellow focus:ring-2 focus:ring-yellow/30"
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -160,7 +160,7 @@ export default async function EstimerPage({
               <select
                 name="type"
                 defaultValue={type}
-                className="box-border w-full border-[2.5px] border-ink bg-cream px-4.5 py-4 font-sans text-[15px] text-ink outline-none"
+                className="box-border w-full rounded-xl border border-line bg-cream px-4.5 py-3.5 font-sans text-[15px] text-ink outline-none transition focus:border-yellow focus:ring-2 focus:ring-yellow/30"
               >
                 {TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -171,7 +171,7 @@ export default async function EstimerPage({
             </label>
             <button
               type="submit"
-              className="cursor-pointer border-0 bg-yellow px-4.5 py-4.5 font-mono text-[13px] font-semibold text-ink shadow-[6px_6px_0_var(--pvl-ink)] transition-transform hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0_var(--pvl-ink)]"
+              className="cursor-pointer rounded-full border-0 bg-yellow px-4.5 py-4 font-mono text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
             >
               ESTIMER →
             </button>

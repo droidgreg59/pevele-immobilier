@@ -36,8 +36,11 @@ function OptionCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col gap-1.5 border-[2.5px] border-ink px-5 py-5 text-left transition-colors hover:bg-[#FDEBC2]"
-      style={{ background: active ? "#FBF3DC" : "#fff" }}
+      className="flex flex-col gap-1.5 rounded-2xl px-5 py-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      style={{
+        background: active ? "#FBF3DC" : "#fff",
+        border: `1px solid ${active ? "transparent" : "var(--pvl-line)"}`,
+      }}
     >
       <span className="font-sans text-[17px] font-bold text-ink">{title}</span>
       {desc ? (
@@ -64,7 +67,7 @@ function RecapTag({
     <button
       type="button"
       onClick={onClick}
-      className="border-2 border-ink px-3.5 py-2 font-mono text-[11px] font-semibold hover:brightness-95"
+      className="rounded-xl px-3.5 py-2 font-mono text-[11px] font-semibold shadow-sm transition hover:brightness-95"
       style={{ background: bg, color, transform: `rotate(${rotate})` }}
     >
       {label}
@@ -127,9 +130,9 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
     <div className="mx-auto flex max-w-[640px] flex-col gap-6 px-6 py-10 sm:py-16">
       {step !== "success" ? (
         <>
-          <div className="h-1.5 w-full border border-ink bg-white">
+          <div className="h-1.5 w-full rounded-full bg-surface">
             <div
-              className="h-full bg-blue transition-all"
+              className="h-full rounded-full bg-blue transition-all"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
@@ -245,7 +248,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
                 placeholder="0"
                 value={budgetMin}
                 onChange={(e) => setBudgetMin(e.target.value)}
-                className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+                className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -259,14 +262,14 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
                 placeholder="ex. 350000"
                 value={budgetMax}
                 onChange={(e) => setBudgetMax(e.target.value)}
-                className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+                className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
               />
             </label>
           </div>
           <button
             type="button"
             onClick={() => setStep("lieu")}
-            className="self-start bg-yellow px-6 py-3.5 font-mono text-[12px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
+            className="self-start rounded-full bg-yellow px-6 py-3 font-mono text-[12px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
           >
             SUIVANT →
           </button>
@@ -292,7 +295,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
               value={lieu}
               onChange={(e) => setLieu(e.target.value)}
               placeholder="ex. Cysoing"
-              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
             <datalist id="pw-villages">
               {villages.map((v) => (
@@ -304,7 +307,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
             <button
               type="button"
               onClick={() => setStep("recap")}
-              className="bg-yellow px-6 py-3.5 font-mono text-[12px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
+              className="rounded-full bg-yellow px-6 py-3 font-mono text-[12px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
             >
               SUIVANT →
             </button>
@@ -334,7 +337,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
             </p>
           </div>
 
-          <div className="relative flex flex-wrap gap-3.5 border-[2.5px] border-ink bg-white p-7">
+          <div className="relative flex flex-wrap gap-3.5 rounded-2xl border border-line bg-white p-7 shadow-sm">
             <RecapTag
               label={transaction === "LOCATION" ? "Location" : "Achat"}
               bg="var(--pvl-yellow)"
@@ -373,7 +376,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
               type="button"
               disabled={isPending}
               onClick={handleSave}
-              className="self-start bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px disabled:opacity-60"
+              className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
             >
               {isPending ? "ENREGISTREMENT…" : "ENREGISTRER MA RECHERCHE →"}
             </button>
@@ -388,7 +391,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
 
       {step === "success" ? (
         <div className="animate-view-in flex flex-col gap-5">
-          <div className="border-[2.5px] border-ink bg-[#EAF3E8] p-6">
+          <div className="rounded-2xl bg-[#EAF3E8] p-6">
             <span className="font-mono text-[10.5px] font-semibold text-green">
               ✓ RECHERCHE ENREGISTRÉE
             </span>
@@ -401,7 +404,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div className="flex flex-wrap gap-4">
             <Link
               href={resultUrl()}
-              className="border-2 border-ink px-5 py-3.5 font-mono text-[11.5px] font-semibold text-ink hover:bg-[#FDEBC2]"
+              className="rounded-full border border-line px-5 py-3 font-mono text-[11.5px] font-semibold text-ink transition hover:bg-surface"
             >
               VOIR LES ANNONCES CORRESPONDANTES →
             </Link>

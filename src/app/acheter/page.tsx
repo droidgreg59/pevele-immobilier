@@ -34,8 +34,8 @@ export default async function AcheterPage({
   return (
     <ListingsBrowser
       listings={listings}
-      pieceBadge="PIÈCE 01"
-      titre="LE SÉJOUR — ACHETER"
+      pieceBadge="ACHAT"
+      titre="ACHETER EN PÉVÈLE"
       transaction="VENTE"
       initialQuery={q}
       initialBudgetMin={

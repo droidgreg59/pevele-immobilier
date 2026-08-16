@@ -36,7 +36,7 @@ export default async function ArtisanPage({
 
   return (
     <div className="animate-view-in max-w-[1000px] px-9 py-8">
-      <span className="border-2 border-gold px-3 py-1.5 font-mono text-sm text-gold">
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-gold">
         ARTISAN
       </span>
       <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
@@ -44,7 +44,7 @@ export default async function ArtisanPage({
       </h1>
       <div className="flex flex-wrap gap-4">
         <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-          ← RETOUR AU PLAN
+          ← RETOUR À L&apos;ACCUEIL
         </Link>
         <Link
           href="/artisans"
@@ -67,7 +67,7 @@ export default async function ArtisanPage({
           {artisan.categories.map((c) => (
             <span
               key={c}
-              className="border-2 border-ink bg-[#FBF3DC] px-3 py-1.5 font-mono text-[10.5px] font-semibold text-gold"
+              className="rounded-full bg-[#FBF3DC] px-3 py-1.5 font-mono text-[10.5px] font-semibold text-gold"
             >
               {c}
             </span>
@@ -81,7 +81,7 @@ export default async function ArtisanPage({
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-col gap-2 border-2 border-ink bg-white p-5" style={{ maxWidth: 420 }}>
+      <div className="mt-6 flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm" style={{ maxWidth: 420 }}>
         <span className="font-mono text-[10.5px] font-medium text-muted">
           COORDONNÉES
         </span>
@@ -122,7 +122,7 @@ export default async function ArtisanPage({
               <Link
                 key={v.slug}
                 href={`/villages/${v.slug}`}
-                className="border-[1.5px] border-ink bg-white px-3 py-2 font-mono text-[10.5px] font-medium text-ink hover:bg-[#FDEBC2]"
+                className="rounded-full border border-line bg-white px-3 py-2 font-mono text-[10.5px] font-medium text-ink transition hover:bg-surface"
               >
                 {v.nom}
               </Link>

@@ -43,7 +43,7 @@ export default async function VillagePage({
 
   return (
     <div className="animate-view-in max-w-[1200px] px-9 py-8">
-      <span className="border-2 border-green px-3 py-1.5 font-mono text-sm text-green">
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-green">
         FICHE VILLAGE
       </span>
       <h2 className="mt-3 font-display text-[36px] text-ink sm:text-[52px]">
@@ -51,7 +51,7 @@ export default async function VillagePage({
       </h2>
       <div className="flex flex-wrap gap-4">
         <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-          ← RETOUR AU PLAN
+          ← RETOUR À L&apos;ACCUEIL
         </Link>
         <Link
           href="/villages"
@@ -99,7 +99,7 @@ export default async function VillagePage({
         <h3 className="m-0 font-display text-xl text-ink">PRIX IMMOBILIER</h3>
         {dvfStats ? (
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.4fr]">
-            <div className="border-2 border-ink bg-[#F7F4EA] p-5">
+            <div className="rounded-2xl bg-surface p-5">
               <span className="font-display text-[30px] text-ink">
                 {dvfStats.avgPrixM2.toLocaleString("fr-FR")} €
               </span>
@@ -110,8 +110,8 @@ export default async function VillagePage({
               </p>
             </div>
             {dvfRecent.length > 0 ? (
-              <div className="border-2 border-line bg-white">
-                <div className="border-b-2 border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
+              <div className="rounded-2xl border border-line bg-white">
+                <div className="border-b border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
                   DERNIÈRES VENTES
                 </div>
                 <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
@@ -150,7 +150,7 @@ export default async function VillagePage({
         {STUB_SECTIONS.map((section) => (
           <div
             key={section}
-            className="border-2 border-dashed border-muted-2 bg-white p-5"
+            className="rounded-2xl border border-dashed border-line bg-surface p-5"
           >
             <span className="font-mono text-[10.5px] font-medium text-muted">
               {section.toUpperCase()}

@@ -36,16 +36,22 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
           <button
             type="button"
             onClick={() => setTransaction("VENTE")}
-            className="border-2 border-ink px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
-            style={{ background: transaction === "VENTE" ? "#FBF3DC" : "#fff" }}
+            className="rounded-xl px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+            style={{
+              background: transaction === "VENTE" ? "#FBF3DC" : "#fff",
+              border: `1px solid ${transaction === "VENTE" ? "transparent" : "var(--pvl-line)"}`,
+            }}
           >
             JE VENDS
           </button>
           <button
             type="button"
             onClick={() => setTransaction("LOCATION")}
-            className="border-2 border-ink px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-[#FDEBC2]"
-            style={{ background: transaction === "LOCATION" ? "#FBF3DC" : "#fff" }}
+            className="rounded-xl px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+            style={{
+              background: transaction === "LOCATION" ? "#FBF3DC" : "#fff",
+              border: `1px solid ${transaction === "LOCATION" ? "transparent" : "var(--pvl-line)"}`,
+            }}
           >
             JE LOUE
           </button>
@@ -59,7 +65,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
             name="titre"
             required
             defaultValue={listing.titre}
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
 
@@ -72,7 +78,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               name="villageSlug"
               required
               defaultValue={listing.villageSlug}
-              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             >
               {villages.map((v) => (
                 <option key={v.slug} value={v.slug}>
@@ -89,7 +95,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               name="typeBien"
               required
               defaultValue={listing.typeBien}
-              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             >
               <option value="MAISON">Maison</option>
               <option value="APPARTEMENT">Appartement</option>
@@ -109,7 +115,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.prix}
-              className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -122,7 +128,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.surface}
-              className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -135,7 +141,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.pieces}
-              className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -148,7 +154,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.chambres}
-              className="border-[2.5px] border-ink bg-white px-3 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
         </div>
@@ -162,7 +168,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               name="exterieur"
               defaultValue={listing.exterieur === "—" ? "" : listing.exterieur}
               placeholder="ex. 500 M² JARDIN, BALCON…"
-              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -172,7 +178,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
             <select
               name="dpe"
               defaultValue={listing.dpe ?? ""}
-              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             >
               <option value="">Non renseigné</option>
               {DPE_OPTIONS.map((letter) => (
@@ -193,7 +199,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
             required
             rows={4}
             defaultValue={listing.description}
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
 
@@ -206,7 +212,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               {visiblePhotos.map((p) => (
                 <div
                   key={p.id}
-                  className="relative h-20 w-20 overflow-hidden border-2 border-ink"
+                  className="relative h-20 w-20 overflow-hidden rounded-xl border border-line"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.url} alt="" className="h-full w-full object-cover" />
@@ -239,7 +245,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               type="url"
               defaultValue={listing.videoUrl ?? ""}
               placeholder="https://youtube.com/watch?v=…"
-              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -251,13 +257,13 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               type="url"
               defaultValue={listing.visiteVirtuelleUrl ?? ""}
               placeholder="https://…"
-              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
         </div>
 
         {state.error ? (
-          <p className="m-0 border-2 border-ink bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
             {state.error}
           </p>
         ) : null}
@@ -265,19 +271,19 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
         <button
           type="submit"
           disabled={pending}
-          className="self-start bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px disabled:opacity-60"
+          className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
         >
           {pending ? "ENREGISTREMENT…" : "ENREGISTRER LES MODIFICATIONS →"}
         </button>
       </form>
 
-      <div className="max-w-[720px] border-2 border-dashed border-ink p-6">
+      <div className="max-w-[720px] rounded-2xl border border-dashed border-line bg-surface p-6">
         <span className="font-mono text-[10.5px] font-medium text-ink">
           ZONE SENSIBLE
         </span>
         <p className="m-0 mt-2 font-sans text-[13px] text-muted">
-          Supprimer cette annonce est définitif : elle disparaît du plan et de
-          votre compte.
+          Supprimer cette annonce est définitif : elle disparaît des annonces
+          et de votre compte.
         </p>
         <form
           action={deleteListingAction}
@@ -291,7 +297,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
           <input type="hidden" name="listingId" value={listing.id} />
           <button
             type="submit"
-            className="border-2 border-ink px-4 py-2.5 font-mono text-[11px] font-semibold text-ink hover:bg-[#FBEAEA]"
+            className="rounded-full border border-line px-4 py-2.5 font-mono text-[11px] font-semibold text-ink transition hover:bg-[#FBEAEA]"
           >
             SUPPRIMER CETTE ANNONCE
           </button>

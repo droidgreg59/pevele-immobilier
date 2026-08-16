@@ -99,17 +99,17 @@ export default async function ComptePage() {
 
   return (
     <div className="animate-view-in max-w-[900px] px-9 py-8">
-      <span className="border-2 border-blue px-3 py-1.5 font-mono text-sm text-blue">
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
         MON COMPTE
       </span>
       <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[44px]">
         {session.nom.toUpperCase()}
       </h1>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
-      <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-[2.5px] border-ink bg-white p-6 shadow-[6px_6px_0_rgba(39,67,166,.18)]">
+      <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-line bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-1.5 font-mono text-[12px] text-ink">
           <span>EMAIL — {session.email}</span>
           <span>TYPE DE COMPTE — {TYPE_LABEL[session.type]}</span>
@@ -117,7 +117,7 @@ export default async function ComptePage() {
         <form action={logoutAction}>
           <button
             type="submit"
-            className="border-2 border-ink px-4 py-2.5 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+            className="rounded-full border border-line px-4 py-2.5 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
           >
             SE DÉCONNECTER
           </button>
@@ -148,7 +148,7 @@ export default async function ComptePage() {
       ) : null}
 
       {isAgence ? (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-white px-5 py-4">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
           <div className="flex flex-col gap-1">
             <span className="font-mono text-[10.5px] font-medium text-ink">
               MES CLIENTS ({clientCount})
@@ -247,7 +247,7 @@ export default async function ComptePage() {
         </div>
       ) : null}
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-white px-5 py-4">
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
         <div className="flex flex-col gap-1">
           <span className="font-mono text-[10.5px] font-medium text-ink">
             MES FAVORIS ({favoriteCount})
@@ -285,7 +285,7 @@ export default async function ComptePage() {
               return (
                 <div
                   key={s.id}
-                  className="flex flex-col gap-3 border-2 border-ink bg-white px-5 py-4"
+                  className="flex flex-col gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-col gap-1">
@@ -331,7 +331,7 @@ export default async function ComptePage() {
                       {s.mandates.map((m) => (
                         <span
                           key={m.id}
-                          className="border-[1.5px] border-line bg-[#F7F4EA] px-2.5 py-1 font-mono text-[10px] font-medium text-muted"
+                          className="rounded-full bg-surface px-2.5 py-1 font-mono text-[10px] font-medium text-muted"
                         >
                           {m.agencyNom} · {MANDATE_LABEL[m.statut]}
                         </span>
@@ -351,7 +351,7 @@ export default async function ComptePage() {
                             {m.proposals.map((p) => (
                               <div
                                 key={p.proposalId}
-                                className="flex flex-col gap-2 border-2 border-ink bg-[#FBF3DC] px-3 py-2"
+                                className="flex flex-col gap-2 rounded-xl bg-[#FBF3DC] px-3 py-2"
                               >
                                 <Link
                                   href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
@@ -419,7 +419,7 @@ export default async function ComptePage() {
                         name="agencyId"
                         required
                         defaultValue=""
-                        className="border-2 border-ink bg-white px-3 py-2 font-mono text-[11px] text-ink outline-none focus:border-blue"
+                        className="rounded-full border border-line bg-white px-3 py-2 font-mono text-[11px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
                       >
                         <option value="" disabled>
                           Choisir une agence…
@@ -432,7 +432,7 @@ export default async function ComptePage() {
                       </select>
                       <button
                         type="submit"
-                        className="border-2 border-ink px-3.5 py-2 font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2]"
+                        className="rounded-full border border-line px-3.5 py-2 font-mono text-[11px] font-medium text-ink transition hover:bg-surface"
                       >
                         CONFIER CETTE RECHERCHE →
                       </button>
@@ -455,7 +455,7 @@ export default async function ComptePage() {
           {stubs.map((label) => (
             <div
               key={label}
-              className="border-2 border-dashed border-muted-2 bg-white p-5"
+              className="rounded-2xl border border-dashed border-line bg-surface p-5"
             >
               <span className="font-mono text-[10.5px] font-medium text-muted">
                 {label.toUpperCase()}
@@ -469,13 +469,13 @@ export default async function ComptePage() {
       ) : null}
 
       {!isArtisan ? (
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-2 border-dashed border-blue px-6 py-5">
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-surface px-6 py-5">
           <span className="font-sans text-[15px] text-ink">
-            Prêt à publier votre premier bien sur le plan ?
+            Prêt à publier votre premier bien ?
           </span>
           <Link
             href="/vendre/deposer"
-            className="bg-yellow px-5 py-3.5 font-mono text-[11.5px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px"
+            className="rounded-full bg-yellow px-5 py-3 font-mono text-[11.5px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
           >
             + DÉPOSER UNE ANNONCE
           </Link>

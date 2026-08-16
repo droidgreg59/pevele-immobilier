@@ -32,22 +32,22 @@ export default function VillageMap({ initialSlug }: { initialSlug?: string }) {
   return (
     <div className="animate-view-in max-w-[1400px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="border-2 border-green px-3 py-1.5 font-mono text-sm text-green">
-          PIÈCE 06
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-green">
+          LA CARTE
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          LA CARTE — PLAN DE MASSE
+          EXPLOREZ LA PÉVÈLE
         </h2>
         <span className="ml-auto font-mono text-[11px] font-medium text-muted">
           SURVOLEZ &amp; CLIQUEZ UN VILLAGE
         </span>
       </div>
       <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR AU PLAN
+        ← RETOUR À L&apos;ACCUEIL
       </Link>
 
       <div className="mt-5.5 grid grid-cols-1 items-start gap-12 lg:grid-cols-[470px_1fr]">
-        <div className="border-[2.5px] border-ink bg-white p-5.5 shadow-[6px_6px_0_rgba(39,67,166,.22)]">
+        <div className="rounded-2xl border border-line bg-white p-5.5 shadow-sm">
           <div className="mb-1.5 flex justify-between">
             <span className="font-mono text-[10px] font-medium text-blue">
               PLAN DE MASSE — LA PÉVÈLE
@@ -102,7 +102,7 @@ export default function VillageMap({ initialSlug }: { initialSlug?: string }) {
         </div>
 
         <div className="flex flex-col gap-4.5">
-          <div className="animate-draw-in flex flex-col gap-3 border-[2.5px] border-ink bg-white p-7 shadow-[6px_6px_0_rgba(39,67,166,.22)]">
+          <div className="animate-draw-in flex flex-col gap-3 rounded-2xl border border-line bg-white p-7 shadow-sm">
             <span className="font-mono text-[10.5px] font-medium text-green">
               FICHE VILLAGE — {sel + 1}/{villages.length}
             </span>
@@ -112,16 +112,16 @@ export default function VillageMap({ initialSlug }: { initialSlug?: string }) {
             <p className="m-0 max-w-[56ch] font-sans text-[15px] leading-[1.6] text-muted">
               {selected.description}
             </p>
-            <div className="flex max-w-[520px] font-mono text-[11px]">
+            <div className="flex max-w-[520px] gap-2 font-mono text-[11px]">
               <Link
                 href={`/villages/${selected.slug}`}
-                className="flex-1 border-2 border-ink bg-cream px-2.5 py-2.5 text-center text-ink"
+                className="flex-1 rounded-full border border-line bg-surface px-2.5 py-2.5 text-center text-ink transition hover:bg-white"
               >
                 GUIDE DU VILLAGE
               </Link>
               <Link
                 href={`/acheter?q=${selected.slug}`}
-                className="flex-1 border-2 border-l-0 border-ink bg-yellow px-2.5 py-2.5 text-center text-ink"
+                className="flex-1 rounded-full bg-yellow px-2.5 py-2.5 text-center text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
               >
                 ANNONCES ICI →
               </Link>
@@ -133,10 +133,11 @@ export default function VillageMap({ initialSlug }: { initialSlug?: string }) {
                 key={v.slug}
                 type="button"
                 onClick={() => setSel(i)}
-                className="cursor-pointer border-[1.5px] border-ink px-3 py-2 font-mono text-[10.5px] font-medium transition-colors hover:bg-[#FDEBC2]"
+                className="cursor-pointer rounded-full px-3 py-2 font-mono text-[10.5px] font-medium transition-colors hover:bg-surface"
                 style={{
                   background: sel === i ? "var(--pvl-yellow)" : "#fff",
                   color: "var(--pvl-ink)",
+                  border: `1px solid ${sel === i ? "transparent" : "var(--pvl-line)"}`,
                 }}
               >
                 {v.nom}

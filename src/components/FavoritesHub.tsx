@@ -64,10 +64,10 @@ function FavoriteHubCard({
   const particulier = item.ownerType === "PARTICULIER";
 
   return (
-    <div className="flex flex-col gap-4 border-[2.5px] border-ink bg-white p-4 sm:flex-row">
+    <div className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 shadow-sm sm:flex-row">
       <Link
         href={item.detailHref}
-        className="relative h-[140px] w-full shrink-0 overflow-hidden border-2 border-ink sm:h-[120px] sm:w-[160px]"
+        className="relative h-[140px] w-full shrink-0 overflow-hidden rounded-xl sm:h-[120px] sm:w-[160px]"
       >
         {item.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -77,12 +77,12 @@ function FavoriteHubCard({
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,#EDEAE1_0_14px,#E4E0D3_14px_28px)] px-3 text-center font-mono text-[9.5px] text-muted-2">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface px-3 text-center font-mono text-[9.5px] text-muted-2">
             Aucune photo
           </div>
         )}
         <span
-          className="absolute left-2 top-2 whitespace-nowrap border-2 border-ink px-2 py-1 font-mono text-[8.5px] font-semibold"
+          className="absolute left-2 top-2 whitespace-nowrap rounded-full px-2 py-1 font-mono text-[8.5px] font-semibold shadow-sm"
           style={{
             background: particulier ? "#FBF3DC" : "#EDF1FB",
             color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
@@ -106,11 +106,11 @@ function FavoriteHubCard({
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <span className="bg-ink px-3 py-1.5 font-display text-[19px] tracking-[.02em] text-yellow">
+            <span className="rounded-lg bg-ink px-3 py-1.5 font-display text-[19px] tracking-[.02em] text-yellow">
               {formatPrix(item.prix, item.transaction)}
             </span>
             {item.enVerification ? (
-              <span className="border-2 border-ink bg-blue px-2 py-1 font-mono text-[8.5px] font-semibold text-white">
+              <span className="rounded-full bg-blue px-2 py-1 font-mono text-[8.5px] font-semibold text-white">
                 EN VÉRIFICATION
               </span>
             ) : null}
@@ -123,7 +123,7 @@ function FavoriteHubCard({
         </span>
 
         {item.surveillePrix && item.enBaisse ? (
-          <span className="w-fit border-2 border-ink bg-[#EAF3E8] px-3 py-1.5 font-mono text-[10.5px] font-semibold text-green">
+          <span className="w-fit rounded-full bg-[#EAF3E8] px-3 py-1.5 font-mono text-[10.5px] font-semibold text-green">
             ↓ BAISSE DE PRIX DÉTECTÉE
           </span>
         ) : null}
@@ -191,10 +191,11 @@ export default function FavoritesHub({ items: initialItems }: { items: FavoriteH
               key={key}
               type="button"
               onClick={() => setFiltre(key)}
-              className="cursor-pointer border-2 border-ink px-4 py-2.5 font-mono text-[11px] font-medium transition-colors hover:bg-[#FDEBC2]"
+              className="cursor-pointer rounded-full px-4 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
               style={{
-                background: active ? "var(--pvl-ink)" : "#fff",
+                background: active ? "var(--pvl-ink)" : "transparent",
                 color: active ? "#fff" : "var(--pvl-ink)",
+                border: active ? "none" : "1px solid var(--pvl-line)",
               }}
             >
               {FILTRE_LABEL[key]} ({count})

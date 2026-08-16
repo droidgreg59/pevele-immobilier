@@ -45,9 +45,9 @@ export default function PhotoDropzone({
           e.preventDefault();
           addFiles(e.dataTransfer.files);
         }}
-        className="flex cursor-pointer items-center justify-center gap-3.5 border-2 border-dashed border-muted-2 bg-white p-7 hover:border-blue"
+        className="flex cursor-pointer items-center justify-center gap-3.5 rounded-2xl border border-dashed border-line bg-surface p-7 transition hover:border-blue"
       >
-        <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-blue font-sans text-xl font-semibold text-blue">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white font-sans text-xl font-semibold text-blue shadow-sm">
           ↑
         </span>
         <span className="font-sans text-[14px] leading-[1.5] text-muted">
@@ -64,7 +64,7 @@ export default function PhotoDropzone({
           {photos.map((p, i) => (
             <div
               key={p.url}
-              className="relative h-20 w-20 overflow-hidden border-2 border-ink"
+              className="relative h-20 w-20 overflow-hidden rounded-xl border border-line"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.url} alt="" className="h-full w-full object-cover" />

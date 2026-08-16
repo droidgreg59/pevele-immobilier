@@ -13,7 +13,7 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
 
   if (state.success) {
     return (
-      <p className="m-0 mt-4 border-2 border-ink bg-[#EAF3E8] px-4 py-3 font-sans text-[13px] text-ink">
+      <p className="m-0 mt-4 rounded-xl bg-[#EAF3E8] px-4 py-3 font-sans text-[13px] text-ink">
         Votre demande a été envoyée — le propriétaire vous recontactera
         directement.
       </p>
@@ -33,7 +33,7 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
           required
           rows={3}
           placeholder="Je souhaite visiter ce bien…"
-          className="border-2 border-ink bg-white px-3.5 py-3 font-sans text-[14px] text-ink outline-none focus:border-blue"
+          className="rounded-xl border border-line bg-white px-3.5 py-3 font-sans text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
@@ -45,7 +45,7 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
           <input
             name="preferredDate"
             type="date"
-            className="border-2 border-ink bg-white px-3.5 py-3 font-sans text-[14px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-3.5 py-3 font-sans text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -56,13 +56,13 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
             name="telephone"
             type="tel"
             placeholder="ex. 06 00 00 00 00"
-            className="border-2 border-ink bg-white px-3.5 py-3 font-sans text-[14px] text-ink outline-none focus:border-blue"
+            className="rounded-xl border border-line bg-white px-3.5 py-3 font-sans text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       </div>
 
       {state.error ? (
-        <p className="m-0 border-2 border-ink bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
           {state.error}
         </p>
       ) : null}
@@ -70,7 +70,7 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="self-start bg-yellow px-5 py-3 font-mono text-[11px] font-semibold text-ink shadow-[4px_4px_0_var(--pvl-blue)] hover:translate-x-px hover:translate-y-px disabled:opacity-60"
+        className="self-start rounded-full bg-yellow px-5 py-3 font-mono text-[11px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "ENVOI…" : "DEMANDER UNE VISITE →"}
       </button>
