@@ -13,6 +13,7 @@ import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
 import { getVisitRequestsForOwner } from "@/lib/visits";
 import { getAgencies } from "@/lib/agencies";
+import { getVillageBySlug } from "@/data/villages";
 import { formatPrix } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
 import DevisList from "@/components/DevisList";
@@ -30,13 +31,25 @@ const TYPE_BIEN_LABEL: Record<string, string> = {
   TERRAIN: "Terrain",
 };
 
+function locationLabel(villageSlugs: string | null, q: string | null): string {
+  if (villageSlugs) {
+    const noms = villageSlugs
+      .split(",")
+      .filter(Boolean)
+      .map((slug) => getVillageBySlug(slug)?.nom)
+      .filter((n): n is string => Boolean(n));
+    if (noms.length > 0) return noms.join(", ");
+  }
+  return q || "toute la Pévèle";
+}
+
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Mon compte — Pévèle Immobilier",
 };
 
-const STUBS_PARTICULIER = ["Mes alertes"];
+const STUBS_PARTICULIER: string[] = [];
 const STUBS_AGENCE = ["Mes collaborateurs"];
 const STUBS_ARTISAN: string[] = [];
 
@@ -96,6 +109,16 @@ export default async function ComptePage() {
     listingTitre: v.listing.titre,
     listingHref: `/${v.listing.transaction === "VENTE" ? "acheter" : "louer"}/${v.listing.id}`,
   }));
+  const totalNewMatches = mesRecherches.reduce((sum, s) => sum + s.newMatches, 0);
+  const pendingProposals = mesRecherches.reduce(
+    (sum, s) =>
+      sum +
+      s.mandates.reduce(
+        (mSum, m) => mSum + m.proposals.filter((p) => p.statut === "PROPOSEE").length,
+        0
+      ),
+    0
+  );
 
   return (
     <div className="animate-view-in max-w-[900px] px-9 py-8">
@@ -165,6 +188,47 @@ export default async function ComptePage() {
           >
             VOIR MES CLIENTS →
           </Link>
+        </div>
+      ) : null}
+
+      {!isAgence && !isArtisan ? (
+        <div className="mt-6 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
+          <span className="font-mono text-[10.5px] font-medium text-ink">
+            MES ALERTES
+          </span>
+          {totalNewMatches > 0 || pendingProposals > 0 ? (
+            <div className="mt-2 flex flex-col gap-1.5">
+              {totalNewMatches > 0 ? (
+                <Link
+                  href="#recherches"
+                  className="font-sans text-[13.5px] text-ink hover:text-blue"
+                >
+                  🔔{" "}
+                  <b>
+                    {totalNewMatches} nouvelle{totalNewMatches > 1 ? "s" : ""} annonce
+                    {totalNewMatches > 1 ? "s" : ""}
+                  </b>{" "}
+                  correspondant à vos recherches
+                </Link>
+              ) : null}
+              {pendingProposals > 0 ? (
+                <Link
+                  href="#recherches"
+                  className="font-sans text-[13.5px] text-ink hover:text-blue"
+                >
+                  📨{" "}
+                  <b>
+                    {pendingProposals} proposition{pendingProposals > 1 ? "s" : ""}
+                  </b>{" "}
+                  à examiner
+                </Link>
+              ) : null}
+            </div>
+          ) : (
+            <p className="m-0 mt-2 font-sans text-[13.5px] text-muted">
+              Rien de nouveau pour le moment.
+            </p>
+          )}
         </div>
       ) : null}
 
@@ -264,7 +328,7 @@ export default async function ComptePage() {
         </Link>
       </div>
 
-      <div className="mt-8">
+      <div id="recherches" className="mt-8 scroll-mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="font-mono text-[10.5px] font-medium text-ink">
             MES RECHERCHES SAUVEGARDÉES ({mesRecherches.length})
@@ -292,7 +356,11 @@ export default async function ComptePage() {
                       <span className="font-sans text-[14px] text-ink">
                         {s.transaction === "VENTE" ? "Achat" : "Location"}
                         {s.typeBien ? ` · ${TYPE_BIEN_LABEL[s.typeBien]}` : ""}
-                        {s.q ? ` · ${s.q}` : " · toute la Pévèle"}
+                        {` · ${locationLabel(s.villageSlugs, s.q)}`}
+                        {s.chambresMin != null ? ` · ${s.chambresMin}+ chambres` : ""}
+                        {s.equipements
+                          ? ` · ${s.equipements.split(",").filter(Boolean).join(", ")}`
+                          : ""}
                         {s.budgetMin != null && s.budgetMax != null
                           ? ` · ${s.budgetMin.toLocaleString("fr-FR")} – ${s.budgetMax.toLocaleString("fr-FR")} €`
                           : s.budgetMax != null

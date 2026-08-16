@@ -25,6 +25,9 @@ export type SavedSearchSummary = {
   transaction: TransactionType;
   typeBien: TypeBien | null;
   q: string | null;
+  villageSlugs: string | null;
+  chambresMin: number | null;
+  equipements: string | null;
   budgetMin: number | null;
   budgetMax: number | null;
   createdAt: Date;
@@ -62,13 +65,27 @@ export async function getSavedSearchesByUser(
   return Promise.all(
     rows.map(async (row) => {
       const qSlug = row.q ? slugify(row.q) : "";
+      const villageSlugList = row.villageSlugs
+        ? row.villageSlugs.split(",").filter(Boolean)
+        : [];
+      const equipementList = row.equipements
+        ? row.equipements.split(",").filter(Boolean)
+        : [];
       const newMatches = await prisma.listing.count({
         where: {
           transaction: row.transaction,
           statut: "PUBLIEE",
           createdAt: { gt: row.createdAt },
-          ...(qSlug ? { villageSlug: { contains: qSlug } } : {}),
+          ...(villageSlugList.length > 0
+            ? { villageSlug: { in: villageSlugList } }
+            : qSlug
+              ? { villageSlug: { contains: qSlug } }
+              : {}),
           ...(row.typeBien ? { typeBien: row.typeBien } : {}),
+          ...(row.chambresMin != null ? { chambres: { gte: row.chambresMin } } : {}),
+          ...(equipementList.length > 0
+            ? { AND: equipementList.map((tag) => ({ equipements: { contains: tag } })) }
+            : {}),
           ...(row.budgetMin != null || row.budgetMax != null
             ? {
                 prix: {
@@ -101,13 +118,23 @@ export async function getSavedSearchesByUser(
 export function savedSearchUrl(
   search: Pick<
     SavedSearchSummary,
-    "transaction" | "typeBien" | "q" | "budgetMin" | "budgetMax"
+    | "transaction"
+    | "typeBien"
+    | "q"
+    | "villageSlugs"
+    | "chambresMin"
+    | "equipements"
+    | "budgetMin"
+    | "budgetMax"
   >
 ): string {
   const base = search.transaction === "VENTE" ? "/acheter" : "/louer";
   const params = new URLSearchParams();
-  if (search.q) params.set("q", search.q);
+  if (search.villageSlugs) params.set("villages", search.villageSlugs);
+  else if (search.q) params.set("q", search.q);
   if (search.typeBien) params.set("type", search.typeBien);
+  if (search.chambresMin != null) params.set("chambresMin", String(search.chambresMin));
+  if (search.equipements) params.set("equip", search.equipements);
   if (search.budgetMin != null) params.set("budgetMin", String(search.budgetMin));
   if (search.budgetMax != null) params.set("budget", String(search.budgetMax));
   const qs = params.toString();

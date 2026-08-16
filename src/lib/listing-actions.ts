@@ -47,6 +47,7 @@ function parseListingFields(
   const titre = String(formData.get("titre") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const exterieur = String(formData.get("exterieur") ?? "").trim();
+  const equipements = formData.getAll("equipements").map(String).join(",");
   const dpe = String(formData.get("dpe") ?? "").trim();
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
   const visiteVirtuelleUrl = String(formData.get("visiteVirtuelleUrl") ?? "").trim();
@@ -85,6 +86,7 @@ function parseListingFields(
       chambres,
       surface,
       exterieur: exterieur || "—",
+      equipements,
       dpe: dpe || undefined,
       videoUrl: videoUrl || undefined,
       visiteVirtuelleUrl: visiteVirtuelleUrl || undefined,

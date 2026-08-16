@@ -97,6 +97,7 @@ export type ListingFieldsInput = {
   chambres: number;
   surface: number;
   exterieur: string;
+  equipements: string;
   dpe?: string;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;

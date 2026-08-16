@@ -9,6 +9,9 @@ export async function createSavedSearchAction(input: {
   transaction: TransactionType;
   typeBien?: TypeBien;
   q?: string;
+  villageSlugs?: string[];
+  chambresMin?: number;
+  equipements?: string[];
   budgetMin?: number;
   budgetMax?: number;
   next?: string;
@@ -24,6 +27,9 @@ export async function createSavedSearchAction(input: {
       transaction: input.transaction,
       typeBien: input.typeBien ?? null,
       q: input.q?.trim() || null,
+      villageSlugs: input.villageSlugs?.length ? input.villageSlugs.join(",") : null,
+      chambresMin: input.chambresMin ?? null,
+      equipements: input.equipements?.length ? input.equipements.join(",") : null,
       budgetMin: input.budgetMin ?? null,
       budgetMax: input.budgetMax ?? null,
     },

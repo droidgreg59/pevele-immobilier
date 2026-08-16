@@ -23,6 +23,18 @@ export default async function AcheterPage({
   const type = typeof params.type === "string" ? params.type : undefined;
   const initialTypeBien =
     type === "MAISON" || type === "APPARTEMENT" || type === "TERRAIN" ? type : undefined;
+  const villagesParam = typeof params.villages === "string" ? params.villages : undefined;
+  const initialVillageSlugs = villagesParam
+    ? villagesParam.split(",").filter(Boolean)
+    : undefined;
+  const chambresMinParam =
+    typeof params.chambresMin === "string" ? Number(params.chambresMin) : undefined;
+  const initialChambresMin =
+    chambresMinParam !== undefined && Number.isFinite(chambresMinParam)
+      ? chambresMinParam
+      : undefined;
+  const equipParam = typeof params.equip === "string" ? params.equip : undefined;
+  const initialEquipements = equipParam ? equipParam.split(",").filter(Boolean) : undefined;
   const [listings, session] = await Promise.all([
     getPublicListings("VENTE"),
     getSession(),
@@ -43,6 +55,9 @@ export default async function AcheterPage({
       }
       initialBudgetMax={budget !== undefined && Number.isFinite(budget) ? budget : undefined}
       initialTypeBien={initialTypeBien}
+      initialVillageSlugs={initialVillageSlugs}
+      initialChambresMin={initialChambresMin}
+      initialEquipements={initialEquipements}
       isLoggedIn={session !== null}
       favoriteIds={favoriteIds}
     />

@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createListingAction, type ListingFormState } from "@/lib/listing-actions";
 import { villages } from "@/data/villages";
+import { EQUIPEMENTS } from "@/data/equipements";
 import PhotoDropzone from "./PhotoDropzone";
 
 const initialState: ListingFormState = {};
@@ -181,6 +182,28 @@ export default function PublishForm({
             ))}
           </select>
         </label>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="font-mono text-[10.5px] font-medium text-muted">
+          ÉQUIPEMENTS
+        </span>
+        <div className="flex flex-wrap gap-3">
+          {EQUIPEMENTS.map((eq) => (
+            <label
+              key={eq}
+              className="flex items-center gap-1.5 font-sans text-[13.5px] text-ink"
+            >
+              <input
+                type="checkbox"
+                name="equipements"
+                value={eq}
+                className="h-4 w-4 accent-[var(--pvl-blue)]"
+              />
+              {eq}
+            </label>
+          ))}
+        </div>
       </div>
 
       <label className="flex flex-col gap-1.5">

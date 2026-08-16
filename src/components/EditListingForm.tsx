@@ -7,6 +7,7 @@ import {
   type ListingFormState,
 } from "@/lib/listing-actions";
 import { villages } from "@/data/villages";
+import { EQUIPEMENTS } from "@/data/equipements";
 import { MAX_PHOTOS } from "@/lib/photo-constants";
 import type { ListingWithOwner } from "@/lib/listings";
 import PhotoDropzone from "./PhotoDropzone";
@@ -25,6 +26,9 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
   const [removedIds, setRemovedIds] = useState<string[]>([]);
 
   const visiblePhotos = listing.photos.filter((p) => !removedIds.includes(p.id));
+  const existingEquipements = listing.equipements
+    ? listing.equipements.split(",").filter(Boolean)
+    : [];
 
   return (
     <div className="flex flex-col gap-9">
@@ -188,6 +192,29 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               ))}
             </select>
           </label>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <span className="font-mono text-[10.5px] font-medium text-muted">
+            ÉQUIPEMENTS
+          </span>
+          <div className="flex flex-wrap gap-3">
+            {EQUIPEMENTS.map((eq) => (
+              <label
+                key={eq}
+                className="flex items-center gap-1.5 font-sans text-[13.5px] text-ink"
+              >
+                <input
+                  type="checkbox"
+                  name="equipements"
+                  value={eq}
+                  defaultChecked={existingEquipements.includes(eq)}
+                  className="h-4 w-4 accent-[var(--pvl-blue)]"
+                />
+                {eq}
+              </label>
+            ))}
+          </div>
         </div>
 
         <label className="flex flex-col gap-1.5">

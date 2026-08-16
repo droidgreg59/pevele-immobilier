@@ -4,18 +4,38 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { createSavedSearchAction } from "@/lib/saved-search-actions";
 import { villages } from "@/data/villages";
+import { EQUIPEMENTS } from "@/data/equipements";
+import VillageMultiSelect from "./VillageMultiSelect";
 
 type Transaction = "VENTE" | "LOCATION";
 type TypeBienChoice = "MAISON" | "APPARTEMENT" | "TERRAIN" | null;
-type Step = "projet" | "type" | "budget" | "lieu" | "recap" | "success";
+type Step =
+  | "projet"
+  | "type"
+  | "chambres"
+  | "criteres"
+  | "budget"
+  | "lieu"
+  | "recap"
+  | "success";
 
-const STEPS: Step[] = ["projet", "type", "budget", "lieu", "recap"];
+const STEPS: Step[] = [
+  "projet",
+  "type",
+  "chambres",
+  "criteres",
+  "budget",
+  "lieu",
+  "recap",
+];
 
 const TYPE_BIEN_LABEL: Record<string, string> = {
   MAISON: "Maison",
   APPARTEMENT: "Appartement",
   TERRAIN: "Terrain",
 };
+
+const CHAMBRES_OPTIONS = [1, 2, 3, 4] as const;
 
 function formatEuros(n: number) {
   return n.toLocaleString("fr-FR") + " €";
@@ -50,6 +70,31 @@ function OptionCard({
   );
 }
 
+function ToggleChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-full px-4 py-2.5 font-sans text-[14px] font-medium transition-colors hover:bg-surface"
+      style={{
+        background: active ? "#FBF3DC" : "#fff",
+        color: "var(--pvl-ink)",
+        border: `1px solid ${active ? "transparent" : "var(--pvl-line)"}`,
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 function RecapTag({
   label,
   bg,
@@ -80,9 +125,12 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [typeBien, setTypeBien] = useState<TypeBienChoice>(null);
   const [typeAnswered, setTypeAnswered] = useState(false);
+  const [chambresMin, setChambresMin] = useState<number | null>(null);
+  const [chambresAnswered, setChambresAnswered] = useState(false);
+  const [equipements, setEquipements] = useState<string[]>([]);
   const [budgetMin, setBudgetMin] = useState("");
   const [budgetMax, setBudgetMax] = useState("");
-  const [lieu, setLieu] = useState("");
+  const [villageSlugs, setVillageSlugs] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
   const stepIndex = STEPS.indexOf(step);
@@ -92,12 +140,20 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
     if (stepIndex > 0) setStep(STEPS[stepIndex - 1]);
   }
 
+  function toggleEquipement(tag: string) {
+    setEquipements((prev) =>
+      prev.includes(tag) ? prev.filter((e) => e !== tag) : [...prev, tag]
+    );
+  }
+
   function handleSave() {
     startTransition(async () => {
       await createSavedSearchAction({
         transaction: transaction ?? "VENTE",
         typeBien: typeBien ?? undefined,
-        q: lieu || undefined,
+        villageSlugs: villageSlugs.length > 0 ? villageSlugs : undefined,
+        chambresMin: chambresMin ?? undefined,
+        equipements: equipements.length > 0 ? equipements : undefined,
         budgetMin: budgetMin ? Number(budgetMin) : undefined,
         budgetMax: budgetMax ? Number(budgetMax) : undefined,
         next: "/mon-projet",
@@ -115,11 +171,22 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
     return `À partir de ${formatEuros(Number(budgetMin))}`;
   }
 
+  function villagesLabel() {
+    if (villageSlugs.length === 0) return "Toute la Pévèle";
+    const noms = villageSlugs
+      .map((slug) => villages.find((v) => v.slug === slug)?.nom)
+      .filter((n): n is string => Boolean(n));
+    if (noms.length <= 2) return noms.join(", ");
+    return `${noms.length} villages`;
+  }
+
   function resultUrl() {
     const base = transaction === "LOCATION" ? "/louer" : "/acheter";
     const params = new URLSearchParams();
-    if (lieu) params.set("q", lieu);
+    if (villageSlugs.length > 0) params.set("villages", villageSlugs.join(","));
     if (typeBien) params.set("type", typeBien);
+    if (chambresMin) params.set("chambresMin", String(chambresMin));
+    if (equipements.length > 0) params.set("equip", equipements.join(","));
     if (budgetMin) params.set("budgetMin", budgetMin);
     if (budgetMax) params.set("budget", budgetMax);
     const qs = params.toString();
@@ -209,7 +276,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
                 onClick={() => {
                   setTypeBien(t);
                   setTypeAnswered(true);
-                  setStep("budget");
+                  setStep("chambres");
                 }}
               />
             ))}
@@ -219,10 +286,76 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
               onClick={() => {
                 setTypeBien(null);
                 setTypeAnswered(true);
-                setStep("budget");
+                setStep("chambres");
               }}
             />
           </div>
+        </div>
+      ) : null}
+
+      {step === "chambres" ? (
+        <div className="animate-view-in flex flex-col gap-5">
+          <div>
+            <h1 className="m-0 font-display text-[32px] leading-tight text-ink sm:text-[38px]">
+              COMBIEN DE CHAMBRES ?
+            </h1>
+            <p className="mt-2 font-sans text-[14.5px] text-muted">
+              Le nombre minimum de chambres souhaité.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3.5 sm:grid-cols-5">
+            <OptionCard
+              title="Peu importe"
+              active={chambresAnswered && chambresMin === null}
+              onClick={() => {
+                setChambresMin(null);
+                setChambresAnswered(true);
+                setStep("criteres");
+              }}
+            />
+            {CHAMBRES_OPTIONS.map((n) => (
+              <OptionCard
+                key={n}
+                title={`${n}+`}
+                active={chambresAnswered && chambresMin === n}
+                onClick={() => {
+                  setChambresMin(n);
+                  setChambresAnswered(true);
+                  setStep("criteres");
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {step === "criteres" ? (
+        <div className="animate-view-in flex flex-col gap-5">
+          <div>
+            <h1 className="m-0 font-display text-[32px] leading-tight text-ink sm:text-[38px]">
+              DES CRITÈRES EN PARTICULIER ?
+            </h1>
+            <p className="mt-2 font-sans text-[14.5px] text-muted">
+              Facultatif — sélectionnez tout ce qui compte pour vous.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {EQUIPEMENTS.map((eq) => (
+              <ToggleChip
+                key={eq}
+                label={eq}
+                active={equipements.includes(eq)}
+                onClick={() => toggleEquipement(eq)}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setStep("budget")}
+            className="self-start rounded-full bg-yellow px-6 py-3 font-mono text-[12px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
+          >
+            SUIVANT →
+          </button>
         </div>
       ) : null}
 
@@ -283,26 +416,10 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
               OÙ CHERCHEZ-VOUS ?
             </h1>
             <p className="mt-2 font-sans text-[14.5px] text-muted">
-              Un village en particulier, ou toute la Pévèle.
+              Un ou plusieurs villages, ou toute la Pévèle.
             </p>
           </div>
-          <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              VILLAGE (FACULTATIF)
-            </span>
-            <input
-              list="pw-villages"
-              value={lieu}
-              onChange={(e) => setLieu(e.target.value)}
-              placeholder="ex. Cysoing"
-              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-            />
-            <datalist id="pw-villages">
-              {villages.map((v) => (
-                <option key={v.slug} value={v.nom} />
-              ))}
-            </datalist>
-          </label>
+          <VillageMultiSelect value={villageSlugs} onChange={setVillageSlugs} />
           <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
@@ -311,16 +428,18 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
             >
               SUIVANT →
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLieu("");
-                setStep("recap");
-              }}
-              className="font-mono text-[11px] font-medium text-blue"
-            >
-              TOUTE LA PÉVÈLE →
-            </button>
+            {villageSlugs.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setVillageSlugs([]);
+                  setStep("recap");
+                }}
+                className="font-mono text-[11px] font-medium text-blue"
+              >
+                TOUTE LA PÉVÈLE →
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -352,6 +471,28 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
               rotate="1deg"
               onClick={() => setStep("type")}
             />
+            {chambresMin ? (
+              <RecapTag
+                label={`${chambresMin}+ chambres`}
+                bg="var(--pvl-ink)"
+                color="#fff"
+                rotate="-1deg"
+                onClick={() => setStep("chambres")}
+              />
+            ) : null}
+            {equipements.length > 0 ? (
+              <RecapTag
+                label={
+                  equipements.length <= 2
+                    ? equipements.join(", ")
+                    : `${equipements.length} critères`
+                }
+                bg="#FBF3DC"
+                color="var(--pvl-gold)"
+                rotate="1.5deg"
+                onClick={() => setStep("criteres")}
+              />
+            ) : null}
             <RecapTag
               label={budgetLabel()}
               bg="var(--pvl-blue)"
@@ -360,7 +501,7 @@ export default function ProjectWizard({ isLoggedIn }: { isLoggedIn: boolean }) {
               onClick={() => setStep("budget")}
             />
             <RecapTag
-              label={lieu || "Toute la Pévèle"}
+              label={villagesLabel()}
               bg="var(--pvl-green)"
               color="#fff"
               rotate="1.5deg"

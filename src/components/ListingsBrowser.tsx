@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 import type { ListingWithOwner } from "@/lib/listings";
 import { slugify } from "@/lib/slugify";
 import { createSavedSearchAction } from "@/lib/saved-search-actions";
+import { EQUIPEMENTS } from "@/data/equipements";
 import ListingCard from "./ListingCard";
+import VillageMultiSelect from "./VillageMultiSelect";
 
 type Filtre = "tout" | "agence" | "particulier";
 type TypeBienFiltre = "TOUS" | "MAISON" | "APPARTEMENT" | "TERRAIN";
@@ -44,6 +46,9 @@ export default function ListingsBrowser({
   initialBudgetMin,
   initialBudgetMax,
   initialTypeBien,
+  initialVillageSlugs,
+  initialChambresMin,
+  initialEquipements,
   isLoggedIn = false,
   favoriteIds = [],
 }: {
@@ -55,6 +60,9 @@ export default function ListingsBrowser({
   initialBudgetMin?: number;
   initialBudgetMax?: number;
   initialTypeBien?: TypeBienFiltre;
+  initialVillageSlugs?: string[];
+  initialChambresMin?: number;
+  initialEquipements?: string[];
   isLoggedIn?: boolean;
   favoriteIds?: string[];
 }) {
@@ -67,6 +75,15 @@ export default function ListingsBrowser({
   const [budgetMax, setBudgetMax] = useState<number | undefined>(
     initialBudgetMax
   );
+  const [villageSlugs, setVillageSlugs] = useState<string[]>(
+    initialVillageSlugs ?? []
+  );
+  const [chambresMin, setChambresMin] = useState<number | undefined>(
+    initialChambresMin
+  );
+  const [equipements, setEquipements] = useState<string[]>(
+    initialEquipements ?? []
+  );
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -75,10 +92,23 @@ export default function ListingsBrowser({
     (l) =>
       matchesFiltre(l, filtre) &&
       matchesTypeBien(l, typeBien) &&
-      (querySlug === "" || l.villageSlug.includes(querySlug)) &&
+      (villageSlugs.length > 0
+        ? villageSlugs.includes(l.villageSlug)
+        : querySlug === "" || l.villageSlug.includes(querySlug)) &&
       (budgetMin === undefined || l.prix >= budgetMin) &&
-      (budgetMax === undefined || l.prix <= budgetMax)
+      (budgetMax === undefined || l.prix <= budgetMax) &&
+      (chambresMin === undefined || l.chambres >= chambresMin) &&
+      equipements.every((tag) =>
+        l.equipements.toLowerCase().includes(tag.toLowerCase())
+      )
   );
+
+  function toggleEquipement(tag: string) {
+    setSaved(false);
+    setEquipements((prev) =>
+      prev.includes(tag) ? prev.filter((e) => e !== tag) : [...prev, tag]
+    );
+  }
 
   function handleSaveSearch() {
     setSaved(true);
@@ -86,7 +116,10 @@ export default function ListingsBrowser({
       await createSavedSearchAction({
         transaction,
         typeBien: typeBien === "TOUS" ? undefined : typeBien,
-        q: initialQuery,
+        q: villageSlugs.length > 0 ? undefined : initialQuery,
+        villageSlugs: villageSlugs.length > 0 ? villageSlugs : undefined,
+        chambresMin,
+        equipements: equipements.length > 0 ? equipements : undefined,
         budgetMin,
         budgetMax,
         next: pathname,
@@ -129,6 +162,27 @@ export default function ListingsBrowser({
               }}
             >
               {TYPE_BIEN_LABEL[key]} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {EQUIPEMENTS.map((eq) => {
+          const active = equipements.includes(eq);
+          return (
+            <button
+              key={eq}
+              type="button"
+              onClick={() => toggleEquipement(eq)}
+              className="cursor-pointer rounded-full px-4 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
+              style={{
+                background: active ? "#FBF3DC" : "transparent",
+                color: "var(--pvl-ink)",
+                border: active ? "1px solid transparent" : "1px solid var(--pvl-line)",
+              }}
+            >
+              {eq}
             </button>
           );
         })}
@@ -186,6 +240,25 @@ export default function ListingsBrowser({
             className="w-[110px] rounded-xl border border-line bg-white px-3 py-2 font-sans text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
+        <label className="flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
+          CHAMBRES MIN
+          <select
+            defaultValue={initialChambresMin ?? ""}
+            onChange={(e) => {
+              setSaved(false);
+              const v = e.target.value;
+              setChambresMin(v === "" ? undefined : Number(v));
+            }}
+            className="rounded-full border border-line bg-white px-3 py-2 font-sans text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          >
+            <option value="">Peu importe</option>
+            {[1, 2, 3, 4].map((n) => (
+              <option key={n} value={n}>
+                {n}+
+              </option>
+            ))}
+          </select>
+        </label>
         <span className="ml-auto flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
           TRIER
           <span className="cursor-pointer rounded-full border border-line bg-white px-3.5 py-2 text-ink">
@@ -209,6 +282,21 @@ export default function ListingsBrowser({
             ☆ ENREGISTRER CETTE RECHERCHE
           </Link>
         )}
+      </div>
+
+      <div className="mt-4 max-w-[420px]">
+        <span className="font-mono text-[10.5px] font-medium text-muted">
+          VILLAGES
+        </span>
+        <div className="mt-1.5">
+          <VillageMultiSelect
+            value={villageSlugs}
+            onChange={(slugs) => {
+              setSaved(false);
+              setVillageSlugs(slugs);
+            }}
+          />
+        </div>
       </div>
 
       {list.length > 0 ? (

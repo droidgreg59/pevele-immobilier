@@ -133,16 +133,19 @@ model Review {
 /// transaction) — consultée depuis /compte, pas de notification email pour
 /// l'instant.
 model SavedSearch {
-  id          String          @id @default(cuid())
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  transaction TransactionType
-  typeBien    TypeBien?
-  q           String?
-  budgetMin   Int?
-  budgetMax   Int?
-  createdAt   DateTime        @default(now())
-  mandates    SearchMandate[]
+  id           String          @id @default(cuid())
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  transaction  TransactionType
+  typeBien     TypeBien?
+  q            String?
+  villageSlugs String?
+  chambresMin  Int?
+  equipements  String?
+  budgetMin    Int?
+  budgetMax    Int?
+  createdAt    DateTime        @default(now())
+  mandates     SearchMandate[]
 
   @@index([userId])
 }
