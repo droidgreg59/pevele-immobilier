@@ -1,10 +1,13 @@
 import Link from "next/link";
 import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
+import type { ArtisanSummary } from "@/lib/artisans";
+import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2 } from "@/lib/format";
 import FavoriteButton from "./FavoriteButton";
 import PhotoGallery from "./PhotoGallery";
+import VisitRequestForm from "./VisitRequestForm";
 
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
   if (owner.type === "PARTICULIER") return "ENTRE VOISINS — PARTICULIER";
@@ -30,14 +33,18 @@ export default function ListingDetail({
   dvfRecent,
   priceHistory,
   isOwner,
+  isLoggedIn,
   isFavorited,
+  artisans,
 }: {
   listing: ListingWithOwner;
   dvfStats: DvfVillageStats | null;
   dvfRecent: DvfTransactionSummary[];
   priceHistory: PriceHistoryEntry[];
   isOwner: boolean;
+  isLoggedIn: boolean;
   isFavorited: boolean;
+  artisans: ArtisanSummary[];
 }) {
   const particulier = listing.owner.type === "PARTICULIER";
   const enVerification = listing.statut === "EN_VERIFICATION";
@@ -49,6 +56,7 @@ export default function ListingDetail({
       : null;
   const prixM2 = listingPrixM2 ? formatPrixM2(listing.prix, listing.surface) : null;
   const comparisonText = marketComparison(listingPrixM2, dvfStats);
+  const videoEmbedUrl = listing.videoUrl ? getVideoEmbedUrl(listing.videoUrl) : null;
   const equipements = listing.equipements
     ? listing.equipements.split(",").filter(Boolean)
     : [];
@@ -102,9 +110,40 @@ export default function ListingDetail({
               </>
             }
           />
-          <p className="mt-2 font-mono text-[10px] text-muted-2">
-            Visite virtuelle — bientôt disponible.
-          </p>
+          {listing.videoUrl || listing.visiteVirtuelleUrl ? (
+            <div className="mt-3 flex flex-col gap-3">
+              {listing.videoUrl && videoEmbedUrl ? (
+                <div className="relative aspect-video w-full overflow-hidden border-2 border-ink">
+                  <iframe
+                    src={videoEmbedUrl}
+                    title="Vidéo du bien"
+                    className="absolute inset-0 h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : listing.videoUrl ? (
+                <a
+                  href={listing.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[11px] font-medium text-blue"
+                >
+                  ▶ VOIR LA VIDÉO →
+                </a>
+              ) : null}
+              {listing.visiteVirtuelleUrl ? (
+                <a
+                  href={listing.visiteVirtuelleUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-fit border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-semibold text-ink hover:bg-[#FDEBC2]"
+                >
+                  VOIR LA VISITE VIRTUELLE 360° →
+                </a>
+              ) : null}
+            </div>
+          ) : null}
 
           <section className="mt-8">
             <h2 className="m-0 font-display text-2xl text-ink">LE BIEN</h2>
@@ -230,7 +269,7 @@ export default function ListingDetail({
         <aside className="flex flex-col gap-5">
           <div className="relative border-[2.5px] border-ink bg-white p-6 shadow-[6px_6px_0_rgba(39,67,166,.22)]">
             <span className="font-mono text-[10.5px] font-medium text-muted">
-              ◉ {listing.commune.toUpperCase()}
+              ◉ {listing.commune.toUpperCase()} · {listing.typeBien}
             </span>
             <h1 className="m-0 mt-1 font-display text-[28px] leading-tight text-ink">
               {listing.titre}
@@ -294,9 +333,17 @@ export default function ListingDetail({
               >
                 MODIFIER L&apos;ANNONCE
               </Link>
+            ) : isLoggedIn ? (
+              <VisitRequestForm listingId={listing.id} />
             ) : (
               <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
-                Contact et demande de visite : bientôt disponibles.
+                <Link
+                  href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                  className="text-blue"
+                >
+                  Connectez-vous
+                </Link>{" "}
+                pour contacter le propriétaire et demander une visite.
               </p>
             )}
             {enVerification ? (
@@ -349,17 +396,37 @@ export default function ListingDetail({
             </div>
           </div>
 
-          <div className="border-2 border-dashed border-muted-2 bg-white p-6">
+          <div className="border-2 border-ink bg-white p-6">
             <span className="font-mono text-[10.5px] font-medium text-muted">
-              PROFESSIONNELS AUTOUR DU BIEN
+              ARTISANS AUTOUR DU BIEN
             </span>
-            <p className="m-0 mt-2 font-sans text-[12.5px] leading-[1.6] text-muted-2">
-              Artisans, courtiers, diagnostiqueurs et notaires locaux —
-              bientôt disponibles.
-            </p>
-            <div className="mt-2 flex flex-wrap gap-3">
+            {artisans.length > 0 ? (
+              <div className="mt-3 flex flex-col gap-2.5">
+                {artisans.map((a) => (
+                  <Link
+                    key={a.id}
+                    href={`/artisans/${a.id}`}
+                    className="flex flex-col gap-0.5 border border-line bg-[#F7F4EA] px-3 py-2 hover:bg-[#FDEBC2]"
+                  >
+                    <span className="font-sans text-[13px] font-semibold text-ink">
+                      {a.entreprise ?? a.nom}
+                    </span>
+                    {a.categories.length > 0 ? (
+                      <span className="font-mono text-[10px] text-muted-2">
+                        {a.categories.join(" · ")}
+                      </span>
+                    ) : null}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="m-0 mt-2 font-sans text-[12.5px] leading-[1.6] text-muted-2">
+                Aucun artisan référencé pour cette commune pour le moment.
+              </p>
+            )}
+            <div className="mt-3 flex flex-wrap gap-3">
               <Link href="/artisans" className="font-mono text-[11px] text-blue">
-                Artisans & Habitat →
+                Tous les artisans →
               </Link>
               <Link
                 href="/professionnels"

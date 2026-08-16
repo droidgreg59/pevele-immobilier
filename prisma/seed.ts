@@ -195,6 +195,7 @@ async function main() {
     {
       ownerId: particulier.id,
       transaction: "LOCATION" as const,
+      typeBien: "APPARTEMENT" as const,
       badge: "LOCATION",
       titre: "Appartement en centre-bourg",
       description:

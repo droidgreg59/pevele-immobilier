@@ -4,6 +4,7 @@ import { getListingById, getPriceHistory } from "@/lib/listings";
 import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
 import { getSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
+import { getArtisansForVillage } from "@/lib/artisans";
 import ListingDetail from "@/components/ListingDetail";
 
 export const dynamic = "force-dynamic";
@@ -27,11 +28,12 @@ export default async function AcheterListingPage({
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "VENTE") notFound();
 
-  const [dvfStats, dvfRecent, priceHistory, session] = await Promise.all([
+  const [dvfStats, dvfRecent, priceHistory, session, artisans] = await Promise.all([
     getDvfStatsForVillage(listing.villageSlug),
     getRecentDvfTransactions(listing.villageSlug),
     getPriceHistory(listing.id),
     getSession(),
+    getArtisansForVillage(listing.villageSlug),
   ]);
   const isFavorited = session
     ? await isListingFavorited(session.userId, listing.id)
@@ -44,7 +46,9 @@ export default async function AcheterListingPage({
       dvfRecent={dvfRecent}
       priceHistory={priceHistory}
       isOwner={session?.userId === listing.ownerId}
+      isLoggedIn={session !== null}
       isFavorited={isFavorited}
+      artisans={artisans}
     />
   );
 }

@@ -9,11 +9,19 @@ import { createSavedSearchAction } from "@/lib/saved-search-actions";
 import ListingCard from "./ListingCard";
 
 type Filtre = "tout" | "agence" | "particulier";
+type TypeBienFiltre = "TOUS" | "MAISON" | "APPARTEMENT" | "TERRAIN";
 
 const FILTRE_LABEL: Record<Filtre, string> = {
   tout: "TOUT",
   agence: "AGENCES",
   particulier: "ENTRE VOISINS",
+};
+
+const TYPE_BIEN_LABEL: Record<TypeBienFiltre, string> = {
+  TOUS: "TOUS TYPES",
+  MAISON: "MAISON",
+  APPARTEMENT: "APPARTEMENT",
+  TERRAIN: "TERRAIN",
 };
 
 function matchesFiltre(listing: ListingWithOwner, filtre: Filtre): boolean {
@@ -23,6 +31,10 @@ function matchesFiltre(listing: ListingWithOwner, filtre: Filtre): boolean {
     : listing.owner.type === "PARTICULIER";
 }
 
+function matchesTypeBien(listing: ListingWithOwner, typeBien: TypeBienFiltre): boolean {
+  return typeBien === "TOUS" || listing.typeBien === typeBien;
+}
+
 export default function ListingsBrowser({
   listings,
   pieceBadge,
@@ -30,6 +42,7 @@ export default function ListingsBrowser({
   transaction,
   initialQuery,
   initialBudgetMax,
+  initialTypeBien,
   isLoggedIn = false,
   favoriteIds = [],
 }: {
@@ -39,11 +52,13 @@ export default function ListingsBrowser({
   transaction: "VENTE" | "LOCATION";
   initialQuery?: string;
   initialBudgetMax?: number;
+  initialTypeBien?: TypeBienFiltre;
   isLoggedIn?: boolean;
   favoriteIds?: string[];
 }) {
   const pathname = usePathname();
   const [filtre, setFiltre] = useState<Filtre>("tout");
+  const [typeBien, setTypeBien] = useState<TypeBienFiltre>(initialTypeBien ?? "TOUS");
   const [budgetMax, setBudgetMax] = useState<number | undefined>(
     initialBudgetMax
   );
@@ -54,6 +69,7 @@ export default function ListingsBrowser({
   const list = listings.filter(
     (l) =>
       matchesFiltre(l, filtre) &&
+      matchesTypeBien(l, typeBien) &&
       (querySlug === "" || l.villageSlug.includes(querySlug)) &&
       (budgetMax === undefined || l.prix <= budgetMax)
   );
@@ -89,6 +105,27 @@ export default function ListingsBrowser({
       </Link>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
+        {(Object.keys(TYPE_BIEN_LABEL) as TypeBienFiltre[]).map((key) => {
+          const count = listings.filter((l) => matchesTypeBien(l, key)).length;
+          const active = typeBien === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTypeBien(key)}
+              className="cursor-pointer border-2 border-ink px-4 py-2.5 font-mono text-[11px] font-medium transition-colors hover:bg-[#FDEBC2]"
+              style={{
+                background: active ? "var(--pvl-gold)" : "#fff",
+                color: active ? "#fff" : "var(--pvl-ink)",
+              }}
+            >
+              {TYPE_BIEN_LABEL[key]} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         {(Object.keys(FILTRE_LABEL) as Filtre[]).map((key) => {
           const count = listings.filter((l) => matchesFiltre(l, key)).length;
           const active = filtre === key;

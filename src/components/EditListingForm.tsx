@@ -63,23 +63,40 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
           />
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            VILLAGE
-          </span>
-          <select
-            name="villageSlug"
-            required
-            defaultValue={listing.villageSlug}
-            className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
-          >
-            {villages.map((v) => (
-              <option key={v.slug} value={v.slug}>
-                {v.nom}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5">
+            <span className="font-mono text-[10.5px] font-medium text-muted">
+              VILLAGE
+            </span>
+            <select
+              name="villageSlug"
+              required
+              defaultValue={listing.villageSlug}
+              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            >
+              {villages.map((v) => (
+                <option key={v.slug} value={v.slug}>
+                  {v.nom}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="font-mono text-[10.5px] font-medium text-muted">
+              TYPE DE BIEN
+            </span>
+            <select
+              name="typeBien"
+              required
+              defaultValue={listing.typeBien}
+              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            >
+              <option value="MAISON">Maison</option>
+              <option value="APPARTEMENT">Appartement</option>
+              <option value="TERRAIN">Terrain</option>
+            </select>
+          </label>
+        </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <label className="flex flex-col gap-1.5">
@@ -211,6 +228,33 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
         ))}
 
         <PhotoDropzone maxNewPhotos={MAX_PHOTOS - visiblePhotos.length} />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5">
+            <span className="font-mono text-[10.5px] font-medium text-muted">
+              LIEN VIDÉO (YOUTUBE/VIMEO, FACULTATIF)
+            </span>
+            <input
+              name="videoUrl"
+              type="url"
+              defaultValue={listing.videoUrl ?? ""}
+              placeholder="https://youtube.com/watch?v=…"
+              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="font-mono text-[10.5px] font-medium text-muted">
+              LIEN VISITE VIRTUELLE 360° (FACULTATIF)
+            </span>
+            <input
+              name="visiteVirtuelleUrl"
+              type="url"
+              defaultValue={listing.visiteVirtuelleUrl ?? ""}
+              placeholder="https://…"
+              className="border-[2.5px] border-ink bg-white px-4 py-3.5 font-sans text-[15px] text-ink outline-none focus:border-blue"
+            />
+          </label>
+        </div>
 
         {state.error ? (
           <p className="m-0 border-2 border-ink bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">

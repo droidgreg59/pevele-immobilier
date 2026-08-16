@@ -194,14 +194,21 @@ export default function PlanHub() {
               className="border-0 bg-transparent font-sans text-[15px] font-semibold text-ink outline-none"
             />
           </label>
-          <div className="flex flex-col gap-1 border-r-2 border-line px-5 py-4">
+          <label className="flex flex-col gap-1 border-r-2 border-line px-5 py-4">
             <span className="font-mono text-[9.5px] font-medium text-muted-2">
               QUOI ?
             </span>
-            <span className="font-sans text-[15px] font-semibold text-ink">
-              Maison ▾
-            </span>
-          </div>
+            <select
+              name="type"
+              defaultValue=""
+              className="cursor-pointer border-0 bg-transparent font-sans text-[15px] font-semibold text-ink outline-none"
+            >
+              <option value="">Tous types</option>
+              <option value="MAISON">Maison</option>
+              <option value="APPARTEMENT">Appartement</option>
+              <option value="TERRAIN">Terrain</option>
+            </select>
+          </label>
           <div className="flex flex-col gap-1 px-5 py-4">
             <span className="font-mono text-[9.5px] font-medium text-muted-2">
               BUDGET

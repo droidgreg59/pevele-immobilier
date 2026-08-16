@@ -8,12 +8,15 @@ import { getFavoriteListingIds, getFavoriteCount } from "@/lib/favorites";
 import { getSavedSearchesByUser, savedSearchUrl } from "@/lib/saved-searches";
 import { deleteSavedSearchAction } from "@/lib/saved-search-actions";
 import { sendMandateAction } from "@/lib/mandate-actions";
+import { respondToProposalAction } from "@/lib/proposal-actions";
 import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
+import { getVisitRequestsForOwner } from "@/lib/visits";
 import { getAgencies } from "@/lib/agencies";
 import { formatPrix } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
 import DevisList from "@/components/DevisList";
+import VisitRequestList from "@/components/VisitRequestList";
 
 const MANDATE_LABEL: Record<string, string> = {
   EN_ATTENTE: "en attente",
@@ -50,6 +53,7 @@ export default async function ComptePage() {
     favoriteCount,
     mesRecherches,
     devisRequests,
+    visitRequests,
     agencies,
     pendingMandateCount,
     clientCount,
@@ -59,6 +63,7 @@ export default async function ComptePage() {
     getFavoriteCount(session.userId),
     getSavedSearchesByUser(session.userId),
     isArtisan ? getDevisRequestsForArtisan(session.userId) : Promise.resolve([]),
+    isArtisan ? Promise.resolve([]) : getVisitRequestsForOwner(session.userId),
     getAgencies(),
     isAgence ? getPendingMandateCount(session.userId) : Promise.resolve(0),
     isAgence ? getClientCount(session.userId) : Promise.resolve(0),
@@ -71,6 +76,19 @@ export default async function ComptePage() {
     createdLabel: d.createdAt.toLocaleDateString("fr-FR"),
     authorNom: d.author.nom,
     authorEmail: d.author.email,
+  }));
+  const visitItems = visitRequests.map((v) => ({
+    id: v.id,
+    message: v.message,
+    telephone: v.telephone,
+    preferredDateLabel: v.preferredDate ? v.preferredDate.toLocaleDateString("fr-FR") : null,
+    traite: v.traite,
+    createdLabel: v.createdAt.toLocaleDateString("fr-FR"),
+    authorNom: v.author.nom,
+    authorEmail: v.author.email,
+    listingId: v.listing.id,
+    listingTitre: v.listing.titre,
+    listingHref: `/${v.listing.transaction === "VENTE" ? "acheter" : "louer"}/${v.listing.id}`,
   }));
 
   return (
@@ -113,6 +131,12 @@ export default async function ComptePage() {
             className="font-mono text-[11.5px] font-medium text-blue"
           >
             MODIFIER MES COORDONNÉES →
+          </Link>
+          <Link
+            href="/compte/agence/statistiques"
+            className="font-mono text-[11.5px] font-medium text-blue"
+          >
+            VOIR MES STATISTIQUES →
           </Link>
         </div>
       ) : null}
@@ -196,6 +220,22 @@ export default async function ComptePage() {
           ) : (
             <p className="mt-3 font-sans text-[14px] text-muted">
               Vous n&apos;avez pas encore déposé d&apos;annonce.
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      {!isArtisan ? (
+        <div className="mt-8">
+          <span className="font-mono text-[10.5px] font-medium text-ink">
+            DEMANDES DE VISITE ({visitItems.length})
+          </span>
+          {visitItems.length > 0 ? (
+            <VisitRequestList items={visitItems} />
+          ) : (
+            <p className="mt-3 font-sans text-[14px] text-muted">
+              Les demandes de visite envoyées sur vos annonces apparaîtront
+              ici.
             </p>
           )}
         </div>
@@ -290,18 +330,60 @@ export default async function ComptePage() {
                               PROPOSITIONS DE {m.agencyNom.toUpperCase()}
                             </span>
                             {m.proposals.map((p) => (
-                              <Link
+                              <div
                                 key={p.proposalId}
-                                href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
-                                className="flex flex-wrap items-center justify-between gap-2 border-2 border-ink bg-[#FBF3DC] px-3 py-2 hover:bg-[#FDEBC2]"
+                                className="flex flex-col gap-2 border-2 border-ink bg-[#FBF3DC] px-3 py-2"
                               >
-                                <span className="font-sans text-[13px] font-medium text-ink">
-                                  {p.titre}
-                                </span>
-                                <span className="font-mono text-[11px] font-semibold text-gold">
-                                  {formatPrix(p.prix, p.transaction)}
-                                </span>
-                              </Link>
+                                <Link
+                                  href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
+                                  className="flex flex-wrap items-center justify-between gap-2 hover:underline"
+                                >
+                                  <span className="font-sans text-[13px] font-medium text-ink">
+                                    {p.titre}
+                                  </span>
+                                  <span className="font-mono text-[11px] font-semibold text-gold">
+                                    {formatPrix(p.prix, p.transaction)}
+                                  </span>
+                                </Link>
+                                {p.statut === "PROPOSEE" ? (
+                                  <form
+                                    action={respondToProposalAction}
+                                    className="flex items-center gap-4"
+                                  >
+                                    <input type="hidden" name="proposalId" value={p.proposalId} />
+                                    <button
+                                      type="submit"
+                                      name="decision"
+                                      value="interesse"
+                                      className="font-mono text-[10.5px] font-semibold text-green"
+                                    >
+                                      ♥ INTÉRESSÉ(E)
+                                    </button>
+                                    <button
+                                      type="submit"
+                                      name="decision"
+                                      value="pas_interesse"
+                                      className="font-mono text-[10.5px] font-medium text-muted hover:text-ink"
+                                    >
+                                      PAS POUR MOI
+                                    </button>
+                                  </form>
+                                ) : (
+                                  <span
+                                    className="font-mono text-[10.5px] font-semibold"
+                                    style={{
+                                      color:
+                                        p.statut === "INTERESSE"
+                                          ? "var(--pvl-green)"
+                                          : "var(--pvl-muted)",
+                                    }}
+                                  >
+                                    {p.statut === "INTERESSE"
+                                      ? "♥ Vous avez indiqué être intéressé(e)"
+                                      : "Vous avez indiqué que ce bien ne vous intéresse pas"}
+                                  </span>
+                                )}
+                              </div>
                             ))}
                           </div>
                         ))}

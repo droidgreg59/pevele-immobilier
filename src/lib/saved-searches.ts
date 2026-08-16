@@ -9,6 +9,7 @@ export type ProposedListing = {
   titre: string;
   prix: number;
   transaction: TransactionType;
+  statut: "PROPOSEE" | "INTERESSE" | "PAS_INTERESSE";
 };
 
 export type SavedSearchMandate = {
@@ -45,6 +46,7 @@ export async function getSavedSearchesByUser(
           proposals: {
             select: {
               id: true,
+              statut: true,
               listing: {
                 select: { id: true, titre: true, prix: true, transaction: true },
               },
@@ -78,6 +80,7 @@ export async function getSavedSearchesByUser(
           titre: p.listing.titre,
           prix: p.listing.prix,
           transaction: p.listing.transaction,
+          statut: p.statut,
         })),
       }));
       return { ...row, newMatches, mandates };

@@ -41,3 +41,18 @@ export async function removeProposalAction(formData: FormData) {
 
   redirect("/compte/agence/clients");
 }
+
+export async function respondToProposalAction(formData: FormData) {
+  const proposalId = String(formData.get("proposalId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+  const session = await getSession();
+  if (!session) redirect("/connexion");
+  if (decision !== "interesse" && decision !== "pas_interesse") redirect("/compte");
+
+  await prisma.listingProposal.updateMany({
+    where: { id: proposalId, mandate: { clientId: session.userId } },
+    data: { statut: decision === "interesse" ? "INTERESSE" : "PAS_INTERESSE" },
+  });
+
+  redirect("/compte");
+}

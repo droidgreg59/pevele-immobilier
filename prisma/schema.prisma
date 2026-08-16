@@ -33,6 +33,7 @@ model User {
   devisEnvoyees      DevisRequest[]  @relation("AuthorDevis")
   clientMandates     SearchMandate[] @relation("ClientMandates")
   agencyMandates     SearchMandate[] @relation("AgencyMandates")
+  visitRequests      VisitRequest[]
 }
 
 enum AccountType {
@@ -42,28 +43,32 @@ enum AccountType {
 }
 
 model Listing {
-  id           String            @id @default(cuid())
-  owner        User              @relation(fields: [ownerId], references: [id])
-  ownerId      String
-  transaction  TransactionType
-  statut       ListingStatus     @default(EN_VERIFICATION)
-  titre        String
-  description  String
-  prix         Int
-  commune      String
-  villageSlug  String
-  pieces       Int
-  chambres     Int
-  surface      Int
-  exterieur    String
-  dpe          String?
-  equipements  String            @default("")
-  badge        String?
-  photos       ListingPhoto[]
-  priceHistory PriceHistory[]
-  favorites    Favorite[]
-  proposals    ListingProposal[]
-  createdAt    DateTime          @default(now())
+  id                 String            @id @default(cuid())
+  owner              User              @relation(fields: [ownerId], references: [id])
+  ownerId            String
+  transaction        TransactionType
+  statut             ListingStatus     @default(EN_VERIFICATION)
+  typeBien           TypeBien          @default(MAISON)
+  titre              String
+  description        String
+  prix               Int
+  commune            String
+  villageSlug        String
+  pieces             Int
+  chambres           Int
+  surface            Int
+  exterieur          String
+  dpe                String?
+  equipements        String            @default("")
+  badge              String?
+  videoUrl           String?
+  visiteVirtuelleUrl String?
+  photos             ListingPhoto[]
+  priceHistory       PriceHistory[]
+  favorites          Favorite[]
+  proposals          ListingProposal[]
+  visitRequests      VisitRequest[]
+  createdAt          DateTime          @default(now())
 
   @@index([ownerId])
   @@index([transaction, statut])
@@ -171,16 +176,23 @@ enum MandateStatus {
 /// confiée et acceptée — visible côté agence (fiche client) et côté
 /// particulier (sous sa recherche sauvegardée).
 model ListingProposal {
-  id        String        @id @default(cuid())
-  mandate   SearchMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+  id        String         @id @default(cuid())
+  mandate   SearchMandate  @relation(fields: [mandateId], references: [id], onDelete: Cascade)
   mandateId String
-  listing   Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing   Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
   listingId String
-  createdAt DateTime      @default(now())
+  statut    ProposalStatus @default(PROPOSEE)
+  createdAt DateTime       @default(now())
 
   @@unique([mandateId, listingId])
   @@index([mandateId])
   @@index([listingId])
+}
+
+enum ProposalStatus {
+  PROPOSEE
+  INTERESSE
+  PAS_INTERESSE
 }
 
 /// Demande de devis envoyée par un utilisateur à un artisan depuis sa fiche
@@ -200,6 +212,25 @@ model DevisRequest {
   @@index([artisanId])
 }
 
+/// Demande de visite envoyée par un utilisateur sur une annonce — pas de
+/// notification email pour l'instant, consultée depuis /compte côté
+/// propriétaire de l'annonce.
+model VisitRequest {
+  id            String    @id @default(cuid())
+  listing       Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId     String
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId      String
+  message       String
+  telephone     String?
+  preferredDate DateTime?
+  traite        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  @@index([listingId])
+  @@index([authorId])
+}
+
 enum TransactionType {
   VENTE
   LOCATION
@@ -208,6 +239,12 @@ enum TransactionType {
 enum ListingStatus {
   EN_VERIFICATION
   PUBLIEE
+}
+
+enum TypeBien {
+  MAISON
+  APPARTEMENT
+  TERRAIN
 }
 
 /// Transactions immobilières issues des DVF (Demandes de Valeurs Foncières,

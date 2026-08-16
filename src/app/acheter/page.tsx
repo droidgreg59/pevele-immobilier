@@ -18,6 +18,9 @@ export default async function AcheterPage({
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
   const budget = typeof params.budget === "string" ? Number(params.budget) : undefined;
+  const type = typeof params.type === "string" ? params.type : undefined;
+  const initialTypeBien =
+    type === "MAISON" || type === "APPARTEMENT" || type === "TERRAIN" ? type : undefined;
   const [listings, session] = await Promise.all([
     getPublicListings("VENTE"),
     getSession(),
@@ -34,6 +37,7 @@ export default async function AcheterPage({
       transaction="VENTE"
       initialQuery={q}
       initialBudgetMax={budget !== undefined && Number.isFinite(budget) ? budget : undefined}
+      initialTypeBien={initialTypeBien}
       isLoggedIn={session !== null}
       favoriteIds={favoriteIds}
     />

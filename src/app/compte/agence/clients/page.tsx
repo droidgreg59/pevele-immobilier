@@ -21,6 +21,12 @@ function searchSummary(s: { transaction: "VENTE" | "LOCATION"; q: string | null;
   return parts.join(" · ");
 }
 
+const PROPOSAL_STATUS_LABEL: Record<string, { label: string; color: string }> = {
+  PROPOSEE: { label: "en attente de réponse", color: "var(--pvl-muted-2)" },
+  INTERESSE: { label: "♥ intéressé(e)", color: "var(--pvl-green)" },
+  PAS_INTERESSE: { label: "pas intéressé(e)", color: "var(--pvl-muted-2)" },
+};
+
 export default async function AgenceClientsPage() {
   const session = await getSession();
   if (!session) redirect("/connexion?next=/compte/agence/clients");
@@ -155,15 +161,23 @@ export default async function AgenceClientsPage() {
                                 >
                                   {p.titre} — {formatPrix(p.prix, p.transaction)}
                                 </Link>
-                                <form action={removeProposalAction}>
-                                  <input type="hidden" name="proposalId" value={p.proposalId} />
-                                  <button
-                                    type="submit"
-                                    className="font-mono text-[9.5px] font-medium text-muted hover:text-ink"
+                                <div className="flex items-center gap-3">
+                                  <span
+                                    className="font-mono text-[9.5px] font-semibold"
+                                    style={{ color: PROPOSAL_STATUS_LABEL[p.statut].color }}
                                   >
-                                    RETIRER
-                                  </button>
-                                </form>
+                                    {PROPOSAL_STATUS_LABEL[p.statut].label}
+                                  </span>
+                                  <form action={removeProposalAction}>
+                                    <input type="hidden" name="proposalId" value={p.proposalId} />
+                                    <button
+                                      type="submit"
+                                      className="font-mono text-[9.5px] font-medium text-muted hover:text-ink"
+                                    >
+                                      RETIRER
+                                    </button>
+                                  </form>
+                                </div>
                               </div>
                             ))}
                           </div>

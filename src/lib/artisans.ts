@@ -28,6 +28,26 @@ export async function getArtisans(category?: string): Promise<ArtisanSummary[]> 
   }));
 }
 
+export async function getArtisansForVillage(
+  villageSlug: string,
+  limit = 4
+): Promise<ArtisanSummary[]> {
+  const artisans = await prisma.user.findMany({
+    where: { type: "ARTISAN", communesDesservies: { contains: villageSlug } },
+    select: { id: true, nom: true, entreprise: true, ville: true, categories: true },
+    orderBy: { createdAt: "asc" },
+    take: limit,
+  });
+
+  return artisans.map((a) => ({
+    id: a.id,
+    nom: a.nom,
+    entreprise: a.entreprise,
+    ville: a.ville,
+    categories: a.categories ? a.categories.split(",").filter(Boolean) : [],
+  }));
+}
+
 const ARTISAN_PROFILE_SELECT = {
   id: true,
   nom: true,

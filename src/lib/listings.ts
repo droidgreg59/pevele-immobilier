@@ -1,6 +1,6 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
-import type { TransactionType } from "@prisma/client";
+import type { TransactionType, TypeBien } from "@prisma/client";
 import { prisma } from "./prisma";
 
 export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
@@ -87,6 +87,7 @@ export async function getListingForEdit(
 
 export type ListingFieldsInput = {
   transaction: TransactionType;
+  typeBien: TypeBien;
   titre: string;
   description: string;
   prix: number;
@@ -97,6 +98,8 @@ export type ListingFieldsInput = {
   surface: number;
   exterieur: string;
   dpe?: string;
+  videoUrl?: string;
+  visiteVirtuelleUrl?: string;
 };
 
 export type CreateListingInput = ListingFieldsInput & { ownerId: string };
@@ -107,6 +110,8 @@ export async function createListing(input: CreateListingInput) {
     data: {
       ...fields,
       dpe: fields.dpe || null,
+      videoUrl: fields.videoUrl || null,
+      visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
       owner: { connect: { id: ownerId } },
       priceHistory: { create: [{ prix: fields.prix }] },
     },
@@ -125,7 +130,12 @@ export async function updateListing(
   return prisma.$transaction(async (tx) => {
     const updated = await tx.listing.update({
       where: { id },
-      data: { ...input, dpe: input.dpe || null },
+      data: {
+        ...input,
+        dpe: input.dpe || null,
+        videoUrl: input.videoUrl || null,
+        visiteVirtuelleUrl: input.visiteVirtuelleUrl || null,
+      },
     });
     if (input.prix !== existing.prix) {
       await tx.priceHistory.create({ data: { listingId: id, prix: input.prix } });

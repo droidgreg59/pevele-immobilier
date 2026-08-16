@@ -73,12 +73,17 @@ export default function ListingCard({
           >
             {listing.titre}
           </Link>
-          <Link
-            href={`/villages/${listing.villageSlug}`}
-            className="font-mono text-[10.5px] font-medium text-blue"
-          >
-            ◉ {listing.commune.toUpperCase()}
-          </Link>
+          <span className="flex items-center gap-1.5">
+            <Link
+              href={`/villages/${listing.villageSlug}`}
+              className="font-mono text-[10.5px] font-medium text-blue"
+            >
+              ◉ {listing.commune.toUpperCase()}
+            </Link>
+            <span className="font-mono text-[10.5px] text-muted-2">
+              · {listing.typeBien}
+            </span>
+          </span>
         </div>
         <div className="mt-auto flex text-center">
           <span className="flex-1 border-2 border-ink bg-[#F7F4EA] px-1 py-1.5">
