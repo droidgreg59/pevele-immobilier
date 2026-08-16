@@ -8,8 +8,8 @@ datasource db {
 }
 
 model User {
-  id                 String        @id @default(cuid())
-  email              String        @unique
+  id                 String          @id @default(cuid())
+  email              String          @unique
   passwordHash       String
   nom                String
   entreprise         String?
@@ -23,12 +23,16 @@ model User {
   categories         String?
   communesDesservies String?
   type               AccountType
-  createdAt          DateTime      @default(now())
+  createdAt          DateTime        @default(now())
   listings           Listing[]
   favorites          Favorite[]
-  agencyReviews      Review[]      @relation("AgencyReviews")
-  authoredReviews    Review[]      @relation("AuthoredReviews")
+  agencyReviews      Review[]        @relation("AgencyReviews")
+  authoredReviews    Review[]        @relation("AuthoredReviews")
   savedSearches      SavedSearch[]
+  devisRecus         DevisRequest[]  @relation("ArtisanDevis")
+  devisEnvoyees      DevisRequest[]  @relation("AuthorDevis")
+  clientMandates     SearchMandate[] @relation("ClientMandates")
+  agencyMandates     SearchMandate[] @relation("AgencyMandates")
 }
 
 enum AccountType {
@@ -38,11 +42,11 @@ enum AccountType {
 }
 
 model Listing {
-  id           String          @id @default(cuid())
-  owner        User            @relation(fields: [ownerId], references: [id])
+  id           String            @id @default(cuid())
+  owner        User              @relation(fields: [ownerId], references: [id])
   ownerId      String
   transaction  TransactionType
-  statut       ListingStatus   @default(EN_VERIFICATION)
+  statut       ListingStatus     @default(EN_VERIFICATION)
   titre        String
   description  String
   prix         Int
@@ -53,12 +57,13 @@ model Listing {
   surface      Int
   exterieur    String
   dpe          String?
-  equipements  String          @default("")
+  equipements  String            @default("")
   badge        String?
   photos       ListingPhoto[]
   priceHistory PriceHistory[]
   favorites    Favorite[]
-  createdAt    DateTime        @default(now())
+  proposals    ListingProposal[]
+  createdAt    DateTime          @default(now())
 
   @@index([ownerId])
   @@index([transaction, statut])
@@ -130,8 +135,69 @@ model SavedSearch {
   q           String?
   budgetMax   Int?
   createdAt   DateTime        @default(now())
+  mandates    SearchMandate[]
 
   @@index([userId])
+}
+
+/// Mandat de recherche : un particulier confie une recherche sauvegardée à
+/// une agence, qui l'accepte ou la refuse. Une fois acceptée, le particulier
+/// devient un client visible dans le hub de l'agence.
+model SearchMandate {
+  id            String            @id @default(cuid())
+  savedSearch   SavedSearch       @relation(fields: [savedSearchId], references: [id], onDelete: Cascade)
+  savedSearchId String
+  client        User              @relation("ClientMandates", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId      String
+  agency        User              @relation("AgencyMandates", fields: [agencyId], references: [id], onDelete: Cascade)
+  agencyId      String
+  statut        MandateStatus     @default(EN_ATTENTE)
+  createdAt     DateTime          @default(now())
+  respondedAt   DateTime?
+  proposals     ListingProposal[]
+
+  @@unique([savedSearchId, agencyId])
+  @@index([agencyId])
+  @@index([clientId])
+}
+
+enum MandateStatus {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+}
+
+/// Bien proposé par une agence à un client pour répondre à une recherche
+/// confiée et acceptée — visible côté agence (fiche client) et côté
+/// particulier (sous sa recherche sauvegardée).
+model ListingProposal {
+  id        String        @id @default(cuid())
+  mandate   SearchMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+  mandateId String
+  listing   Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  createdAt DateTime      @default(now())
+
+  @@unique([mandateId, listingId])
+  @@index([mandateId])
+  @@index([listingId])
+}
+
+/// Demande de devis envoyée par un utilisateur à un artisan depuis sa fiche
+/// publique — pas de notification email pour l'instant, consultée depuis
+/// /compte côté artisan.
+model DevisRequest {
+  id        String   @id @default(cuid())
+  artisan   User     @relation("ArtisanDevis", fields: [artisanId], references: [id], onDelete: Cascade)
+  artisanId String
+  author    User     @relation("AuthorDevis", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  message   String
+  telephone String?
+  traite    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([artisanId])
 }
 
 enum TransactionType {

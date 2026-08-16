@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getArtisanById } from "@/lib/artisans";
 import { getVillageBySlug } from "@/data/villages";
 import { getSession } from "@/lib/session";
+import DevisRequestForm from "@/components/DevisRequestForm";
 
 export const dynamic = "force-dynamic";
 
@@ -130,14 +131,29 @@ export default async function ArtisanPage({
         </div>
       ) : null}
 
-      <div className="mt-8 border-2 border-dashed border-muted-2 bg-white p-6">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
+      <div className="mt-8">
+        <h3 className="m-0 font-display text-xl text-ink">
           DEMANDE DE DEVIS
-        </span>
-        <p className="m-0 mt-2 font-sans text-[13.5px] leading-[1.6] text-muted-2">
-          Bientôt disponible — contactez cet artisan directement par email en
-          attendant.
-        </p>
+        </h3>
+        {isOwner ? (
+          <p className="mt-3 font-sans text-[14px] text-muted">
+            Vous ne pouvez pas demander un devis à votre propre fiche.
+          </p>
+        ) : session ? (
+          <div className="mt-3">
+            <DevisRequestForm artisanId={artisan.id} />
+          </div>
+        ) : (
+          <p className="mt-3 font-sans text-[14px] text-muted">
+            <Link
+              href={`/connexion?next=${encodeURIComponent(`/artisans/${artisan.id}`)}`}
+              className="text-blue"
+            >
+              Connectez-vous
+            </Link>{" "}
+            pour envoyer une demande de devis à cet artisan.
+          </p>
+        )}
       </div>
     </div>
   );

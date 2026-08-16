@@ -7,7 +7,19 @@ import { getListingsByUser } from "@/lib/listings";
 import { getFavoriteListingIds, getFavoriteCount } from "@/lib/favorites";
 import { getSavedSearchesByUser, savedSearchUrl } from "@/lib/saved-searches";
 import { deleteSavedSearchAction } from "@/lib/saved-search-actions";
+import { sendMandateAction } from "@/lib/mandate-actions";
+import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
+import { getDevisRequestsForArtisan } from "@/lib/devis";
+import { getAgencies } from "@/lib/agencies";
+import { formatPrix } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
+import DevisList from "@/components/DevisList";
+
+const MANDATE_LABEL: Record<string, string> = {
+  EN_ATTENTE: "en attente",
+  ACCEPTEE: "acceptée",
+  REFUSEE: "refusée",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +28,8 @@ export const metadata: Metadata = {
 };
 
 const STUBS_PARTICULIER = ["Mes alertes"];
-const STUBS_AGENCE = ["Mes collaborateurs", "Statistiques et leads"];
-const STUBS_ARTISAN = ["Demandes de devis"];
+const STUBS_AGENCE = ["Mes collaborateurs"];
+const STUBS_ARTISAN: string[] = [];
 
 const TYPE_LABEL: Record<string, string> = {
   PARTICULIER: "PARTICULIER",
@@ -32,12 +44,34 @@ export default async function ComptePage() {
   const isAgence = session.type === "AGENCE";
   const isArtisan = session.type === "ARTISAN";
   const stubs = isAgence ? STUBS_AGENCE : isArtisan ? STUBS_ARTISAN : STUBS_PARTICULIER;
-  const [mesAnnonces, favoriteIds, favoriteCount, mesRecherches] = await Promise.all([
+  const [
+    mesAnnonces,
+    favoriteIds,
+    favoriteCount,
+    mesRecherches,
+    devisRequests,
+    agencies,
+    pendingMandateCount,
+    clientCount,
+  ] = await Promise.all([
     isArtisan ? Promise.resolve([]) : getListingsByUser(session.userId),
     getFavoriteListingIds(session.userId),
     getFavoriteCount(session.userId),
     getSavedSearchesByUser(session.userId),
+    isArtisan ? getDevisRequestsForArtisan(session.userId) : Promise.resolve([]),
+    getAgencies(),
+    isAgence ? getPendingMandateCount(session.userId) : Promise.resolve(0),
+    isAgence ? getClientCount(session.userId) : Promise.resolve(0),
   ]);
+  const devisItems = devisRequests.map((d) => ({
+    id: d.id,
+    message: d.message,
+    telephone: d.telephone,
+    traite: d.traite,
+    createdLabel: d.createdAt.toLocaleDateString("fr-FR"),
+    authorNom: d.author.nom,
+    authorEmail: d.author.email,
+  }));
 
   return (
     <div className="animate-view-in max-w-[900px] px-9 py-8">
@@ -83,6 +117,27 @@ export default async function ComptePage() {
         </div>
       ) : null}
 
+      {isAgence ? (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-white px-5 py-4">
+          <div className="flex flex-col gap-1">
+            <span className="font-mono text-[10.5px] font-medium text-ink">
+              MES CLIENTS ({clientCount})
+            </span>
+            <span className="font-sans text-[13.5px] text-muted">
+              {pendingMandateCount > 0
+                ? `${pendingMandateCount} demande${pendingMandateCount > 1 ? "s" : ""} de recherche en attente`
+                : "Recherches confiées par des particuliers."}
+            </span>
+          </div>
+          <Link
+            href="/compte/agence/clients"
+            className="font-mono text-[11px] font-medium text-blue"
+          >
+            VOIR MES CLIENTS →
+          </Link>
+        </div>
+      ) : null}
+
       {isArtisan ? (
         <div className="mt-4 flex flex-wrap gap-4">
           <Link
@@ -97,6 +152,22 @@ export default async function ComptePage() {
           >
             MODIFIER MA FICHE →
           </Link>
+        </div>
+      ) : null}
+
+      {isArtisan ? (
+        <div className="mt-8">
+          <span className="font-mono text-[10.5px] font-medium text-ink">
+            DEMANDES DE DEVIS ({devisItems.length})
+          </span>
+          {devisItems.length > 0 ? (
+            <DevisList items={devisItems} />
+          ) : (
+            <p className="mt-3 font-sans text-[14px] text-muted">
+              Les demandes de devis envoyées depuis votre fiche publique
+              apparaîtront ici.
+            </p>
+          )}
         </div>
       ) : null}
 
@@ -153,42 +224,122 @@ export default async function ComptePage() {
         </span>
         {mesRecherches.length > 0 ? (
           <div className="mt-3 flex flex-col gap-3">
-            {mesRecherches.map((s) => (
-              <div
-                key={s.id}
-                className="flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-white px-5 py-4"
-              >
-                <div className="flex flex-col gap-1">
-                  <span className="font-sans text-[14px] text-ink">
-                    {s.transaction === "VENTE" ? "Achat" : "Location"}
-                    {s.q ? ` · ${s.q}` : " · toute la Pévèle"}
-                    {s.budgetMax != null ? ` · ≤ ${s.budgetMax.toLocaleString("fr-FR")} €` : ""}
-                  </span>
-                  <span className="font-mono text-[10.5px] font-medium text-blue">
-                    {s.newMatches > 0
-                      ? `${s.newMatches} nouvelle${s.newMatches > 1 ? "s" : ""} annonce${s.newMatches > 1 ? "s" : ""} depuis l'enregistrement`
-                      : "Aucune nouvelle annonce depuis l'enregistrement"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Link
-                    href={savedSearchUrl(s)}
-                    className="font-mono text-[11px] font-medium text-blue"
-                  >
-                    RELANCER →
-                  </Link>
-                  <form action={deleteSavedSearchAction}>
-                    <input type="hidden" name="id" value={s.id} />
-                    <button
-                      type="submit"
-                      className="font-mono text-[11px] font-medium text-muted hover:text-ink"
+            {mesRecherches.map((s) => {
+              const availableAgencies = agencies.filter(
+                (a) => !s.mandates.some((m) => m.agencyId === a.id)
+              );
+              return (
+                <div
+                  key={s.id}
+                  className="flex flex-col gap-3 border-2 border-ink bg-white px-5 py-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-sans text-[14px] text-ink">
+                        {s.transaction === "VENTE" ? "Achat" : "Location"}
+                        {s.q ? ` · ${s.q}` : " · toute la Pévèle"}
+                        {s.budgetMax != null
+                          ? ` · ≤ ${s.budgetMax.toLocaleString("fr-FR")} €`
+                          : ""}
+                      </span>
+                      <span className="font-mono text-[10.5px] font-medium text-blue">
+                        {s.newMatches > 0
+                          ? `${s.newMatches} nouvelle${s.newMatches > 1 ? "s" : ""} annonce${s.newMatches > 1 ? "s" : ""} depuis l'enregistrement`
+                          : "Aucune nouvelle annonce depuis l'enregistrement"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Link
+                        href={savedSearchUrl(s)}
+                        className="font-mono text-[11px] font-medium text-blue"
+                      >
+                        RELANCER →
+                      </Link>
+                      <form action={deleteSavedSearchAction}>
+                        <input type="hidden" name="id" value={s.id} />
+                        <button
+                          type="submit"
+                          className="font-mono text-[11px] font-medium text-muted hover:text-ink"
+                        >
+                          SUPPRIMER
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+
+                  {s.mandates.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {s.mandates.map((m) => (
+                        <span
+                          key={m.id}
+                          className="border-[1.5px] border-line bg-[#F7F4EA] px-2.5 py-1 font-mono text-[10px] font-medium text-muted"
+                        >
+                          {m.agencyNom} · {MANDATE_LABEL[m.statut]}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {s.mandates.some((m) => m.proposals.length > 0) ? (
+                    <div className="flex flex-col gap-2">
+                      {s.mandates
+                        .filter((m) => m.proposals.length > 0)
+                        .map((m) => (
+                          <div key={m.id} className="flex flex-col gap-1.5">
+                            <span className="font-mono text-[10px] font-medium text-muted-2">
+                              PROPOSITIONS DE {m.agencyNom.toUpperCase()}
+                            </span>
+                            {m.proposals.map((p) => (
+                              <Link
+                                key={p.proposalId}
+                                href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
+                                className="flex flex-wrap items-center justify-between gap-2 border-2 border-ink bg-[#FBF3DC] px-3 py-2 hover:bg-[#FDEBC2]"
+                              >
+                                <span className="font-sans text-[13px] font-medium text-ink">
+                                  {p.titre}
+                                </span>
+                                <span className="font-mono text-[11px] font-semibold text-gold">
+                                  {formatPrix(p.prix, p.transaction)}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        ))}
+                    </div>
+                  ) : null}
+
+                  {availableAgencies.length > 0 ? (
+                    <form
+                      action={sendMandateAction}
+                      className="flex flex-wrap items-center gap-2"
                     >
-                      SUPPRIMER
-                    </button>
-                  </form>
+                      <input type="hidden" name="savedSearchId" value={s.id} />
+                      <select
+                        name="agencyId"
+                        required
+                        defaultValue=""
+                        className="border-2 border-ink bg-white px-3 py-2 font-mono text-[11px] text-ink outline-none focus:border-blue"
+                      >
+                        <option value="" disabled>
+                          Choisir une agence…
+                        </option>
+                        {availableAgencies.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.entreprise ?? a.nom}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="submit"
+                        className="border-2 border-ink px-3.5 py-2 font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2]"
+                      >
+                        CONFIER CETTE RECHERCHE →
+                      </button>
+                    </form>
+                  ) : null}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="mt-3 font-sans text-[14px] text-muted">
@@ -198,21 +349,23 @@ export default async function ComptePage() {
         )}
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {stubs.map((label) => (
-          <div
-            key={label}
-            className="border-2 border-dashed border-muted-2 bg-white p-5"
-          >
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              {label.toUpperCase()}
-            </span>
-            <p className="m-0 mt-2 font-sans text-[13px] text-muted-2">
-              Bientôt disponible.
-            </p>
-          </div>
-        ))}
-      </div>
+      {stubs.length > 0 ? (
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {stubs.map((label) => (
+            <div
+              key={label}
+              className="border-2 border-dashed border-muted-2 bg-white p-5"
+            >
+              <span className="font-mono text-[10.5px] font-medium text-muted">
+                {label.toUpperCase()}
+              </span>
+              <p className="m-0 mt-2 font-sans text-[13px] text-muted-2">
+                Bientôt disponible.
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {!isArtisan ? (
         <div className="mt-7 flex flex-wrap items-center justify-between gap-5 border-2 border-dashed border-blue px-6 py-5">
