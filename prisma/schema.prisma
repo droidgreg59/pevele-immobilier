@@ -8,8 +8,8 @@ datasource db {
 }
 
 model User {
-  id                 String      @id @default(cuid())
-  email              String      @unique
+  id                 String        @id @default(cuid())
+  email              String        @unique
   passwordHash       String
   nom                String
   entreprise         String?
@@ -23,11 +23,12 @@ model User {
   categories         String?
   communesDesservies String?
   type               AccountType
-  createdAt          DateTime    @default(now())
+  createdAt          DateTime      @default(now())
   listings           Listing[]
   favorites          Favorite[]
-  agencyReviews      Review[]    @relation("AgencyReviews")
-  authoredReviews    Review[]    @relation("AuthoredReviews")
+  agencyReviews      Review[]      @relation("AgencyReviews")
+  authoredReviews    Review[]      @relation("AuthoredReviews")
+  savedSearches      SavedSearch[]
 }
 
 enum AccountType {
@@ -87,12 +88,15 @@ model PriceHistory {
 }
 
 model Favorite {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  listingId String
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId     String
+  visite        Boolean  @default(false)
+  surveillePrix Boolean  @default(false)
+  contacte      Boolean  @default(false)
+  createdAt     DateTime @default(now())
 
   @@unique([userId, listingId])
   @@index([listingId])
@@ -113,6 +117,21 @@ model Review {
 
   @@unique([agencyId, authorId])
   @@index([agencyId])
+}
+
+/// Recherche enregistrée par un utilisateur (village + budget + type de
+/// transaction) — consultée depuis /compte, pas de notification email pour
+/// l'instant.
+model SavedSearch {
+  id          String          @id @default(cuid())
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  transaction TransactionType
+  q           String?
+  budgetMax   Int?
+  createdAt   DateTime        @default(now())
+
+  @@index([userId])
 }
 
 enum TransactionType {

@@ -22,3 +22,21 @@ export async function toggleFavoriteAction(listingId: string, next?: string) {
     });
   }
 }
+
+const FAVORITE_TAGS = ["visite", "surveillePrix", "contacte"] as const;
+export type FavoriteTag = (typeof FAVORITE_TAGS)[number];
+
+export async function updateFavoriteTagAction(
+  listingId: string,
+  tag: FavoriteTag,
+  value: boolean
+) {
+  const session = await getSession();
+  if (!session) redirect("/connexion");
+  if (!FAVORITE_TAGS.includes(tag)) return;
+
+  await prisma.favorite.update({
+    where: { userId_listingId: { userId: session.userId, listingId } },
+    data: { [tag]: value },
+  });
+}

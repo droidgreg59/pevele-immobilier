@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ListingWithOwner } from "@/lib/listings";
 import { slugify } from "@/lib/slugify";
+import { createSavedSearchAction } from "@/lib/saved-search-actions";
 import ListingCard from "./ListingCard";
 
 type Filtre = "tout" | "agence" | "particulier";
@@ -25,23 +27,48 @@ export default function ListingsBrowser({
   listings,
   pieceBadge,
   titre,
+  transaction,
   initialQuery,
+  initialBudgetMax,
+  isLoggedIn = false,
   favoriteIds = [],
 }: {
   listings: ListingWithOwner[];
   pieceBadge: string;
   titre: string;
+  transaction: "VENTE" | "LOCATION";
   initialQuery?: string;
+  initialBudgetMax?: number;
+  isLoggedIn?: boolean;
   favoriteIds?: string[];
 }) {
+  const pathname = usePathname();
   const [filtre, setFiltre] = useState<Filtre>("tout");
+  const [budgetMax, setBudgetMax] = useState<number | undefined>(
+    initialBudgetMax
+  );
+  const [saved, setSaved] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const querySlug = initialQuery ? slugify(initialQuery) : "";
   const list = listings.filter(
     (l) =>
       matchesFiltre(l, filtre) &&
-      (querySlug === "" || l.villageSlug.includes(querySlug))
+      (querySlug === "" || l.villageSlug.includes(querySlug)) &&
+      (budgetMax === undefined || l.prix <= budgetMax)
   );
+
+  function handleSaveSearch() {
+    setSaved(true);
+    startTransition(async () => {
+      await createSavedSearchAction({
+        transaction,
+        q: initialQuery,
+        budgetMax,
+        next: pathname,
+      });
+    });
+  }
 
   return (
     <div className="animate-view-in max-w-[1400px] px-9 py-8">
@@ -80,12 +107,45 @@ export default function ListingsBrowser({
             </button>
           );
         })}
+        <label className="flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
+          BUDGET MAX
+          <input
+            type="number"
+            min={0}
+            step={1000}
+            placeholder="€"
+            defaultValue={initialBudgetMax ?? ""}
+            onChange={(e) => {
+              setSaved(false);
+              const v = e.target.value;
+              setBudgetMax(v === "" ? undefined : Number(v));
+            }}
+            className="w-[110px] border-2 border-ink bg-white px-3 py-2.5 font-sans text-[13px] text-ink outline-none focus:border-blue"
+          />
+        </label>
         <span className="ml-auto flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
           TRIER
           <span className="cursor-pointer border-2 border-ink bg-white px-3.5 py-2.5 text-ink">
             PRIX ↓ ▾
           </span>
         </span>
+        {isLoggedIn ? (
+          <button
+            type="button"
+            disabled={isPending || saved}
+            onClick={handleSaveSearch}
+            className="border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2] disabled:opacity-70"
+          >
+            {saved ? "★ RECHERCHE ENREGISTRÉE" : "☆ ENREGISTRER CETTE RECHERCHE"}
+          </button>
+        ) : (
+          <Link
+            href={`/connexion?next=${encodeURIComponent(pathname)}`}
+            className="border-2 border-ink px-3.5 py-2.5 font-mono text-[11px] font-medium text-ink hover:bg-[#FDEBC2]"
+          >
+            ☆ ENREGISTRER CETTE RECHERCHE
+          </Link>
+        )}
       </div>
 
       {list.length > 0 ? (

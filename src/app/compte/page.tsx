@@ -3,8 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { logoutAction } from "@/lib/auth-actions";
-import { getListingsByUser, getListingsFavoritedBy } from "@/lib/listings";
-import { getFavoriteListingIds } from "@/lib/favorites";
+import { getListingsByUser } from "@/lib/listings";
+import { getFavoriteListingIds, getFavoriteCount } from "@/lib/favorites";
+import { getSavedSearchesByUser, savedSearchUrl } from "@/lib/saved-searches";
+import { deleteSavedSearchAction } from "@/lib/saved-search-actions";
 import ListingCard from "@/components/ListingCard";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
   title: "Mon compte — Pévèle Immobilier",
 };
 
-const STUBS_PARTICULIER = ["Mes alertes", "Mes recherches sauvegardées"];
+const STUBS_PARTICULIER = ["Mes alertes"];
 const STUBS_AGENCE = ["Mes collaborateurs", "Statistiques et leads"];
 const STUBS_ARTISAN = ["Demandes de devis"];
 
@@ -30,10 +32,11 @@ export default async function ComptePage() {
   const isAgence = session.type === "AGENCE";
   const isArtisan = session.type === "ARTISAN";
   const stubs = isAgence ? STUBS_AGENCE : isArtisan ? STUBS_ARTISAN : STUBS_PARTICULIER;
-  const [mesAnnonces, mesFavoris, favoriteIds] = await Promise.all([
+  const [mesAnnonces, favoriteIds, favoriteCount, mesRecherches] = await Promise.all([
     isArtisan ? Promise.resolve([]) : getListingsByUser(session.userId),
-    getListingsFavoritedBy(session.userId),
     getFavoriteListingIds(session.userId),
+    getFavoriteCount(session.userId),
+    getSavedSearchesByUser(session.userId),
   ]);
 
   return (
@@ -127,19 +130,70 @@ export default async function ComptePage() {
         </div>
       ) : null}
 
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-white px-5 py-4">
+        <div className="flex flex-col gap-1">
+          <span className="font-mono text-[10.5px] font-medium text-ink">
+            MES FAVORIS ({favoriteCount})
+          </span>
+          <span className="font-sans text-[13.5px] text-muted">
+            Visité, à surveiller, contacté — organisez vos coups de cœur.
+          </span>
+        </div>
+        <Link
+          href="/compte/favoris"
+          className="font-mono text-[11px] font-medium text-blue"
+        >
+          GÉRER MES FAVORIS →
+        </Link>
+      </div>
+
       <div className="mt-8">
         <span className="font-mono text-[10.5px] font-medium text-ink">
-          MES FAVORIS ({mesFavoris.length})
+          MES RECHERCHES SAUVEGARDÉES ({mesRecherches.length})
         </span>
-        {mesFavoris.length > 0 ? (
-          <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {mesFavoris.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} isFavorited />
+        {mesRecherches.length > 0 ? (
+          <div className="mt-3 flex flex-col gap-3">
+            {mesRecherches.map((s) => (
+              <div
+                key={s.id}
+                className="flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-white px-5 py-4"
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="font-sans text-[14px] text-ink">
+                    {s.transaction === "VENTE" ? "Achat" : "Location"}
+                    {s.q ? ` · ${s.q}` : " · toute la Pévèle"}
+                    {s.budgetMax != null ? ` · ≤ ${s.budgetMax.toLocaleString("fr-FR")} €` : ""}
+                  </span>
+                  <span className="font-mono text-[10.5px] font-medium text-blue">
+                    {s.newMatches > 0
+                      ? `${s.newMatches} nouvelle${s.newMatches > 1 ? "s" : ""} annonce${s.newMatches > 1 ? "s" : ""} depuis l'enregistrement`
+                      : "Aucune nouvelle annonce depuis l'enregistrement"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Link
+                    href={savedSearchUrl(s)}
+                    className="font-mono text-[11px] font-medium text-blue"
+                  >
+                    RELANCER →
+                  </Link>
+                  <form action={deleteSavedSearchAction}>
+                    <input type="hidden" name="id" value={s.id} />
+                    <button
+                      type="submit"
+                      className="font-mono text-[11px] font-medium text-muted hover:text-ink"
+                    >
+                      SUPPRIMER
+                    </button>
+                  </form>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
           <p className="mt-3 font-sans text-[14px] text-muted">
-            Cliquez sur ♡ sur une annonce pour l&apos;ajouter à vos favoris.
+            Enregistrez une recherche depuis « Acheter » ou « Louer » pour la
+            retrouver ici.
           </p>
         )}
       </div>

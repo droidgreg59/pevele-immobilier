@@ -17,6 +17,7 @@ export default async function LouerPage({
 }: PageProps<"/louer">) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
+  const budget = typeof params.budget === "string" ? Number(params.budget) : undefined;
   const [listings, session] = await Promise.all([
     getPublicListings("LOCATION"),
     getSession(),
@@ -30,7 +31,10 @@ export default async function LouerPage({
       listings={listings}
       pieceBadge="PIÈCE 02"
       titre="L'ENTRÉE — LOUER"
+      transaction="LOCATION"
       initialQuery={q}
+      initialBudgetMax={budget !== undefined && Number.isFinite(budget) ? budget : undefined}
+      isLoggedIn={session !== null}
       favoriteIds={favoriteIds}
     />
   );

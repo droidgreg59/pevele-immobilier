@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import type { TransactionType } from "@prisma/client";
 import { prisma } from "./prisma";
 
-const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
+export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
   include: {
     owner: { select: { nom: true, entreprise: true, type: true } },
     photos: { orderBy: { order: "asc" } },

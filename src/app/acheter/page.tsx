@@ -17,6 +17,7 @@ export default async function AcheterPage({
 }: PageProps<"/acheter">) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
+  const budget = typeof params.budget === "string" ? Number(params.budget) : undefined;
   const [listings, session] = await Promise.all([
     getPublicListings("VENTE"),
     getSession(),
@@ -30,7 +31,10 @@ export default async function AcheterPage({
       listings={listings}
       pieceBadge="PIÈCE 01"
       titre="LE SÉJOUR — ACHETER"
+      transaction="VENTE"
       initialQuery={q}
+      initialBudgetMax={budget !== undefined && Number.isFinite(budget) ? budget : undefined}
+      isLoggedIn={session !== null}
       favoriteIds={favoriteIds}
     />
   );
