@@ -109,7 +109,7 @@ export default function ListingsBrowser({
   const [equipements, setEquipements] = useState<string[]>(
     initialEquipements ?? []
   );
-  const [tri, setTri] = useState<Tri>("prix_desc");
+  const [tri, setTri] = useState<Tri>("recent");
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 
