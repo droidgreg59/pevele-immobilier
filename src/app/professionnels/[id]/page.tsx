@@ -63,12 +63,26 @@ export default async function AgencyPage({
 
   return (
     <div className="animate-view-in max-w-[1200px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-        AGENCE
-      </span>
-      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
-        {(agency.entreprise ?? agency.nom).toUpperCase()}
-      </h1>
+      <div className="flex items-center gap-5">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
+          {agency.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={agency.logoUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span className="font-display text-3xl text-muted-2">
+              {(agency.entreprise ?? agency.nom).charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div>
+          <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
+            AGENCE
+          </span>
+          <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
+            {(agency.entreprise ?? agency.nom).toUpperCase()}
+          </h1>
+        </div>
+      </div>
       <div className="flex flex-wrap gap-4">
         <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
           ← RETOUR À L&apos;ACCUEIL

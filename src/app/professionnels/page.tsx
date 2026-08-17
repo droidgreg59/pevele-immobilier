@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 const AVANTAGES = [
   "Une page agence publique, avec vos annonces réunies au même endroit que celles des particuliers",
   "Le même processus de vérification que pour les particuliers — pas de passe-droit",
-  "Outils de génération de contacts et statistiques (à venir)",
-  "Visibilité renforcée possible sur certaines communes ou catégories (à venir)",
+  "Un hub clients : recherches confiées par des particuliers, propositions et statistiques d'activité",
+  "Des avis publiés directement par vos clients sur votre page",
 ];
 
 export default async function ProfessionnelsPage() {
@@ -52,9 +52,25 @@ export default async function ProfessionnelsPage() {
                 href={`/professionnels/${a.id}`}
                 className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <span className="font-display text-xl text-blue">
-                  {a.entreprise ?? a.nom}
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-surface">
+                    {a.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={a.logoUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="font-display text-base text-muted-2">
+                        {(a.entreprise ?? a.nom).charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-display text-xl text-blue">
+                    {a.entreprise ?? a.nom}
+                  </span>
+                </div>
                 <span className="font-mono text-[10.5px] font-medium text-muted">
                   {a.listingCount} annonce{a.listingCount > 1 ? "s" : ""} en ligne
                 </span>
@@ -87,8 +103,8 @@ export default async function ProfessionnelsPage() {
           BIENTÔT DISPONIBLE
         </span>
         <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
-          Synchronisation de catalogue, statistiques et leads. Vous êtes une
-          agence en Pévèle ?{" "}
+          Synchronisation automatique de catalogue et visibilité renforcée sur
+          certaines communes. Vous êtes une agence en Pévèle ?{" "}
           <Link href="/inscription" className="text-blue">
             Créez votre compte professionnel →
           </Link>

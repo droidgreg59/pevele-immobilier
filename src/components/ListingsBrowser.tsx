@@ -12,12 +12,37 @@ import VillageMultiSelect from "./VillageMultiSelect";
 
 type Filtre = "tout" | "agence" | "particulier";
 type TypeBienFiltre = "TOUS" | "MAISON" | "APPARTEMENT" | "TERRAIN";
+type Tri = "prix_desc" | "prix_asc" | "recent" | "surface_desc";
 
 const FILTRE_LABEL: Record<Filtre, string> = {
   tout: "TOUT",
   agence: "AGENCES",
   particulier: "ENTRE VOISINS",
 };
+
+const TRI_LABEL: Record<Tri, string> = {
+  prix_desc: "PRIX ↓",
+  prix_asc: "PRIX ↑",
+  recent: "PLUS RÉCENTES",
+  surface_desc: "SURFACE ↓",
+};
+
+function sortListings(list: ListingWithOwner[], tri: Tri): ListingWithOwner[] {
+  const sorted = [...list];
+  switch (tri) {
+    case "prix_asc":
+      return sorted.sort((a, b) => a.prix - b.prix);
+    case "recent":
+      return sorted.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    case "surface_desc":
+      return sorted.sort((a, b) => b.surface - a.surface);
+    case "prix_desc":
+    default:
+      return sorted.sort((a, b) => b.prix - a.prix);
+  }
+}
 
 const TYPE_BIEN_LABEL: Record<TypeBienFiltre, string> = {
   TOUS: "TOUS TYPES",
@@ -84,11 +109,12 @@ export default function ListingsBrowser({
   const [equipements, setEquipements] = useState<string[]>(
     initialEquipements ?? []
   );
+  const [tri, setTri] = useState<Tri>("prix_desc");
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const querySlug = initialQuery ? slugify(initialQuery) : "";
-  const list = listings.filter(
+  const filtered = listings.filter(
     (l) =>
       matchesFiltre(l, filtre) &&
       matchesTypeBien(l, typeBien) &&
@@ -102,6 +128,7 @@ export default function ListingsBrowser({
         l.equipements.toLowerCase().includes(tag.toLowerCase())
       )
   );
+  const list = sortListings(filtered, tri);
 
   function toggleEquipement(tag: string) {
     setSaved(false);
@@ -259,12 +286,20 @@ export default function ListingsBrowser({
             ))}
           </select>
         </label>
-        <span className="ml-auto flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
+        <label className="ml-auto flex items-center gap-2 font-mono text-[10.5px] font-medium text-muted">
           TRIER
-          <span className="cursor-pointer rounded-full border border-line bg-white px-3.5 py-2 text-ink">
-            PRIX ↓ ▾
-          </span>
-        </span>
+          <select
+            value={tri}
+            onChange={(e) => setTri(e.target.value as Tri)}
+            className="cursor-pointer rounded-full border border-line bg-white px-3.5 py-2 font-mono text-[11px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          >
+            {(Object.keys(TRI_LABEL) as Tri[]).map((key) => (
+              <option key={key} value={key}>
+                {TRI_LABEL[key]}
+              </option>
+            ))}
+          </select>
+        </label>
         {isLoggedIn ? (
           <button
             type="button"

@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
-import { updateAgencyProfile } from "./agencies";
+import { updateAgencyProfile, getAgencyById } from "./agencies";
+import { pickLogoFile, validateLogoFile, saveLogoFile, deleteLogoFile } from "./photo-upload";
 
 export type AgencyProfileFormState = { error?: string };
 
@@ -43,6 +44,16 @@ export async function updateAgencyProfileAction(
     return { error: "Le lien Google avis doit être une URL valide (https://...)." };
   }
 
+  const logoFile = pickLogoFile(formData);
+  let logoUrl: string | undefined;
+  if (logoFile) {
+    const logoError = validateLogoFile(logoFile);
+    if (logoError) return { error: logoError };
+    const existing = await getAgencyById(session.userId);
+    logoUrl = await saveLogoFile(session.userId, logoFile);
+    await deleteLogoFile(existing?.logoUrl);
+  }
+
   await updateAgencyProfile(session.userId, {
     entreprise,
     telephone,
@@ -51,6 +62,7 @@ export async function updateAgencyProfileAction(
     ville,
     siteWeb,
     googleAvisUrl,
+    logoUrl,
   });
 
   redirect(`/professionnels/${session.userId}`);

@@ -19,6 +19,7 @@ model User {
   ville              String?
   siteWeb            String?
   googleAvisUrl      String?
+  logoUrl            String?
   description        String?
   categories         String?
   communesDesservies String?

@@ -76,3 +76,40 @@ export async function deletePhotoFilesByUrl(urls: string[]): Promise<void> {
     })
   );
 }
+
+export function pickLogoFile(formData: FormData): File | null {
+  const entry = formData.get("logo");
+  return entry instanceof File && entry.size > 0 ? entry : null;
+}
+
+export function validateLogoFile(file: File): string | null {
+  if (!EXT_BY_MIME[file.type]) {
+    return "Le logo doit être au format JPEG, PNG ou WebP.";
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    return "Le logo doit faire moins de 5 Mo.";
+  }
+  return null;
+}
+
+/** Écrit le logo sur disque sous public/uploads/logos/ et renvoie son URL publique. */
+export async function saveLogoFile(userId: string, file: File): Promise<string> {
+  const dir = join(process.cwd(), "public", "uploads", "logos");
+  await mkdir(dir, { recursive: true });
+
+  const ext = EXT_BY_MIME[file.type];
+  const filename = `${userId}-${randomUUID()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await writeFile(join(dir, filename), buffer);
+  return `/uploads/logos/${filename}`;
+}
+
+/** Supprime un fichier logo par son URL publique (best-effort). */
+export async function deleteLogoFile(url: string | null | undefined): Promise<void> {
+  if (!url || !url.startsWith("/uploads/logos/")) return;
+  try {
+    await unlink(join(process.cwd(), "public", url));
+  } catch {
+    // fichier déjà absent — sans conséquence
+  }
+}

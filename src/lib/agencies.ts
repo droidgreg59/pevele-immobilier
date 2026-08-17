@@ -5,6 +5,7 @@ export type AgencySummary = {
   id: string;
   nom: string;
   entreprise: string | null;
+  logoUrl: string | null;
   createdAt: Date;
   listingCount: number;
 };
@@ -16,6 +17,7 @@ export async function getAgencies(): Promise<AgencySummary[]> {
       id: true,
       nom: true,
       entreprise: true,
+      logoUrl: true,
       createdAt: true,
       _count: { select: { listings: { where: { statut: "PUBLIEE" } } } },
     },
@@ -26,6 +28,7 @@ export async function getAgencies(): Promise<AgencySummary[]> {
     id: a.id,
     nom: a.nom,
     entreprise: a.entreprise,
+    logoUrl: a.logoUrl,
     createdAt: a.createdAt,
     listingCount: a._count.listings,
   }));
@@ -42,6 +45,7 @@ const AGENCY_PROFILE_SELECT = {
   ville: true,
   siteWeb: true,
   googleAvisUrl: true,
+  logoUrl: true,
   createdAt: true,
 } as const;
 
@@ -56,6 +60,7 @@ export type AgencyProfile = {
   ville: string | null;
   siteWeb: string | null;
   googleAvisUrl: string | null;
+  logoUrl: string | null;
   createdAt: Date;
 };
 
@@ -74,6 +79,7 @@ export type AgencyProfileInput = {
   ville?: string;
   siteWeb?: string;
   googleAvisUrl?: string;
+  logoUrl?: string;
 };
 
 export async function updateAgencyProfile(
@@ -90,6 +96,7 @@ export async function updateAgencyProfile(
       ville: input.ville || null,
       siteWeb: input.siteWeb || null,
       googleAvisUrl: input.googleAvisUrl || null,
+      ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
     },
   });
 }
