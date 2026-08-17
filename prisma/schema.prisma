@@ -20,6 +20,10 @@ model User {
   siteWeb            String?
   googleAvisUrl      String?
   logoUrl            String?
+  xmlImportUrl       String?
+  xmlLastSyncAt      DateTime?
+  xmlLastSyncCount   Int?
+  xmlLastSyncError   String?
   description        String?
   categories         String?
   communesDesservies String?
@@ -64,6 +68,8 @@ model Listing {
   badge              String?
   videoUrl           String?
   visiteVirtuelleUrl String?
+  externalRef        String?
+  importSource       String?
   photos             ListingPhoto[]
   priceHistory       PriceHistory[]
   favorites          Favorite[]
@@ -71,6 +77,7 @@ model Listing {
   visitRequests      VisitRequest[]
   createdAt          DateTime          @default(now())
 
+  @@unique([ownerId, externalRef])
   @@index([ownerId])
   @@index([transaction, statut])
   @@index([villageSlug])

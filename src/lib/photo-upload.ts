@@ -57,6 +57,46 @@ export async function savePhotoFiles(
   return urls;
 }
 
+const EXT_BY_CONTENT_TYPE: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+/**
+ * Télécharge des photos depuis des URLs distantes (flux XML d'agence) et les
+ * écrit sous public/uploads/listings/{listingId}/, comme savePhotoFiles.
+ * Les URLs qui échouent ou ne renvoient pas une image reconnue sont ignorées
+ * (best-effort — un flux agence peut contenir des liens morts).
+ */
+export async function saveRemotePhotos(
+  listingId: string,
+  urls: string[]
+): Promise<string[]> {
+  if (urls.length === 0) return [];
+
+  const dir = join(process.cwd(), "public", "uploads", "listings", listingId);
+  await mkdir(dir, { recursive: true });
+
+  const saved: string[] = [];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const contentType = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
+      const ext = EXT_BY_CONTENT_TYPE[contentType] ?? (/\.(jpe?g|png|webp)$/i.exec(url)?.[1]?.toLowerCase().replace("jpeg", "jpg") || "jpg");
+      const filename = `${randomUUID()}.${ext}`;
+      const buffer = Buffer.from(await res.arrayBuffer());
+      await writeFile(join(dir, filename), buffer);
+      saved.push(`/uploads/listings/${listingId}/${filename}`);
+    } catch {
+      // URL injoignable — ignorée, sans bloquer l'import du reste
+    }
+  }
+  return saved;
+}
+
 /** Supprime tous les fichiers d'une annonce (best-effort, ne lève pas si absent). */
 export async function deleteListingUploadDir(listingId: string): Promise<void> {
   const dir = join(process.cwd(), "public", "uploads", "listings", listingId);

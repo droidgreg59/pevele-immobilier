@@ -46,6 +46,10 @@ const AGENCY_PROFILE_SELECT = {
   siteWeb: true,
   googleAvisUrl: true,
   logoUrl: true,
+  xmlImportUrl: true,
+  xmlLastSyncAt: true,
+  xmlLastSyncCount: true,
+  xmlLastSyncError: true,
   createdAt: true,
 } as const;
 
@@ -61,6 +65,10 @@ export type AgencyProfile = {
   siteWeb: string | null;
   googleAvisUrl: string | null;
   logoUrl: string | null;
+  xmlImportUrl: string | null;
+  xmlLastSyncAt: Date | null;
+  xmlLastSyncCount: number | null;
+  xmlLastSyncError: string | null;
   createdAt: Date;
 };
 
@@ -97,6 +105,24 @@ export async function updateAgencyProfile(
       siteWeb: input.siteWeb || null,
       googleAvisUrl: input.googleAvisUrl || null,
       ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
+    },
+  });
+}
+
+export async function updateXmlImportUrl(userId: string, url: string | null): Promise<void> {
+  await prisma.user.update({ where: { id: userId }, data: { xmlImportUrl: url } });
+}
+
+export async function recordXmlSyncResult(
+  userId: string,
+  result: { count: number } | { error: string }
+): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      xmlLastSyncAt: new Date(),
+      xmlLastSyncCount: "count" in result ? result.count : null,
+      xmlLastSyncError: "error" in result ? result.error : null,
     },
   });
 }

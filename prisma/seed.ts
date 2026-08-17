@@ -19,6 +19,7 @@ async function upsertUser(input: {
   description?: string;
   categories?: string;
   communesDesservies?: string;
+  xmlImportUrl?: string;
   type: "PARTICULIER" | "AGENCE" | "ARTISAN";
 }) {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
@@ -47,6 +48,8 @@ async function main() {
     ville: "Cysoing",
     siteWeb: "https://pvl-immobilier.fr",
     googleAvisUrl: "https://g.page/r/exemple-pvl-immobilier/review",
+    xmlImportUrl:
+      "https://clients.immo-facile.com/office20/pvlimmo_111023/cache/export.xml",
     type: "AGENCE",
   });
   const partenaire = await upsertUser({

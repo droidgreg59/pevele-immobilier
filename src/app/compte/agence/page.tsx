@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getAgencyById } from "@/lib/agencies";
 import AgencyProfileForm from "@/components/AgencyProfileForm";
+import XmlImportPanel from "@/components/XmlImportPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,10 @@ export default async function CompteAgencePage() {
 
       <div className="mt-7">
         <AgencyProfileForm agency={agency} />
+      </div>
+
+      <div className="mt-8">
+        <XmlImportPanel agency={agency} />
       </div>
     </div>
   );

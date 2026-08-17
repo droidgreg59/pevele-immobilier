@@ -2,6 +2,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import type { TransactionType, TypeBien } from "@prisma/client";
 import { prisma } from "./prisma";
+import { saveRemotePhotos, deletePhotoFilesByUrl } from "./photo-upload";
 
 export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
   include: {
@@ -154,6 +155,69 @@ export async function deleteListing(id: string, ownerId: string) {
   if (!existing || existing.ownerId !== ownerId) return null;
   await prisma.listing.delete({ where: { id } });
   return existing;
+}
+
+export type ImportedListingInput = ListingFieldsInput & {
+  externalRef: string;
+  importSource: string;
+  photoUrls: string[];
+};
+
+/**
+ * Crée ou met à jour une annonce issue d'un flux XML d'agence, identifiée
+ * par (ownerId, externalRef). Contrairement aux annonces saisies à la main,
+ * publiée directement (statut PUBLIEE) : l'agence est déjà un compte
+ * vérifié et le flux est sa propre source officielle, donc la vérification
+ * manuelle habituelle ne s'applique pas ici.
+ */
+export async function upsertImportedListing(
+  ownerId: string,
+  input: ImportedListingInput
+): Promise<{ id: string; created: boolean }> {
+  const { externalRef, importSource, photoUrls, ...fields } = input;
+  const fieldsData = {
+    ...fields,
+    dpe: fields.dpe || null,
+    videoUrl: fields.videoUrl || null,
+    visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
+  };
+
+  const existing = await prisma.listing.findUnique({
+    where: { ownerId_externalRef: { ownerId, externalRef } },
+  });
+
+  if (!existing) {
+    const created = await prisma.listing.create({
+      data: {
+        ...fieldsData,
+        statut: "PUBLIEE",
+        externalRef,
+        importSource,
+        owner: { connect: { id: ownerId } },
+        priceHistory: { create: [{ prix: fields.prix }] },
+      },
+    });
+    const savedUrls = await saveRemotePhotos(created.id, photoUrls);
+    await addListingPhotos(created.id, savedUrls);
+    return { id: created.id, created: true };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.listing.update({ where: { id: existing.id }, data: fieldsData });
+    if (fields.prix !== existing.prix) {
+      await tx.priceHistory.create({ data: { listingId: existing.id, prix: fields.prix } });
+    }
+  });
+
+  const savedUrls = await saveRemotePhotos(existing.id, photoUrls);
+  if (savedUrls.length > 0) {
+    const oldPhotos = await prisma.listingPhoto.findMany({ where: { listingId: existing.id } });
+    await prisma.listingPhoto.deleteMany({ where: { listingId: existing.id } });
+    await deletePhotoFilesByUrl(oldPhotos.map((p) => p.url));
+    await addListingPhotos(existing.id, savedUrls);
+  }
+
+  return { id: existing.id, created: false };
 }
 
 export async function addListingPhotos(listingId: string, urls: string[]) {
