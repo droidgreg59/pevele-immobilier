@@ -100,11 +100,13 @@ export default async function ProfessionnelsPage() {
 
       <div className="mt-8 rounded-2xl border border-dashed border-line bg-surface p-7">
         <span className="font-mono text-[10.5px] font-medium text-blue">
-          BIENTÔT DISPONIBLE
+          IMPORT XML AC3 / IMMOFACILE
         </span>
         <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
-          Synchronisation automatique de catalogue et visibilité renforcée sur
-          certaines communes. Vous êtes une agence en Pévèle ?{" "}
+          Votre logiciel de transaction exporte déjà vos biens au format AC3 ?
+          Connectez le flux depuis votre compte agence et synchronisez votre
+          catalogue en un clic, sans ressaisie. Vous êtes une agence en
+          Pévèle ?{" "}
           <Link href="/inscription" className="text-blue">
             Créez votre compte professionnel →
           </Link>

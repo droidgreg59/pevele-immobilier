@@ -39,7 +39,7 @@ export default async function PrixPage() {
         Prix moyen au m² constaté dans chaque village, calculé à partir des
         ventes de maisons et d&apos;appartements réellement enregistrées
         (DVF, {anneeMin}–{anneeMax}). L&apos;historique du prix propre à
-        chaque annonce arrivera dans une prochaine étape.
+        chaque annonce est visible directement sur sa fiche.
       </p>
 
       <div className="mt-7 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm">

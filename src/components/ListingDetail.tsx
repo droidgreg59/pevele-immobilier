@@ -145,31 +145,30 @@ export default function ListingDetail({
             </div>
           ) : null}
 
+          <div className="mt-6 grid grid-cols-2 gap-3 rounded-2xl border border-line bg-white p-4 shadow-sm sm:grid-cols-4">
+            {[
+              ["PIÈCES", `${listing.pieces} P.`],
+              ["CHAMBRES", `${listing.chambres} CH.`],
+              ["SURFACE", `${listing.surface} M²`],
+              ["EXTÉRIEUR", listing.exterieur],
+            ].map(([label, value]) => (
+              <span
+                key={label}
+                className="flex flex-col gap-1 rounded-xl bg-surface px-3 py-3 text-center"
+              >
+                <b className="font-display text-xl text-ink">{value}</b>
+                <span className="font-mono text-[9px] font-medium text-muted">
+                  {label}
+                </span>
+              </span>
+            ))}
+          </div>
+
           <section className="mt-8">
             <h2 className="m-0 font-display text-2xl text-ink">LE BIEN</h2>
             <p className="mt-3 max-w-[70ch] font-sans text-[15px] leading-[1.65] text-muted">
               {listing.description}
             </p>
-            <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              {[
-                ["PIÈCES", `${listing.pieces} P.`],
-                ["CHAMBRES", `${listing.chambres} CH.`],
-                ["SURFACE", `${listing.surface} M²`],
-                ["EXTÉRIEUR", listing.exterieur],
-              ].map(([label, value]) => (
-                <span
-                  key={label}
-                  className="flex flex-col gap-1 rounded-xl bg-surface px-3 py-2.5 text-center"
-                >
-                  <b className="font-sans text-sm font-semibold text-ink">
-                    {value}
-                  </b>
-                  <span className="font-mono text-[8px] font-medium text-muted">
-                    {label}
-                  </span>
-                </span>
-              ))}
-            </div>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {listing.dpe ? (
                 <span className="rounded-full border border-line px-3 py-1.5 font-mono text-[11px] font-semibold text-ink">

@@ -117,8 +117,9 @@ export default async function ArtisansPage({
           VOUS ÊTES ARTISAN EN PÉVÈLE ?
         </span>
         <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
-          Créez votre compte pour figurer dans l&apos;annuaire — les demandes
-          de devis en ligne arrivent dans une prochaine étape.{" "}
+          Créez votre compte pour figurer dans l&apos;annuaire et recevoir les
+          demandes de devis envoyées directement depuis votre fiche
+          publique.{" "}
           <Link href="/inscription" className="text-blue">
             Créer un compte artisan →
           </Link>
