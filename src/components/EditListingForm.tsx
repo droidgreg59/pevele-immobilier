@@ -32,6 +32,19 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
 
   return (
     <div className="flex flex-col gap-9">
+      {listing.statut === "REFUSEE" ? (
+        <div className="max-w-[720px] rounded-2xl bg-[#FBEAEA] px-5 py-4">
+          <span className="font-mono text-[10.5px] font-semibold text-ink">
+            ANNONCE REFUSÉE
+          </span>
+          <p className="m-0 mt-1.5 font-sans text-[13.5px] leading-[1.6] text-ink">
+            {listing.statutRaison ||
+              "Aucun motif communiqué."}{" "}
+            Modifiez l&apos;annonce ci-dessous pour la soumettre à nouveau à
+            vérification.
+          </p>
+        </div>
+      ) : null}
       <form action={formAction} className="flex max-w-[720px] flex-col gap-5">
         <input type="hidden" name="listingId" value={listing.id} />
         <input type="hidden" name="transaction" value={transaction} />

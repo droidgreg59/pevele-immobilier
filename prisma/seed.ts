@@ -20,6 +20,7 @@ async function upsertUser(input: {
   categories?: string;
   communesDesservies?: string;
   xmlImportUrl?: string;
+  isAdmin?: boolean;
   type: "PARTICULIER" | "AGENCE" | "ARTISAN";
 }) {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
@@ -67,6 +68,12 @@ async function main() {
   const particulier = await upsertUser({
     email: "demo@example.com",
     nom: "Compte démo particulier",
+    type: "PARTICULIER",
+  });
+  await upsertUser({
+    email: "admin@pevele-immobilier.fr",
+    nom: "Modération Pévèle Immobilier",
+    isAdmin: true,
     type: "PARTICULIER",
   });
   await upsertUser({
@@ -216,7 +223,10 @@ async function main() {
   ];
 
   await prisma.listing.deleteMany({
-    where: { ownerId: { in: [pvl.id, partenaire.id, particulier.id] } },
+    where: {
+      ownerId: { in: [pvl.id, partenaire.id, particulier.id] },
+      importSource: null,
+    },
   });
 
   const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -269,6 +279,7 @@ async function main() {
   console.log(`  - ${pvl.email} (agence)`);
   console.log(`  - ${partenaire.email} (agence)`);
   console.log(`  - ${particulier.email} (particulier)`);
+  console.log(`  - admin@pevele-immobilier.fr (admin)`);
 }
 
 main()

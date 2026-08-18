@@ -137,6 +137,10 @@ export async function updateListing(
         dpe: input.dpe || null,
         videoUrl: input.videoUrl || null,
         visiteVirtuelleUrl: input.visiteVirtuelleUrl || null,
+        // Une annonce refusée repasse en vérification après correction.
+        ...(existing.statut === "REFUSEE"
+          ? { statut: "EN_VERIFICATION" as const, statutRaison: null }
+          : {}),
       },
     });
     if (input.prix !== existing.prix) {

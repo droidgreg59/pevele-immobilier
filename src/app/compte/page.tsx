@@ -13,6 +13,7 @@ import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
 import { getVisitRequestsForOwner } from "@/lib/visits";
 import { getAgencies } from "@/lib/agencies";
+import { isUserAdmin, getPendingListings } from "@/lib/admin";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
@@ -76,6 +77,7 @@ export default async function ComptePage() {
     agencies,
     pendingMandateCount,
     clientCount,
+    isAdmin,
   ] = await Promise.all([
     isArtisan ? Promise.resolve([]) : getListingsByUser(session.userId),
     getFavoriteListingIds(session.userId),
@@ -86,7 +88,9 @@ export default async function ComptePage() {
     getAgencies(),
     isAgence ? getPendingMandateCount(session.userId) : Promise.resolve(0),
     isAgence ? getClientCount(session.userId) : Promise.resolve(0),
+    isUserAdmin(session.userId),
   ]);
+  const pendingModerationCount = isAdmin ? (await getPendingListings()).length : 0;
   const devisItems = devisRequests.map((d) => ({
     id: d.id,
     message: d.message,
@@ -146,6 +150,27 @@ export default async function ComptePage() {
           </button>
         </form>
       </div>
+
+      {isAdmin ? (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
+          <div className="flex flex-col gap-1">
+            <span className="font-mono text-[10.5px] font-medium text-ink">
+              ADMINISTRATION
+            </span>
+            <span className="font-sans text-[13.5px] text-muted">
+              {pendingModerationCount > 0
+                ? `${pendingModerationCount} annonce${pendingModerationCount > 1 ? "s" : ""} en attente de vérification`
+                : "Aucune annonce en attente."}
+            </span>
+          </div>
+          <Link
+            href="/admin/annonces"
+            className="font-mono text-[11px] font-medium text-blue"
+          >
+            MODÉRER LES ANNONCES →
+          </Link>
+        </div>
+      ) : null}
 
       {isAgence ? (
         <div className="mt-4 flex flex-wrap gap-4">
@@ -278,6 +303,12 @@ export default async function ComptePage() {
                     listing={listing}
                     isFavorited={favoriteIds.has(listing.id)}
                   />
+                  {listing.statut === "REFUSEE" ? (
+                    <p className="m-0 font-sans text-[12.5px] text-muted">
+                      Refusée
+                      {listing.statutRaison ? ` — ${listing.statutRaison}` : ""}
+                    </p>
+                  ) : null}
                   <Link
                     href={`/compte/annonces/${listing.id}`}
                     className="self-start font-mono text-[11px] font-medium text-blue"

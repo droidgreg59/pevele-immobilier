@@ -12,6 +12,7 @@ export default function ListingCard({
 }) {
   const particulier = listing.owner.type === "PARTICULIER";
   const enVerification = listing.statut === "EN_VERIFICATION";
+  const refusee = listing.statut === "REFUSEE";
   const detailHref = `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`;
   const cover = listing.photos[0];
   const enBaisse = (listing.priceHistory[0]?.prix ?? listing.prix) > listing.prix;
@@ -58,6 +59,10 @@ export default function ListingCard({
         {enVerification ? (
           <span className="absolute bottom-2.5 right-2.5 rounded-full bg-blue px-2.5 py-1 font-mono text-[9px] font-semibold text-white shadow-sm">
             EN VÉRIFICATION
+          </span>
+        ) : refusee ? (
+          <span className="absolute bottom-2.5 right-2.5 rounded-full bg-ink px-2.5 py-1 font-mono text-[9px] font-semibold text-white shadow-sm">
+            REFUSÉE
           </span>
         ) : listing.badge ? (
           <span className="absolute bottom-2.5 right-2.5 rounded-full bg-yellow px-2.5 py-1 font-mono text-[9px] font-semibold text-ink shadow-sm">

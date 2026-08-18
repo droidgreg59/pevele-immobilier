@@ -24,6 +24,7 @@ model User {
   xmlLastSyncAt      DateTime?
   xmlLastSyncCount   Int?
   xmlLastSyncError   String?
+  isAdmin            Boolean         @default(false)
   description        String?
   categories         String?
   communesDesservies String?
@@ -53,6 +54,7 @@ model Listing {
   ownerId            String
   transaction        TransactionType
   statut             ListingStatus     @default(EN_VERIFICATION)
+  statutRaison       String?
   typeBien           TypeBien          @default(MAISON)
   titre              String
   description        String
@@ -252,6 +254,7 @@ enum TransactionType {
 enum ListingStatus {
   EN_VERIFICATION
   PUBLIEE
+  REFUSEE
 }
 
 enum TypeBien {
