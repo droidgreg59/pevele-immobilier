@@ -17,6 +17,7 @@ export default function FavoriteButton({
 }) {
   const pathname = usePathname();
   const [favorited, setFavorited] = useState(initialFavorited);
+  const [justFavorited, setJustFavorited] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -24,16 +25,23 @@ export default function FavoriteButton({
       type="button"
       disabled={isPending}
       onClick={() => {
-        setFavorited((f) => !f);
+        setFavorited((f) => {
+          const next = !f;
+          if (next) {
+            setJustFavorited(true);
+            window.setTimeout(() => setJustFavorited(false), 260);
+          }
+          return next;
+        });
         startTransition(async () => {
           await toggleFavoriteAction(listingId, pathname);
         });
       }}
       aria-label="Ajouter aux favoris"
-      className={
+      className={`${
         className ??
         "flex items-center justify-center rounded-full border border-line bg-white text-[16px] leading-none text-blue shadow-sm"
-      }
+      } ${justFavorited ? "animate-heart-pop" : ""}`}
       style={{ width: size, height: size }}
     >
       {favorited ? "♥" : "♡"}
