@@ -115,6 +115,58 @@ export async function getSavedSearchesByUser(
   );
 }
 
+export type SavedSearchPillSummary = {
+  id: string;
+  matchCount: number;
+};
+
+/**
+ * Résumé léger de la dernière recherche sauvegardée — pour le pill "Mon
+ * projet" du header (appelé depuis /api/session à chaque navigation, donc
+ * volontairement sans les jointures mandats/propositions de
+ * getSavedSearchesByUser).
+ */
+export async function getMostRecentSavedSearchSummary(
+  userId: string
+): Promise<SavedSearchPillSummary | null> {
+  const row = await prisma.savedSearch.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!row) return null;
+
+  const qSlug = row.q ? slugify(row.q) : "";
+  const villageSlugList = row.villageSlugs ? row.villageSlugs.split(",").filter(Boolean) : [];
+  const equipementList = row.equipements ? row.equipements.split(",").filter(Boolean) : [];
+
+  const matchCount = await prisma.listing.count({
+    where: {
+      transaction: row.transaction,
+      statut: "PUBLIEE",
+      ...(villageSlugList.length > 0
+        ? { villageSlug: { in: villageSlugList } }
+        : qSlug
+          ? { villageSlug: { contains: qSlug } }
+          : {}),
+      ...(row.typeBien ? { typeBien: row.typeBien } : {}),
+      ...(row.chambresMin != null ? { chambres: { gte: row.chambresMin } } : {}),
+      ...(equipementList.length > 0
+        ? { AND: equipementList.map((tag) => ({ equipements: { contains: tag } })) }
+        : {}),
+      ...(row.budgetMin != null || row.budgetMax != null
+        ? {
+            prix: {
+              ...(row.budgetMin != null ? { gte: row.budgetMin } : {}),
+              ...(row.budgetMax != null ? { lte: row.budgetMax } : {}),
+            },
+          }
+        : {}),
+    },
+  });
+
+  return { id: row.id, matchCount };
+}
+
 export function savedSearchUrl(
   search: Pick<
     SavedSearchSummary,
