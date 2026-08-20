@@ -1,17 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import type { ArtisanSummary } from "@/lib/artisans";
 import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2 } from "@/lib/format";
+import { markListingViewed } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
 import PhotoGallery from "./PhotoGallery";
 import VisitRequestForm from "./VisitRequestForm";
+import BottomSheet from "./BottomSheet";
 
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
-  if (owner.type === "PARTICULIER") return "ENTRE VOISINS — PARTICULIER";
-  return `AGENCE — ${owner.entreprise ?? owner.nom}`;
+  if (owner.type === "PARTICULIER") return "Entre voisins — particulier";
+  return `Agence — ${owner.entreprise ?? owner.nom}`;
 }
 
 function marketComparison(
@@ -25,6 +31,29 @@ function marketComparison(
   if (diffPct > 3) return `${diffPct}% au-dessus du prix moyen constaté dans le secteur.`;
   if (diffPct < -3) return `${Math.abs(diffPct)}% en-dessous du prix moyen constaté dans le secteur.`;
   return "Dans la moyenne du secteur.";
+}
+
+function PriceHistoryChart({ history }: { history: PriceHistoryEntry[] }) {
+  const maxPrix = Math.max(...history.map((h) => h.prix));
+  return (
+    <div className="flex h-14 items-end gap-1.5">
+      {history.map((h, i) => {
+        const isLast = i === history.length - 1;
+        const heightPct = Math.max((h.prix / maxPrix) * 100, 12);
+        return (
+          <div
+            key={h.id}
+            title={`${h.prix.toLocaleString("fr-FR")} € — ${new Date(h.changedAt).toLocaleDateString("fr-FR")}`}
+            className="flex-1 rounded-t-md transition-all"
+            style={{
+              height: `${heightPct}%`,
+              background: isLast ? "var(--pvl-green)" : "var(--pvl-line)",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
 export default function ListingDetail({
@@ -46,8 +75,15 @@ export default function ListingDetail({
   isFavorited: boolean;
   artisans: ArtisanSummary[];
 }) {
+  const [visitSheetOpen, setVisitSheetOpen] = useState(false);
+
+  useEffect(() => {
+    markListingViewed(listing.id);
+  }, [listing.id]);
+
   const particulier = listing.owner.type === "PARTICULIER";
   const enVerification = listing.statut === "EN_VERIFICATION";
+  const refusee = listing.statut === "REFUSEE";
   const village = getVillageBySlug(listing.villageSlug);
   const listHref = listing.transaction === "VENTE" ? "/acheter" : "/louer";
   const listingPrixM2 =
@@ -66,18 +102,26 @@ export default function ListingDetail({
     ? Math.round(((prixInitial - listing.prix) / prixInitial) * 100)
     : 0;
 
+  const statusBadge = enVerification
+    ? { label: "En vérification", bg: "var(--pvl-blue)", fg: "#fff" }
+    : refusee
+      ? { label: "Refusée", bg: "var(--pvl-ink)", fg: "#fff" }
+      : listing.badge
+        ? { label: listing.badge, bg: "var(--pvl-yellow)", fg: "var(--pvl-ink)" }
+        : null;
+
   return (
-    <div className="animate-view-in max-w-[1200px] px-9 py-8">
+    <div className="animate-fade-up max-w-[1200px] px-9 pb-28 pt-8 md:pb-8">
       <div className="flex flex-wrap items-center gap-4">
-        <Link href={listHref} className="font-mono text-[11.5px] font-medium text-blue">
-          ← {listing.transaction === "VENTE" ? "TOUTES LES ANNONCES" : "TOUTES LES LOCATIONS"}
+        <Link href={listHref} className="text-[13px] font-semibold text-blue">
+          ← {listing.transaction === "VENTE" ? "Toutes les annonces" : "Toutes les locations"}
         </Link>
-        <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-          ← RETOUR À L&apos;ACCUEIL
+        <Link href="/" className="text-[13px] font-semibold text-blue">
+          ← Retour à l&apos;accueil
         </Link>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-9 lg:grid-cols-[1.4fr_1fr]">
+      <div className="mt-5 grid grid-cols-1 gap-9 lg:grid-cols-[1.4fr_1fr] lg:items-start">
         <div>
           <PhotoGallery
             photos={listing.photos}
@@ -85,7 +129,7 @@ export default function ListingDetail({
             overlay={
               <>
                 <span
-                  className="absolute left-3 top-3 whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-[9.5px] font-semibold shadow-sm"
+                  className="absolute left-3 top-3 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm"
                   style={{
                     background: particulier ? "#FBF3DC" : "#EDF1FB",
                     color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
@@ -98,13 +142,12 @@ export default function ListingDetail({
                   initialFavorited={isFavorited}
                   className="absolute right-3 top-3 flex items-center justify-center rounded-full border border-line bg-white text-lg leading-none text-blue shadow-sm"
                 />
-                {enVerification ? (
-                  <span className="absolute bottom-3 right-3 rounded-full bg-blue px-3 py-1.5 font-mono text-[10px] font-semibold text-white shadow-sm">
-                    EN VÉRIFICATION
-                  </span>
-                ) : listing.badge ? (
-                  <span className="absolute bottom-3 right-3 rounded-full bg-yellow px-3 py-1.5 font-mono text-[10px] font-semibold text-ink shadow-sm">
-                    {listing.badge}
+                {statusBadge ? (
+                  <span
+                    className="absolute bottom-3 left-3 rounded-full px-3 py-1.5 text-[11px] font-semibold shadow-sm"
+                    style={{ background: statusBadge.bg, color: statusBadge.fg }}
+                  >
+                    {statusBadge.label}
                   </span>
                 ) : null}
               </>
@@ -127,9 +170,9 @@ export default function ListingDetail({
                   href={listing.videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-[11px] font-medium text-blue"
+                  className="text-[13px] font-semibold text-blue"
                 >
-                  ▶ VOIR LA VIDÉO →
+                  ▶ Voir la vidéo →
                 </a>
               ) : null}
               {listing.visiteVirtuelleUrl ? (
@@ -137,9 +180,9 @@ export default function ListingDetail({
                   href={listing.visiteVirtuelleUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-fit rounded-full border border-line px-5 py-3 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
+                  className="w-fit rounded-full border border-line px-5 py-3 text-[13px] font-semibold text-ink transition hover:bg-surface"
                 >
-                  VOIR LA VISITE VIRTUELLE 360° →
+                  Voir la visite virtuelle 360° →
                 </a>
               ) : null}
             </div>
@@ -147,38 +190,36 @@ export default function ListingDetail({
 
           <div className="mt-6 grid grid-cols-2 gap-3 rounded-2xl border border-line bg-white p-4 shadow-sm sm:grid-cols-4">
             {[
-              ["PIÈCES", `${listing.pieces} P.`],
-              ["CHAMBRES", `${listing.chambres} CH.`],
-              ["SURFACE", `${listing.surface} M²`],
-              ["EXTÉRIEUR", listing.exterieur],
+              ["Pièces", `${listing.pieces} p.`],
+              ["Chambres", `${listing.chambres} ch.`],
+              ["Surface", `${listing.surface} m²`],
+              ["Extérieur", listing.exterieur],
             ].map(([label, value]) => (
               <span
                 key={label}
                 className="flex flex-col gap-1 rounded-xl bg-surface px-3 py-3 text-center"
               >
                 <b className="font-display text-xl text-ink">{value}</b>
-                <span className="font-mono text-[9px] font-medium text-muted">
-                  {label}
-                </span>
+                <span className="text-[10px] font-semibold text-muted">{label}</span>
               </span>
             ))}
           </div>
 
           <section className="mt-8">
-            <h2 className="m-0 font-display text-2xl text-ink">LE BIEN</h2>
+            <h2 className="m-0 font-display text-2xl text-ink">Le bien</h2>
             <p className="mt-3 max-w-[70ch] font-sans text-[15px] leading-[1.65] text-muted">
               {listing.description}
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {listing.dpe ? (
-                <span className="rounded-full border border-line px-3 py-1.5 font-mono text-[11px] font-semibold text-ink">
+                <span className="rounded-full border border-line px-3 py-1.5 text-[12px] font-semibold text-ink">
                   DPE {listing.dpe}
                 </span>
               ) : null}
               {equipements.map((eq) => (
                 <span
                   key={eq}
-                  className="rounded-full bg-surface px-2.5 py-1 font-mono text-[10.5px] text-muted"
+                  className="rounded-full bg-surface px-2.5 py-1 text-[12px] text-muted"
                 >
                   {eq}
                 </span>
@@ -188,7 +229,7 @@ export default function ListingDetail({
 
           {listing.transaction === "VENTE" ? (
             <section className="mt-8">
-              <h2 className="m-0 font-display text-2xl text-ink">LE MARCHÉ</h2>
+              <h2 className="m-0 font-display text-2xl text-ink">Le marché</h2>
               {dvfStats ? (
                 <div className="mt-3 flex flex-col gap-4">
                   <div className="rounded-2xl bg-surface p-5">
@@ -199,21 +240,21 @@ export default function ListingDetail({
                       {dvfStats.minAnnee}–{dvfStats.maxAnnee}).
                     </p>
                     {comparisonText ? (
-                      <p className="m-0 mt-2 font-mono text-[11.5px] text-blue">
+                      <p className="m-0 mt-2 text-[12.5px] font-semibold text-blue">
                         {comparisonText}
                       </p>
                     ) : null}
                   </div>
                   {dvfRecent.length > 0 ? (
                     <div className="rounded-2xl border border-line bg-white">
-                      <div className="border-b border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
-                        DERNIÈRES VENTES À {village?.nom.toUpperCase()}
+                      <div className="border-b border-line px-4 py-2 text-[11px] font-semibold text-muted">
+                        Dernières ventes à {village?.nom}
                       </div>
                       <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
                         {dvfRecent.map((t) => (
                           <li
                             key={t.id}
-                            className="flex items-center justify-between gap-3 px-4 py-2.5 font-mono text-[11.5px]"
+                            className="flex items-center justify-between gap-3 px-4 py-2.5 text-[12.5px]"
                           >
                             <span className="text-muted">
                               {new Date(t.dateMutation).toLocaleDateString("fr-FR")} ·{" "}
@@ -227,7 +268,7 @@ export default function ListingDetail({
                       </ul>
                     </div>
                   ) : null}
-                  <p className="m-0 font-mono text-[10px] text-muted-2">
+                  <p className="m-0 text-[11px] text-muted-2">
                     Source : DVF (data.gouv.fr / Etalab) —{" "}
                     <Link href="/prix" className="text-blue">
                       voir tous les villages →
@@ -236,8 +277,8 @@ export default function ListingDetail({
                 </div>
               ) : (
                 <div className="mt-3 rounded-2xl border border-dashed border-line bg-surface p-6">
-                  <span className="font-mono text-[10.5px] font-medium text-blue">
-                    DONNÉES INSUFFISANTES
+                  <span className="text-[11px] font-semibold text-blue">
+                    Données insuffisantes
                   </span>
                   <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
                     Pas assez de ventes DVF enregistrées à{" "}
@@ -250,12 +291,10 @@ export default function ListingDetail({
           ) : null}
 
           <section className="mt-8">
-            <h2 className="m-0 font-display text-2xl text-ink">
-              L&apos;ENVIRONNEMENT
-            </h2>
+            <h2 className="m-0 font-display text-2xl text-ink">L&apos;environnement</h2>
             <div className="mt-3 rounded-2xl border border-dashed border-line bg-surface p-6">
-              <span className="font-mono text-[10.5px] font-medium text-muted">
-                BIENTÔT DISPONIBLE
+              <span className="text-[11px] font-semibold text-muted">
+                Bientôt disponible
               </span>
               <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
                 Écoles, commerces, transports et temps de trajet autour du
@@ -265,10 +304,10 @@ export default function ListingDetail({
           </section>
         </div>
 
-        <aside className="flex flex-col gap-5">
+        <aside className="flex flex-col gap-5 lg:sticky lg:top-[88px] lg:self-start">
           <div className="relative rounded-2xl border border-line bg-white p-6 shadow-sm">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              ◉ {listing.commune.toUpperCase()} · {listing.typeBien}
+            <span className="text-[11px] font-semibold text-muted">
+              ◉ {listing.commune} · {listing.typeBien === "MAISON" ? "Maison" : listing.typeBien === "APPARTEMENT" ? "Appartement" : "Terrain"}
             </span>
             <h1 className="m-0 mt-1 font-display text-[28px] leading-tight text-ink">
               {listing.titre}
@@ -277,28 +316,31 @@ export default function ListingDetail({
               {formatPrix(listing.prix, listing.transaction)}
             </div>
             {prixM2 ? (
-              <span className="font-mono text-[11px] font-medium text-muted">
-                soit {prixM2}
-              </span>
+              <span className="text-[12px] font-medium text-muted">soit {prixM2}</span>
             ) : null}
             {enBaisse ? (
-              <span className="ml-2 rounded-full bg-[#EAF3E8] px-2 py-0.5 font-mono text-[10px] font-semibold text-green">
-                ↓ PRIX EN BAISSE (-{baissePct}%)
+              <span className="ml-2 rounded-full bg-[#EAF3E8] px-2 py-0.5 text-[11px] font-semibold text-green">
+                ↓ Prix en baisse (-{baissePct}%)
               </span>
             ) : null}
             <div className="mt-4 rounded-xl bg-surface p-3.5">
-              <span className="font-mono text-[10px] font-medium text-muted-2">
-                HISTORIQUE DU PRIX
+              <span className="text-[10.5px] font-semibold text-muted-2">
+                Historique du prix
               </span>
+              {priceHistory.length > 1 ? (
+                <div className="mt-2">
+                  <PriceHistoryChart history={priceHistory} />
+                </div>
+              ) : null}
               {priceHistory.length > 0 ? (
-                <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+                <ul className="m-0 mt-2.5 flex list-none flex-col gap-1.5 p-0">
                   {priceHistory.map((h, i) => {
                     const prev = priceHistory[i - 1];
                     const delta = prev ? h.prix - prev.prix : null;
                     return (
                       <li
                         key={h.id}
-                        className="flex items-center justify-between gap-2 font-mono text-[11.5px]"
+                        className="flex items-center justify-between gap-2 text-[12px]"
                       >
                         <span className="text-muted-2">
                           {new Date(h.changedAt).toLocaleDateString("fr-FR")}
@@ -328,12 +370,14 @@ export default function ListingDetail({
             {isOwner ? (
               <Link
                 href={`/compte/annonces/${listing.id}`}
-                className="mt-4 inline-block rounded-full border border-line px-5 py-3 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
+                className="mt-4 inline-block rounded-full border border-line px-5 py-3 text-[13px] font-semibold text-ink transition hover:bg-surface"
               >
-                MODIFIER L&apos;ANNONCE
+                Modifier l&apos;annonce
               </Link>
             ) : isLoggedIn ? (
-              <VisitRequestForm listingId={listing.id} />
+              <div className="hidden md:block">
+                <VisitRequestForm listingId={listing.id} />
+              </div>
             ) : (
               <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
                 <Link
@@ -346,58 +390,52 @@ export default function ListingDetail({
               </p>
             )}
             {enVerification ? (
-              <span className="animate-stamp-in pointer-events-none absolute right-5 top-5 flex h-[92px] w-[92px] items-center justify-center rounded-full border-2 border-blue text-center font-mono text-[9.5px] font-medium leading-tight text-blue">
-                EN COURS DE
+              <span className="animate-scale-press pointer-events-none absolute right-5 top-5 flex h-[92px] w-[92px] items-center justify-center rounded-full border-2 border-blue text-center text-[9.5px] font-semibold leading-tight text-blue">
+                En cours de
                 <br />
-                VÉRIFICATION
-                <br />· SOUS 24H ·
+                vérification
+                <br />· sous 24h ·
               </span>
             ) : null}
           </div>
 
           {village ? (
             <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
-              <span className="font-mono text-[10.5px] font-medium text-green">
-                LE VILLAGE
-              </span>
-              <h3 className="m-0 mt-1 font-display text-xl text-ink">
-                {village.nom.toUpperCase()}
-              </h3>
+              <span className="text-[11px] font-semibold text-green">Le village</span>
+              <h3 className="m-0 mt-1 font-display text-xl text-ink">{village.nom}</h3>
               <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
                 {village.description}
               </p>
               <Link
                 href={`/villages/${village.slug}`}
-                className="mt-3 inline-block font-mono text-[11px] font-medium text-blue"
+                className="mt-3 inline-block text-[12.5px] font-semibold text-blue"
               >
-                VOIR LA FICHE DU VILLAGE →
+                Voir la fiche du village →
               </Link>
             </div>
           ) : null}
 
           <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
-            <span className="font-mono text-[10.5px] font-medium text-gold">
-              LES SERVICES
-            </span>
+            <span className="text-[11px] font-semibold text-gold">Les services</span>
             <div className="mt-2 flex flex-col gap-2">
               <Link
                 href="/estimer"
-                className="rounded-full border border-line px-3.5 py-2.5 text-center font-mono text-[11px] font-medium text-ink transition hover:bg-surface"
+                className="rounded-full border border-line px-3.5 py-2.5 text-center text-[12.5px] font-semibold text-ink transition hover:bg-surface"
               >
-                ESTIMER UN BIEN SIMILAIRE
+                Estimer un bien similaire
               </Link>
               <Link
                 href="/vendre"
-                className="rounded-full border border-line px-3.5 py-2.5 text-center font-mono text-[11px] font-medium text-ink transition hover:bg-surface"
+                className="rounded-full border border-line px-3.5 py-2.5 text-center text-[12.5px] font-semibold text-ink transition hover:bg-surface"
               >
-                VOIR LES PACKS VENDEUR
+                Voir les packs vendeur
               </Link>
             </div>
           </div>
 
           <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              ARTISANS AUTOUR DU BIEN
+            <span className="text-[11px] font-semibold text-muted">
+              Artisans autour du bien
             </span>
             {artisans.length > 0 ? (
               <div className="mt-3 flex flex-col gap-2.5">
@@ -411,7 +449,7 @@ export default function ListingDetail({
                       {a.entreprise ?? a.nom}
                     </span>
                     {a.categories.length > 0 ? (
-                      <span className="font-mono text-[10px] text-muted-2">
+                      <span className="text-[11px] text-muted-2">
                         {a.categories.join(" · ")}
                       </span>
                     ) : null}
@@ -424,19 +462,58 @@ export default function ListingDetail({
               </p>
             )}
             <div className="mt-3 flex flex-wrap gap-3">
-              <Link href="/artisans" className="font-mono text-[11px] text-blue">
+              <Link href="/artisans" className="text-[12px] font-semibold text-blue">
                 Tous les artisans →
               </Link>
-              <Link
-                href="/professionnels"
-                className="font-mono text-[11px] text-blue"
-              >
+              <Link href="/professionnels" className="text-[12px] font-semibold text-blue">
                 Professionnels →
               </Link>
             </div>
           </div>
         </aside>
       </div>
+
+      {!isOwner ? (
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-white/97 px-4 py-3 backdrop-blur md:hidden"
+          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+        >
+          <FavoriteButton
+            listingId={listing.id}
+            initialFavorited={isFavorited}
+            size={48}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-white text-[20px] leading-none text-blue"
+          />
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => setVisitSheetOpen(true)}
+              className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+            >
+              Demander une visite
+            </button>
+          ) : (
+            <Link
+              href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+              className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+            >
+              Se connecter pour visiter
+            </Link>
+          )}
+        </div>
+      ) : null}
+
+      <BottomSheet
+        open={visitSheetOpen}
+        onClose={() => setVisitSheetOpen(false)}
+        title="Demander une visite"
+      >
+        <span className="mb-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+          <Heart className="h-3.5 w-3.5" strokeWidth={1.75} />
+          {listing.titre}
+        </span>
+        <VisitRequestForm listingId={listing.id} />
+      </BottomSheet>
     </div>
   );
 }
