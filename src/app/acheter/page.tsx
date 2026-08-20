@@ -17,9 +17,12 @@ export default async function AcheterPage({
 }: PageProps<"/acheter">) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
-  const budget = typeof params.budget === "string" ? Number(params.budget) : undefined;
+  const budget =
+    typeof params.budget === "string" && params.budget !== "" ? Number(params.budget) : undefined;
   const budgetMin =
-    typeof params.budgetMin === "string" ? Number(params.budgetMin) : undefined;
+    typeof params.budgetMin === "string" && params.budgetMin !== ""
+      ? Number(params.budgetMin)
+      : undefined;
   const type = typeof params.type === "string" ? params.type : undefined;
   const initialTypeBien =
     type === "MAISON" || type === "APPARTEMENT" || type === "TERRAIN" ? type : undefined;
@@ -28,13 +31,23 @@ export default async function AcheterPage({
     ? villagesParam.split(",").filter(Boolean)
     : undefined;
   const chambresMinParam =
-    typeof params.chambresMin === "string" ? Number(params.chambresMin) : undefined;
+    typeof params.chambresMin === "string" && params.chambresMin !== ""
+      ? Number(params.chambresMin)
+      : undefined;
   const initialChambresMin =
     chambresMinParam !== undefined && Number.isFinite(chambresMinParam)
       ? chambresMinParam
       : undefined;
   const equipParam = typeof params.equip === "string" ? params.equip : undefined;
   const initialEquipements = equipParam ? equipParam.split(",").filter(Boolean) : undefined;
+  const triParam = typeof params.tri === "string" ? params.tri : undefined;
+  const initialTri =
+    triParam === "prix_desc" || triParam === "prix_asc" || triParam === "recent" || triParam === "surface_desc"
+      ? triParam
+      : undefined;
+  const filtreParam = typeof params.filtre === "string" ? params.filtre : undefined;
+  const initialFiltre =
+    filtreParam === "agence" || filtreParam === "particulier" ? filtreParam : undefined;
   const [listings, session] = await Promise.all([
     getPublicListings("VENTE"),
     getSession(),
@@ -58,6 +71,8 @@ export default async function AcheterPage({
       initialVillageSlugs={initialVillageSlugs}
       initialChambresMin={initialChambresMin}
       initialEquipements={initialEquipements}
+      initialTri={initialTri}
+      initialFiltre={initialFiltre}
       isLoggedIn={session !== null}
       favoriteIds={favoriteIds}
     />

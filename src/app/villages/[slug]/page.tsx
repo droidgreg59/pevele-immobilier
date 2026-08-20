@@ -7,6 +7,7 @@ import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import { getSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
+import ResumeBanner from "@/components/ResumeBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function VillagePage({
     : new Set<string>();
 
   return (
-    <div className="animate-view-in max-w-[1200px] px-9 py-8">
+    <div className="animate-fade-up max-w-[1200px] px-9 py-8">
       <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-green">
         FICHE VILLAGE
       </span>
@@ -70,6 +71,10 @@ export default async function VillagePage({
       <p className="mt-6 max-w-[64ch] font-sans text-[16px] leading-[1.6] text-muted">
         {village.description}
       </p>
+
+      <div className="mt-6">
+        <ResumeBanner />
+      </div>
 
       <div className="mt-9">
         <h3 className="m-0 font-display text-xl text-ink">
