@@ -34,7 +34,7 @@ export default async function EstimerPage({
 
   return (
     <div
-      className="animate-view-in box-border px-9 py-8"
+      className="animate-fade-up box-border px-9 py-8"
       style={{ background: "var(--pvl-blue)", minHeight: "calc(100vh - 74px)" }}
     >
       <div className="max-w-[1320px]">

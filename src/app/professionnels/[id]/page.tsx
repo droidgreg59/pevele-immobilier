@@ -62,7 +62,7 @@ export default async function AgencyPage({
   const adresseLine = [agency.codePostal, agency.ville].filter(Boolean).join(" ");
 
   return (
-    <div className="animate-view-in max-w-[1200px] px-9 py-8">
+    <div className="animate-fade-up max-w-[1200px] px-9 py-8">
       <div className="flex items-center gap-5">
         <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
           {agency.logoUrl ? (

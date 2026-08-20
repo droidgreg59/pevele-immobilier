@@ -30,7 +30,7 @@ export default function VillageMap({ initialSlug }: { initialSlug?: string }) {
   );
 
   return (
-    <div className="animate-view-in max-w-[1400px] px-9 py-8">
+    <div className="animate-fade-up max-w-[1400px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
         <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-green">
           LA CARTE
@@ -76,7 +76,7 @@ export default function VillageMap({ initialSlug }: { initialSlug?: string }) {
                     cy={d.mapY}
                     r={d.r}
                     fill={d.fill}
-                    className="animate-dot-in transition-[r]"
+                    className="animate-fade-up transition-[r]"
                   />
                 </g>
               ))}
@@ -102,7 +102,7 @@ export default function VillageMap({ initialSlug }: { initialSlug?: string }) {
         </div>
 
         <div className="flex flex-col gap-4.5">
-          <div className="animate-draw-in flex flex-col gap-3 rounded-2xl border border-line bg-white p-7 shadow-sm">
+          <div className="animate-fade-up flex flex-col gap-3 rounded-2xl border border-line bg-white p-7 shadow-sm">
             <span className="font-mono text-[10.5px] font-medium text-green">
               FICHE VILLAGE — {sel + 1}/{villages.length}
             </span>

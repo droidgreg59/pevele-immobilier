@@ -32,7 +32,7 @@ const AVANTAGES = [
 
 export default function EspaceProfessionnelPage() {
   return (
-    <div className="animate-view-in mx-auto max-w-[900px] px-6 py-14 sm:py-20">
+    <div className="animate-fade-up mx-auto max-w-[900px] px-6 py-14 sm:py-20">
       <div className="flex flex-col gap-3 text-center">
         <span className="text-[36px] leading-none">🏢</span>
         <h1 className="m-0 font-display text-[32px] font-extrabold leading-tight text-ink sm:text-[40px]">

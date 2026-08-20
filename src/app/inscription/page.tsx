@@ -24,7 +24,7 @@ export default async function InscriptionPage({
     : undefined;
 
   return (
-    <div className="animate-view-in max-w-[640px] px-9 py-8">
+    <div className="animate-fade-up max-w-[640px] px-9 py-8">
       <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
         MON COMPTE
       </span>

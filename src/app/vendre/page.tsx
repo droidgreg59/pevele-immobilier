@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function VendrePage() {
   return (
-    <div className="animate-view-in max-w-[1200px] px-9 py-8">
+    <div className="animate-fade-up max-w-[1200px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
         <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-gold">
           VENDRE
