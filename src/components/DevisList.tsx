@@ -25,21 +25,21 @@ export default function DevisList({ items }: { items: DevisItem[] }) {
           className="flex flex-col gap-2 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-sans text-[14px] font-semibold text-ink">
+            <span className="text-[14px] font-semibold text-ink">
               {d.authorNom}
             </span>
-            <span className="font-mono text-[10.5px] text-muted-2">
+            <span className="text-[12px] text-muted-2">
               {d.createdLabel}
             </span>
           </div>
-          <p className="m-0 font-sans text-[14px] leading-[1.5] text-ink">
+          <p className="m-0 text-[14px] leading-[1.5] text-ink">
             {d.message}
           </p>
-          <div className="flex flex-wrap items-center gap-4 font-mono text-[10.5px] font-medium text-blue">
+          <div className="flex flex-wrap items-center gap-4 text-[12.5px] font-semibold text-blue">
             <a href={`mailto:${d.authorEmail}`}>{d.authorEmail}</a>
             {d.telephone ? <a href={`tel:${d.telephone}`}>{d.telephone}</a> : null}
           </div>
-          <label className="flex w-fit items-center gap-1.5 font-mono text-[10.5px] font-medium text-ink">
+          <label className="flex w-fit items-center gap-1.5 text-[13px] font-medium text-ink">
             <input
               type="checkbox"
               checked={d.traite}

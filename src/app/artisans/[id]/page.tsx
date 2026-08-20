@@ -36,28 +36,22 @@ export default async function ArtisanPage({
 
   return (
     <div className="animate-fade-up max-w-[1000px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-gold">
-        ARTISAN
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-gold">
+        Artisan
       </span>
-      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
-        {(artisan.entreprise ?? artisan.nom).toUpperCase()}
+      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[44px]">
+        {artisan.entreprise ?? artisan.nom}
       </h1>
       <div className="flex flex-wrap gap-4">
-        <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-          ← RETOUR À L&apos;ACCUEIL
+        <Link href="/" className="text-[13px] font-semibold text-blue">
+          ← Retour à l&apos;accueil
         </Link>
-        <Link
-          href="/artisans"
-          className="font-mono text-[11.5px] font-medium text-blue"
-        >
-          ← TOUS LES ARTISANS
+        <Link href="/artisans" className="text-[13px] font-semibold text-blue">
+          ← Tous les artisans
         </Link>
         {isOwner ? (
-          <Link
-            href="/compte/artisan"
-            className="font-mono text-[11.5px] font-medium text-blue"
-          >
-            MODIFIER MA FICHE →
+          <Link href="/compte/artisan" className="text-[13px] font-semibold text-blue">
+            Modifier ma fiche →
           </Link>
         ) : null}
       </div>
@@ -67,7 +61,7 @@ export default async function ArtisanPage({
           {artisan.categories.map((c) => (
             <span
               key={c}
-              className="rounded-full bg-[#FBF3DC] px-3 py-1.5 font-mono text-[10.5px] font-semibold text-gold"
+              className="rounded-full bg-[#FBF3DC] px-3 py-1.5 text-[12px] font-semibold text-gold"
             >
               {c}
             </span>
@@ -76,28 +70,29 @@ export default async function ArtisanPage({
       ) : null}
 
       {artisan.description ? (
-        <p className="mt-6 max-w-[70ch] font-sans text-[15px] leading-[1.6] text-muted">
+        <p className="mt-6 max-w-[70ch] text-[15px] leading-[1.6] text-muted">
           {artisan.description}
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm" style={{ maxWidth: 420 }}>
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          COORDONNÉES
-        </span>
+      <div
+        className="mt-6 flex flex-col gap-2 rounded-2xl border border-line bg-white p-5 shadow-sm"
+        style={{ maxWidth: 420 }}
+      >
+        <span className="text-[11px] font-semibold text-muted">Coordonnées</span>
         {artisan.adresse || adresseLine ? (
-          <p className="m-0 font-sans text-[14px] text-ink">
+          <p className="m-0 text-[14px] text-ink">
             {artisan.adresse}
             {artisan.adresse && adresseLine ? <br /> : null}
             {adresseLine}
           </p>
         ) : null}
         {artisan.telephone ? (
-          <a href={`tel:${artisan.telephone}`} className="font-sans text-[14px] text-blue">
+          <a href={`tel:${artisan.telephone}`} className="text-[14px] text-blue">
             {artisan.telephone}
           </a>
         ) : null}
-        <a href={`mailto:${artisan.email}`} className="font-sans text-[14px] text-blue">
+        <a href={`mailto:${artisan.email}`} className="text-[14px] text-blue">
           {artisan.email}
         </a>
         {artisan.siteWeb ? (
@@ -105,7 +100,7 @@ export default async function ArtisanPage({
             href={artisan.siteWeb}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-sans text-[14px] text-blue"
+            className="text-[14px] text-blue"
           >
             {artisan.siteWeb.replace(/^https?:\/\//, "")}
           </a>
@@ -114,15 +109,13 @@ export default async function ArtisanPage({
 
       {communes.length > 0 ? (
         <div className="mt-6">
-          <h3 className="m-0 font-display text-xl text-ink">
-            COMMUNES DESSERVIES
-          </h3>
+          <h2 className="m-0 font-display text-xl text-ink">Communes desservies</h2>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {communes.map((v) => (
               <Link
                 key={v.slug}
                 href={`/villages/${v.slug}`}
-                className="rounded-full border border-line bg-white px-3 py-2 font-mono text-[10.5px] font-medium text-ink transition hover:bg-surface"
+                className="rounded-full border border-line bg-white px-3 py-2 text-[12px] font-semibold text-ink transition hover:bg-surface"
               >
                 {v.nom}
               </Link>
@@ -132,11 +125,9 @@ export default async function ArtisanPage({
       ) : null}
 
       <div className="mt-8">
-        <h3 className="m-0 font-display text-xl text-ink">
-          DEMANDE DE DEVIS
-        </h3>
+        <h2 className="m-0 font-display text-xl text-ink">Demande de devis</h2>
         {isOwner ? (
-          <p className="mt-3 font-sans text-[14px] text-muted">
+          <p className="mt-3 text-[14px] text-muted">
             Vous ne pouvez pas demander un devis à votre propre fiche.
           </p>
         ) : session ? (
@@ -144,7 +135,7 @@ export default async function ArtisanPage({
             <DevisRequestForm artisanId={artisan.id} />
           </div>
         ) : (
-          <p className="mt-3 font-sans text-[14px] text-muted">
+          <p className="mt-3 text-[14px] text-muted">
             <Link
               href={`/connexion?next=${encodeURIComponent(`/artisans/${artisan.id}`)}`}
               className="text-blue"

@@ -44,31 +44,26 @@ export default async function VillagePage({
 
   return (
     <div className="animate-fade-up max-w-[1200px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-green">
-        FICHE VILLAGE
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-green">
+        Fiche village
       </span>
-      <h2 className="mt-3 font-display text-[36px] text-ink sm:text-[52px]">
-        {village.nom.toUpperCase()}
-      </h2>
+      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">{village.nom}</h1>
       <div className="flex flex-wrap gap-4">
-        <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-          ← RETOUR À L&apos;ACCUEIL
+        <Link href="/" className="text-[13px] font-semibold text-blue">
+          ← Retour à l&apos;accueil
         </Link>
-        <Link
-          href="/villages"
-          className="font-mono text-[11.5px] font-medium text-blue"
-        >
-          ← TOUS LES VILLAGES
+        <Link href="/villages" className="text-[13px] font-semibold text-blue">
+          ← Tous les villages
         </Link>
         <Link
           href={`/carte?village=${village.slug}`}
-          className="font-mono text-[11.5px] font-medium text-blue"
+          className="text-[13px] font-semibold text-blue"
         >
-          VOIR SUR LA CARTE →
+          Voir sur la carte →
         </Link>
       </div>
 
-      <p className="mt-6 max-w-[64ch] font-sans text-[16px] leading-[1.6] text-muted">
+      <p className="mt-6 max-w-[64ch] text-[16px] leading-[1.6] text-muted">
         {village.description}
       </p>
 
@@ -77,9 +72,7 @@ export default async function VillagePage({
       </div>
 
       <div className="mt-9">
-        <h3 className="m-0 font-display text-xl text-ink">
-          BIENS À VENDRE À {village.nom.toUpperCase()}
-        </h3>
+        <h2 className="m-0 font-display text-xl text-ink">Biens à vendre à {village.nom}</h2>
         {villageListings.length > 0 ? (
           <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {villageListings.map((listing) => (
@@ -91,7 +84,7 @@ export default async function VillagePage({
             ))}
           </div>
         ) : (
-          <p className="mt-3 font-sans text-[14px] text-muted">
+          <p className="mt-3 text-[14px] text-muted">
             Aucune annonce en ligne à {village.nom} pour le moment.{" "}
             <Link href="/acheter" className="text-blue">
               Voir toutes les annonces →
@@ -101,29 +94,29 @@ export default async function VillagePage({
       </div>
 
       <div className="mt-9">
-        <h3 className="m-0 font-display text-xl text-ink">PRIX IMMOBILIER</h3>
+        <h2 className="m-0 font-display text-xl text-ink">Prix immobilier</h2>
         {dvfStats ? (
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.4fr]">
             <div className="rounded-2xl bg-surface p-5">
               <span className="font-display text-[30px] text-ink">
                 {dvfStats.avgPrixM2.toLocaleString("fr-FR")} €
               </span>
-              <span className="ml-1.5 font-mono text-[11px] text-muted">/ M² EN MOYENNE</span>
-              <p className="m-0 mt-2 font-mono text-[10.5px] text-muted">
+              <span className="ml-1.5 text-[12px] font-medium text-muted">/ m² en moyenne</span>
+              <p className="m-0 mt-2 text-[12px] text-muted">
                 {dvfStats.count} vente{dvfStats.count > 1 ? "s" : ""} constatée
                 {dvfStats.count > 1 ? "s" : ""} ({dvfStats.minAnnee}–{dvfStats.maxAnnee})
               </p>
             </div>
             {dvfRecent.length > 0 ? (
               <div className="rounded-2xl border border-line bg-white">
-                <div className="border-b border-line px-4 py-2 font-mono text-[10px] font-medium text-muted">
-                  DERNIÈRES VENTES
+                <div className="border-b border-line px-4 py-2 text-[11px] font-semibold text-muted">
+                  Dernières ventes
                 </div>
                 <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
                   {dvfRecent.map((t) => (
                     <li
                       key={t.id}
-                      className="flex items-center justify-between gap-3 px-4 py-2 font-mono text-[11px]"
+                      className="flex items-center justify-between gap-3 px-4 py-2 text-[12.5px]"
                     >
                       <span className="text-muted">
                         {new Date(t.dateMutation).toLocaleDateString("fr-FR")} ·{" "}
@@ -139,11 +132,11 @@ export default async function VillagePage({
             ) : null}
           </div>
         ) : (
-          <p className="mt-3 font-sans text-[14px] text-muted">
+          <p className="mt-3 text-[14px] text-muted">
             Données insuffisantes pour {village.nom} pour le moment.
           </p>
         )}
-        <p className="mt-3 font-mono text-[10px] text-muted-2">
+        <p className="mt-3 text-[11px] text-muted-2">
           Source : DVF (data.gouv.fr / Etalab) —{" "}
           <Link href="/prix" className="text-blue">
             voir tous les villages →
@@ -157,12 +150,8 @@ export default async function VillagePage({
             key={section}
             className="rounded-2xl border border-dashed border-line bg-surface p-5"
           >
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              {section.toUpperCase()}
-            </span>
-            <p className="m-0 mt-2 font-sans text-[13px] text-muted-2">
-              Bientôt disponible.
-            </p>
+            <span className="text-[11px] font-semibold text-muted">{section}</span>
+            <p className="m-0 mt-2 text-[13px] text-muted-2">Bientôt disponible.</p>
           </div>
         ))}
       </div>

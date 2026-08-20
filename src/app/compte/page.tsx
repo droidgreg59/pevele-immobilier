@@ -55,9 +55,9 @@ const STUBS_AGENCE = ["Mes collaborateurs"];
 const STUBS_ARTISAN: string[] = [];
 
 const TYPE_LABEL: Record<string, string> = {
-  PARTICULIER: "PARTICULIER",
-  AGENCE: "AGENCE",
-  ARTISAN: "ARTISAN",
+  PARTICULIER: "Particulier",
+  AGENCE: "Agence",
+  ARTISAN: "Artisan",
 };
 
 export default async function ComptePage() {
@@ -126,27 +126,25 @@ export default async function ComptePage() {
 
   return (
     <div className="animate-fade-up max-w-[900px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-        MON COMPTE
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
+        Mon compte
       </span>
-      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[44px]">
-        {session.nom.toUpperCase()}
-      </h1>
-      <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR À L&apos;ACCUEIL
+      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[44px]">{session.nom}</h1>
+      <Link href="/" className="text-[13px] font-semibold text-blue">
+        ← Retour à l&apos;accueil
       </Link>
 
       <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-line bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-1.5 font-mono text-[12px] text-ink">
-          <span>EMAIL — {session.email}</span>
-          <span>TYPE DE COMPTE — {TYPE_LABEL[session.type]}</span>
+        <div className="flex flex-col gap-1.5 text-[13px] text-ink">
+          <span>Email — {session.email}</span>
+          <span>Type de compte — {TYPE_LABEL[session.type]}</span>
         </div>
         <form action={logoutAction}>
           <button
             type="submit"
-            className="rounded-full border border-line px-4 py-2.5 font-mono text-[11px] font-semibold text-ink transition hover:bg-surface"
+            className="rounded-full border border-line px-4 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-surface"
           >
-            SE DÉCONNECTER
+            Se déconnecter
           </button>
         </form>
       </div>
@@ -154,43 +152,29 @@ export default async function ComptePage() {
       {isAdmin ? (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
           <div className="flex flex-col gap-1">
-            <span className="font-mono text-[10.5px] font-medium text-ink">
-              ADMINISTRATION
-            </span>
-            <span className="font-sans text-[13.5px] text-muted">
+            <span className="text-[11px] font-semibold text-ink">Administration</span>
+            <span className="text-[13.5px] text-muted">
               {pendingModerationCount > 0
                 ? `${pendingModerationCount} annonce${pendingModerationCount > 1 ? "s" : ""} en attente de vérification`
                 : "Aucune annonce en attente."}
             </span>
           </div>
-          <Link
-            href="/admin/annonces"
-            className="font-mono text-[11px] font-medium text-blue"
-          >
-            MODÉRER LES ANNONCES →
+          <Link href="/admin/annonces" className="text-[13px] font-semibold text-blue">
+            Modérer les annonces →
           </Link>
         </div>
       ) : null}
 
       {isAgence ? (
         <div className="mt-4 flex flex-wrap gap-4">
-          <Link
-            href={`/professionnels/${session.userId}`}
-            className="font-mono text-[11.5px] font-medium text-blue"
-          >
-            VOIR MA PAGE AGENCE PUBLIQUE →
+          <Link href={`/professionnels/${session.userId}`} className="text-[13px] font-semibold text-blue">
+            Voir ma page agence publique →
           </Link>
-          <Link
-            href="/compte/agence"
-            className="font-mono text-[11.5px] font-medium text-blue"
-          >
-            MODIFIER MES COORDONNÉES →
+          <Link href="/compte/agence" className="text-[13px] font-semibold text-blue">
+            Modifier mes coordonnées →
           </Link>
-          <Link
-            href="/compte/agence/statistiques"
-            className="font-mono text-[11.5px] font-medium text-blue"
-          >
-            VOIR MES STATISTIQUES →
+          <Link href="/compte/agence/statistiques" className="text-[13px] font-semibold text-blue">
+            Voir mes statistiques →
           </Link>
         </div>
       ) : null}
@@ -198,36 +182,26 @@ export default async function ComptePage() {
       {isAgence ? (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
           <div className="flex flex-col gap-1">
-            <span className="font-mono text-[10.5px] font-medium text-ink">
-              MES CLIENTS ({clientCount})
-            </span>
-            <span className="font-sans text-[13.5px] text-muted">
+            <span className="text-[11px] font-semibold text-ink">Mes clients ({clientCount})</span>
+            <span className="text-[13.5px] text-muted">
               {pendingMandateCount > 0
                 ? `${pendingMandateCount} demande${pendingMandateCount > 1 ? "s" : ""} de recherche en attente`
                 : "Recherches confiées par des particuliers."}
             </span>
           </div>
-          <Link
-            href="/compte/agence/clients"
-            className="font-mono text-[11px] font-medium text-blue"
-          >
-            VOIR MES CLIENTS →
+          <Link href="/compte/agence/clients" className="text-[13px] font-semibold text-blue">
+            Voir mes clients →
           </Link>
         </div>
       ) : null}
 
       {!isAgence && !isArtisan ? (
         <div className="mt-6 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
-          <span className="font-mono text-[10.5px] font-medium text-ink">
-            MES ALERTES
-          </span>
+          <span className="text-[11px] font-semibold text-ink">Mes alertes</span>
           {totalNewMatches > 0 || pendingProposals > 0 ? (
             <div className="mt-2 flex flex-col gap-1.5">
               {totalNewMatches > 0 ? (
-                <Link
-                  href="#recherches"
-                  className="font-sans text-[13.5px] text-ink hover:text-blue"
-                >
+                <Link href="#recherches" className="text-[13.5px] text-ink hover:text-blue">
                   🔔{" "}
                   <b>
                     {totalNewMatches} nouvelle{totalNewMatches > 1 ? "s" : ""} annonce
@@ -237,10 +211,7 @@ export default async function ComptePage() {
                 </Link>
               ) : null}
               {pendingProposals > 0 ? (
-                <Link
-                  href="#recherches"
-                  className="font-sans text-[13.5px] text-ink hover:text-blue"
-                >
+                <Link href="#recherches" className="text-[13.5px] text-ink hover:text-blue">
                   📨{" "}
                   <b>
                     {pendingProposals} proposition{pendingProposals > 1 ? "s" : ""}
@@ -250,41 +221,32 @@ export default async function ComptePage() {
               ) : null}
             </div>
           ) : (
-            <p className="m-0 mt-2 font-sans text-[13.5px] text-muted">
-              Rien de nouveau pour le moment.
-            </p>
+            <p className="m-0 mt-2 text-[13.5px] text-muted">Rien de nouveau pour le moment.</p>
           )}
         </div>
       ) : null}
 
       {isArtisan ? (
         <div className="mt-4 flex flex-wrap gap-4">
-          <Link
-            href={`/artisans/${session.userId}`}
-            className="font-mono text-[11.5px] font-medium text-blue"
-          >
-            VOIR MA FICHE PUBLIQUE →
+          <Link href={`/artisans/${session.userId}`} className="text-[13px] font-semibold text-blue">
+            Voir ma fiche publique →
           </Link>
-          <Link
-            href="/compte/artisan"
-            className="font-mono text-[11.5px] font-medium text-blue"
-          >
-            MODIFIER MA FICHE →
+          <Link href="/compte/artisan" className="text-[13px] font-semibold text-blue">
+            Modifier ma fiche →
           </Link>
         </div>
       ) : null}
 
       {isArtisan ? (
         <div className="mt-8">
-          <span className="font-mono text-[10.5px] font-medium text-ink">
-            DEMANDES DE DEVIS ({devisItems.length})
+          <span className="text-[11px] font-semibold text-ink">
+            Demandes de devis ({devisItems.length})
           </span>
           {devisItems.length > 0 ? (
             <DevisList items={devisItems} />
           ) : (
-            <p className="mt-3 font-sans text-[14px] text-muted">
-              Les demandes de devis envoyées depuis votre fiche publique
-              apparaîtront ici.
+            <p className="mt-3 text-[14px] text-muted">
+              Les demandes de devis envoyées depuis votre fiche publique apparaîtront ici.
             </p>
           )}
         </div>
@@ -292,51 +254,45 @@ export default async function ComptePage() {
 
       {!isArtisan ? (
         <div className="mt-8">
-          <span className="font-mono text-[10.5px] font-medium text-ink">
-            MES ANNONCES ({mesAnnonces.length})
+          <span className="text-[11px] font-semibold text-ink">
+            Mes annonces ({mesAnnonces.length})
           </span>
           {mesAnnonces.length > 0 ? (
             <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {mesAnnonces.map((listing) => (
                 <div key={listing.id} className="flex flex-col gap-2">
-                  <ListingCard
-                    listing={listing}
-                    isFavorited={favoriteIds.has(listing.id)}
-                  />
+                  <ListingCard listing={listing} isFavorited={favoriteIds.has(listing.id)} />
                   {listing.statut === "REFUSEE" ? (
-                    <p className="m-0 font-sans text-[12.5px] text-muted">
+                    <p className="m-0 text-[12.5px] text-muted">
                       Refusée
                       {listing.statutRaison ? ` — ${listing.statutRaison}` : ""}
                     </p>
                   ) : null}
                   <Link
                     href={`/compte/annonces/${listing.id}`}
-                    className="self-start font-mono text-[11px] font-medium text-blue"
+                    className="self-start text-[12.5px] font-semibold text-blue"
                   >
-                    MODIFIER CETTE ANNONCE →
+                    Modifier cette annonce →
                   </Link>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="mt-3 font-sans text-[14px] text-muted">
-              Vous n&apos;avez pas encore déposé d&apos;annonce.
-            </p>
+            <p className="mt-3 text-[14px] text-muted">Vous n&apos;avez pas encore déposé d&apos;annonce.</p>
           )}
         </div>
       ) : null}
 
       {!isArtisan ? (
         <div className="mt-8">
-          <span className="font-mono text-[10.5px] font-medium text-ink">
-            DEMANDES DE VISITE ({visitItems.length})
+          <span className="text-[11px] font-semibold text-ink">
+            Demandes de visite ({visitItems.length})
           </span>
           {visitItems.length > 0 ? (
             <VisitRequestList items={visitItems} />
           ) : (
-            <p className="mt-3 font-sans text-[14px] text-muted">
-              Les demandes de visite envoyées sur vos annonces apparaîtront
-              ici.
+            <p className="mt-3 text-[14px] text-muted">
+              Les demandes de visite envoyées sur vos annonces apparaîtront ici.
             </p>
           )}
         </div>
@@ -344,31 +300,23 @@ export default async function ComptePage() {
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
         <div className="flex flex-col gap-1">
-          <span className="font-mono text-[10.5px] font-medium text-ink">
-            MES FAVORIS ({favoriteCount})
-          </span>
-          <span className="font-sans text-[13.5px] text-muted">
+          <span className="text-[11px] font-semibold text-ink">Mes favoris ({favoriteCount})</span>
+          <span className="text-[13.5px] text-muted">
             Visité, à surveiller, contacté — organisez vos coups de cœur.
           </span>
         </div>
-        <Link
-          href="/compte/favoris"
-          className="font-mono text-[11px] font-medium text-blue"
-        >
-          GÉRER MES FAVORIS →
+        <Link href="/compte/favoris" className="text-[13px] font-semibold text-blue">
+          Gérer mes favoris →
         </Link>
       </div>
 
       <div id="recherches" className="mt-8 scroll-mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="font-mono text-[10.5px] font-medium text-ink">
-            MES RECHERCHES SAUVEGARDÉES ({mesRecherches.length})
+          <span className="text-[11px] font-semibold text-ink">
+            Mes recherches sauvegardées ({mesRecherches.length})
           </span>
-          <Link
-            href="/mon-projet"
-            className="font-mono text-[11px] font-medium text-blue"
-          >
-            + DÉFINIR UN NOUVEAU PROJET →
+          <Link href="/mon-projet" className="text-[13px] font-semibold text-blue">
+            + Définir un nouveau projet →
           </Link>
         </div>
         {mesRecherches.length > 0 ? (
@@ -384,7 +332,7 @@ export default async function ComptePage() {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-col gap-1">
-                      <span className="font-sans text-[14px] text-ink">
+                      <span className="text-[14px] text-ink">
                         {s.transaction === "VENTE" ? "Achat" : "Location"}
                         {s.typeBien ? ` · ${TYPE_BIEN_LABEL[s.typeBien]}` : ""}
                         {` · ${locationLabel(s.villageSlugs, s.q)}`}
@@ -400,26 +348,23 @@ export default async function ComptePage() {
                               ? ` · ≥ ${s.budgetMin.toLocaleString("fr-FR")} €`
                               : ""}
                       </span>
-                      <span className="font-mono text-[10.5px] font-medium text-blue">
+                      <span className="text-[12px] font-semibold text-blue">
                         {s.newMatches > 0
                           ? `${s.newMatches} nouvelle${s.newMatches > 1 ? "s" : ""} annonce${s.newMatches > 1 ? "s" : ""} depuis l'enregistrement`
                           : "Aucune nouvelle annonce depuis l'enregistrement"}
                       </span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <Link
-                        href={savedSearchUrl(s)}
-                        className="font-mono text-[11px] font-medium text-blue"
-                      >
-                        RELANCER →
+                      <Link href={savedSearchUrl(s)} className="text-[12.5px] font-semibold text-blue">
+                        Relancer →
                       </Link>
                       <form action={deleteSavedSearchAction}>
                         <input type="hidden" name="id" value={s.id} />
                         <button
                           type="submit"
-                          className="font-mono text-[11px] font-medium text-muted hover:text-ink"
+                          className="text-[12.5px] font-semibold text-muted hover:text-ink"
                         >
-                          SUPPRIMER
+                          Supprimer
                         </button>
                       </form>
                     </div>
@@ -430,7 +375,7 @@ export default async function ComptePage() {
                       {s.mandates.map((m) => (
                         <span
                           key={m.id}
-                          className="rounded-full bg-surface px-2.5 py-1 font-mono text-[10px] font-medium text-muted"
+                          className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-muted"
                         >
                           {m.agencyNom} · {MANDATE_LABEL[m.statut]}
                         </span>
@@ -444,8 +389,8 @@ export default async function ComptePage() {
                         .filter((m) => m.proposals.length > 0)
                         .map((m) => (
                           <div key={m.id} className="flex flex-col gap-1.5">
-                            <span className="font-mono text-[10px] font-medium text-muted-2">
-                              PROPOSITIONS DE {m.agencyNom.toUpperCase()}
+                            <span className="text-[11px] font-semibold text-muted-2">
+                              Propositions de {m.agencyNom}
                             </span>
                             {m.proposals.map((p) => (
                               <div
@@ -456,44 +401,37 @@ export default async function ComptePage() {
                                   href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
                                   className="flex flex-wrap items-center justify-between gap-2 hover:underline"
                                 >
-                                  <span className="font-sans text-[13px] font-medium text-ink">
-                                    {p.titre}
-                                  </span>
-                                  <span className="font-mono text-[11px] font-semibold text-gold">
+                                  <span className="text-[13px] font-medium text-ink">{p.titre}</span>
+                                  <span className="text-[12px] font-semibold text-gold">
                                     {formatPrix(p.prix, p.transaction)}
                                   </span>
                                 </Link>
                                 {p.statut === "PROPOSEE" ? (
-                                  <form
-                                    action={respondToProposalAction}
-                                    className="flex items-center gap-4"
-                                  >
+                                  <form action={respondToProposalAction} className="flex items-center gap-4">
                                     <input type="hidden" name="proposalId" value={p.proposalId} />
                                     <button
                                       type="submit"
                                       name="decision"
                                       value="interesse"
-                                      className="font-mono text-[10.5px] font-semibold text-green"
+                                      className="text-[12px] font-semibold text-green"
                                     >
-                                      ♥ INTÉRESSÉ(E)
+                                      ♥ Intéressé(e)
                                     </button>
                                     <button
                                       type="submit"
                                       name="decision"
                                       value="pas_interesse"
-                                      className="font-mono text-[10.5px] font-medium text-muted hover:text-ink"
+                                      className="text-[12px] font-medium text-muted hover:text-ink"
                                     >
-                                      PAS POUR MOI
+                                      Pas pour moi
                                     </button>
                                   </form>
                                 ) : (
                                   <span
-                                    className="font-mono text-[10.5px] font-semibold"
+                                    className="text-[12px] font-semibold"
                                     style={{
                                       color:
-                                        p.statut === "INTERESSE"
-                                          ? "var(--pvl-green)"
-                                          : "var(--pvl-muted)",
+                                        p.statut === "INTERESSE" ? "var(--pvl-green)" : "var(--pvl-muted)",
                                     }}
                                   >
                                     {p.statut === "INTERESSE"
@@ -509,16 +447,13 @@ export default async function ComptePage() {
                   ) : null}
 
                   {availableAgencies.length > 0 ? (
-                    <form
-                      action={sendMandateAction}
-                      className="flex flex-wrap items-center gap-2"
-                    >
+                    <form action={sendMandateAction} className="flex flex-wrap items-center gap-2">
                       <input type="hidden" name="savedSearchId" value={s.id} />
                       <select
                         name="agencyId"
                         required
                         defaultValue=""
-                        className="rounded-full border border-line bg-white px-3 py-2 font-mono text-[11px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+                        className="rounded-full border border-line bg-white px-3 py-2 text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
                       >
                         <option value="" disabled>
                           Choisir une agence…
@@ -531,9 +466,9 @@ export default async function ComptePage() {
                       </select>
                       <button
                         type="submit"
-                        className="rounded-full border border-line px-3.5 py-2 font-mono text-[11px] font-medium text-ink transition hover:bg-surface"
+                        className="rounded-full border border-line px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
                       >
-                        CONFIER CETTE RECHERCHE →
+                        Confier cette recherche →
                       </button>
                     </form>
                   ) : null}
@@ -542,9 +477,8 @@ export default async function ComptePage() {
             })}
           </div>
         ) : (
-          <p className="mt-3 font-sans text-[14px] text-muted">
-            Enregistrez une recherche depuis « Acheter » ou « Louer » pour la
-            retrouver ici.
+          <p className="mt-3 text-[14px] text-muted">
+            Enregistrez une recherche depuis « Acheter » ou « Louer » pour la retrouver ici.
           </p>
         )}
       </div>
@@ -552,16 +486,9 @@ export default async function ComptePage() {
       {stubs.length > 0 ? (
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {stubs.map((label) => (
-            <div
-              key={label}
-              className="rounded-2xl border border-dashed border-line bg-surface p-5"
-            >
-              <span className="font-mono text-[10.5px] font-medium text-muted">
-                {label.toUpperCase()}
-              </span>
-              <p className="m-0 mt-2 font-sans text-[13px] text-muted-2">
-                Bientôt disponible.
-              </p>
+            <div key={label} className="rounded-2xl border border-dashed border-line bg-surface p-5">
+              <span className="text-[11px] font-semibold text-muted">{label}</span>
+              <p className="m-0 mt-2 text-[13px] text-muted-2">Bientôt disponible.</p>
             </div>
           ))}
         </div>
@@ -569,14 +496,14 @@ export default async function ComptePage() {
 
       {!isArtisan ? (
         <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-surface px-6 py-5">
-          <span className="font-sans text-[15px] text-ink">
+          <span className="text-[15px] text-ink">
             Prêt à publier votre premier bien ?
           </span>
           <Link
             href="/vendre/deposer"
-            className="rounded-full bg-yellow px-5 py-3 font-mono text-[11.5px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
+            className="rounded-full bg-yellow px-5 py-3 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
           >
-            + DÉPOSER UNE ANNONCE
+            + Déposer une annonce
           </Link>
         </div>
       ) : null}

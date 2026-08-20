@@ -40,25 +40,25 @@ export default async function AgenceClientsPage() {
 
   return (
     <div className="animate-fade-up max-w-[1000px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-        MON COMPTE
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
+        Mon compte
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
-        MES CLIENTS
+        Mes clients
       </h1>
-      <Link href="/compte" className="font-mono text-[11.5px] font-medium text-blue">
-        ← MON COMPTE
+      <Link href="/compte" className="text-[13px] font-semibold text-blue">
+        ← Mon compte
       </Link>
 
-      <p className="mt-6 max-w-[64ch] font-sans text-[14.5px] leading-[1.6] text-muted">
+      <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
         Les particuliers vous confient leurs recherches sauvegardées depuis
         leur compte. Acceptez une demande pour faire apparaître sa fiche
         client ci-dessous.
       </p>
 
       <div className="mt-8">
-        <span className="font-mono text-[10.5px] font-medium text-ink">
-          DEMANDES EN ATTENTE ({pending.length})
+        <span className="text-[11px] font-semibold text-ink">
+          Demandes en attente ({pending.length})
         </span>
         {pending.length > 0 ? (
           <div className="mt-3 flex flex-col gap-3">
@@ -68,10 +68,10 @@ export default async function AgenceClientsPage() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="font-sans text-[14px] font-semibold text-ink">
+                  <span className="text-[14px] font-semibold text-ink">
                     {m.client.nom}
                   </span>
-                  <span className="font-mono text-[10.5px] text-muted-2">
+                  <span className="text-[12px] text-muted-2">
                     {searchSummary(m.search)}
                   </span>
                 </div>
@@ -81,44 +81,44 @@ export default async function AgenceClientsPage() {
                     type="submit"
                     name="decision"
                     value="accept"
-                    className="rounded-full bg-yellow px-3.5 py-2 font-mono text-[11px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
+                    className="rounded-full bg-yellow px-3.5 py-2 text-[12.5px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
                   >
-                    ACCEPTER
+                    Accepter
                   </button>
                   <button
                     type="submit"
                     name="decision"
                     value="refuse"
-                    className="font-mono text-[11px] font-medium text-muted hover:text-ink"
+                    className="text-[12.5px] font-semibold text-muted hover:text-ink"
                   >
-                    REFUSER
+                    Refuser
                   </button>
                 </form>
               </div>
             ))}
           </div>
         ) : (
-          <p className="mt-3 font-sans text-[14px] text-muted">
+          <p className="mt-3 text-[14px] text-muted">
             Aucune demande en attente pour le moment.
           </p>
         )}
       </div>
 
       <div className="mt-9">
-        <span className="font-mono text-[10.5px] font-medium text-ink">
-          FICHES CLIENTS ({clients.length})
+        <span className="text-[11px] font-semibold text-ink">
+          Fiches clients ({clients.length})
         </span>
         {clients.length > 0 ? (
           <div className="mt-3 flex flex-col gap-4">
             {clients.map((c) => (
               <div key={c.clientId} className="rounded-2xl border border-line bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="font-sans text-[16.5px] font-bold text-ink">
+                  <span className="text-[16.5px] font-bold text-ink">
                     {c.nom}
                   </span>
                   <a
                     href={`mailto:${c.email}`}
-                    className="font-mono text-[11px] font-medium text-blue"
+                    className="text-[12.5px] font-semibold text-blue"
                   >
                     {c.email}
                   </a>
@@ -138,11 +138,11 @@ export default async function AgenceClientsPage() {
                         className="flex flex-col gap-2 rounded-xl bg-surface px-3 py-2.5"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="font-sans text-[13px] text-ink">
+                          <span className="text-[13px] text-ink">
                             {searchSummary(s)}
                           </span>
                           {s.acceptedAt ? (
-                            <span className="font-mono text-[10px] text-muted-2">
+                            <span className="text-[11.5px] text-muted-2">
                               confiée le {s.acceptedAt.toLocaleDateString("fr-FR")}
                             </span>
                           ) : null}
@@ -157,13 +157,13 @@ export default async function AgenceClientsPage() {
                               >
                                 <Link
                                   href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
-                                  className="font-sans text-[12.5px] font-medium text-blue"
+                                  className="text-[12.5px] font-semibold text-blue"
                                 >
                                   {p.titre} — {formatPrix(p.prix, p.transaction)}
                                 </Link>
                                 <div className="flex items-center gap-3">
                                   <span
-                                    className="font-mono text-[9.5px] font-semibold"
+                                    className="text-[11px] font-semibold"
                                     style={{ color: PROPOSAL_STATUS_LABEL[p.statut].color }}
                                   >
                                     {PROPOSAL_STATUS_LABEL[p.statut].label}
@@ -172,9 +172,9 @@ export default async function AgenceClientsPage() {
                                     <input type="hidden" name="proposalId" value={p.proposalId} />
                                     <button
                                       type="submit"
-                                      className="font-mono text-[9.5px] font-medium text-muted hover:text-ink"
+                                      className="text-[11px] font-semibold text-muted hover:text-ink"
                                     >
-                                      RETIRER
+                                      Retirer
                                     </button>
                                   </form>
                                 </div>
@@ -193,7 +193,7 @@ export default async function AgenceClientsPage() {
                               name="listingId"
                               required
                               defaultValue=""
-                              className="rounded-full border border-line bg-white px-2.5 py-1.5 font-mono text-[10.5px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+                              className="rounded-full border border-line bg-white px-2.5 py-1.5 text-[12.5px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
                             >
                               <option value="" disabled>
                                 Proposer une de mes annonces…
@@ -206,9 +206,9 @@ export default async function AgenceClientsPage() {
                             </select>
                             <button
                               type="submit"
-                              className="rounded-full border border-line px-3 py-1.5 font-mono text-[10.5px] font-medium text-ink transition hover:bg-surface"
+                              className="rounded-full border border-line px-3 py-1.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
                             >
-                              PROPOSER →
+                              Proposer →
                             </button>
                           </form>
                         ) : null}
@@ -220,7 +220,7 @@ export default async function AgenceClientsPage() {
             ))}
           </div>
         ) : (
-          <p className="mt-3 font-sans text-[14px] text-muted">
+          <p className="mt-3 text-[14px] text-muted">
             Aucun client pour le moment — les recherches acceptées
             apparaîtront ici.
           </p>

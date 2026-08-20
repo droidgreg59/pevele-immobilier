@@ -23,21 +23,21 @@ export default async function ModifierAnnoncePage({
 
   return (
     <div className="animate-fade-up max-w-[900px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-        MON COMPTE
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
+        Mon compte
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
-        MODIFIER L&apos;ANNONCE
+        Modifier l&apos;annonce
       </h1>
       <div className="flex flex-wrap gap-4">
-        <Link href="/compte" className="font-mono text-[11.5px] font-medium text-blue">
-          ← MON COMPTE
+        <Link href="/compte" className="text-[13px] font-semibold text-blue">
+          ← Mon compte
         </Link>
         <Link
           href={`/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`}
-          className="font-mono text-[11.5px] font-medium text-blue"
+          className="text-[13px] font-semibold text-blue"
         >
-          VOIR LA FICHE →
+          Voir la fiche →
         </Link>
       </div>
 

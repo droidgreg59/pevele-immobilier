@@ -30,89 +30,89 @@ export default function RegisterForm({
         <button
           type="button"
           onClick={() => setType("PARTICULIER")}
-          className="rounded-xl px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          className="rounded-xl px-3 py-3.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-surface"
           style={{
-            background: type === "PARTICULIER" ? "#FBF3DC" : "#fff",
-            border: `1px solid ${type === "PARTICULIER" ? "transparent" : "var(--pvl-line)"}`,
+            background: type === "PARTICULIER" ? "var(--pvl-blue-soft)" : "#fff",
+            border: `1px solid ${type === "PARTICULIER" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
           }}
         >
-          PARTICULIER
+          Particulier
         </button>
         <button
           type="button"
           onClick={() => setType("AGENCE")}
-          className="rounded-xl px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          className="rounded-xl px-3 py-3.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-surface"
           style={{
-            background: type === "AGENCE" ? "#FBF3DC" : "#fff",
-            border: `1px solid ${type === "AGENCE" ? "transparent" : "var(--pvl-line)"}`,
+            background: type === "AGENCE" ? "var(--pvl-blue-soft)" : "#fff",
+            border: `1px solid ${type === "AGENCE" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
           }}
         >
-          AGENCE
+          Agence
         </button>
         <button
           type="button"
           onClick={() => setType("ARTISAN")}
-          className="rounded-xl px-3 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          className="rounded-xl px-3 py-3.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-surface"
           style={{
-            background: type === "ARTISAN" ? "#FBF3DC" : "#fff",
-            border: `1px solid ${type === "ARTISAN" ? "transparent" : "var(--pvl-line)"}`,
+            background: type === "ARTISAN" ? "var(--pvl-blue-soft)" : "#fff",
+            border: `1px solid ${type === "ARTISAN" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
           }}
         >
-          ARTISAN
+          Artisan
         </button>
       </div>
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          {isPro ? "NOM DU CONTACT" : "NOM"}
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          {isPro ? "Nom du contact" : "Nom"}
         </span>
         <input
           name="nom"
           required
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       {isPro ? (
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            {type === "AGENCE" ? "NOM DE L'AGENCE" : "NOM DE L'ENTREPRISE"}
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            {type === "AGENCE" ? "Nom de l'agence" : "Nom de l'entreprise"}
           </span>
           <input
             name="entreprise"
             required
-            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       ) : null}
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          EMAIL
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Email
         </span>
         <input
           type="email"
           name="email"
           required
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          MOT DE PASSE (8 CARACTÈRES MINIMUM)
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Mot de passe (8 caractères minimum)
         </span>
         <input
           type="password"
           name="password"
           required
           minLength={8}
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       {state.error ? (
-        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
           {state.error}
         </p>
       ) : null}
@@ -120,9 +120,9 @@ export default function RegisterForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
+        className="self-start rounded-full bg-yellow px-6.5 py-4 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
-        {pending ? "CRÉATION DU COMPTE…" : "CRÉER MON COMPTE →"}
+        {pending ? "Création du compte…" : "Créer mon compte →"}
       </button>
     </form>
   );

@@ -22,25 +22,25 @@ export default async function CompteAgencePage() {
 
   return (
     <div className="animate-fade-up max-w-[900px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-        MON COMPTE
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
+        Mon compte
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
-        COORDONNÉES DE MON AGENCE
+        Coordonnées de mon agence
       </h1>
       <div className="flex flex-wrap gap-4">
-        <Link href="/compte" className="font-mono text-[11.5px] font-medium text-blue">
-          ← MON COMPTE
+        <Link href="/compte" className="text-[13px] font-semibold text-blue">
+          ← Mon compte
         </Link>
         <Link
           href={`/professionnels/${session.userId}`}
-          className="font-mono text-[11.5px] font-medium text-blue"
+          className="text-[13px] font-semibold text-blue"
         >
-          VOIR MA PAGE PUBLIQUE →
+          Voir ma page publique →
         </Link>
       </div>
 
-      <p className="mt-6 max-w-[64ch] font-sans text-[14.5px] leading-[1.6] text-muted">
+      <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
         Ces informations apparaissent sur votre page agence publique,
         accessible depuis vos annonces et l&apos;annuaire des professionnels.
       </p>

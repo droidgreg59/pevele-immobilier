@@ -45,17 +45,17 @@ export default async function CompteFavorisPage() {
 
   return (
     <div className="animate-fade-up max-w-[1000px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-        MON COMPTE
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
+        Mon compte
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
-        MES FAVORIS
+        Mes favoris
       </h1>
-      <Link href="/compte" className="font-mono text-[11.5px] font-medium text-blue">
-        ← MON COMPTE
+      <Link href="/compte" className="text-[13px] font-semibold text-blue">
+        ← Mon compte
       </Link>
 
-      <p className="mt-6 max-w-[64ch] font-sans text-[14.5px] leading-[1.6] text-muted">
+      <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
         Cochez « visité » ou « contacté » pour vous organiser, activez la
         surveillance sur les biens qui vous intéressent pour repérer une
         baisse de prix en un coup d&apos;œil.

@@ -30,33 +30,33 @@ export default function ArtisanProfileForm({
   return (
     <form action={formAction} className="flex max-w-[640px] flex-col gap-5">
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          NOM DE L&apos;ENTREPRISE
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Nom de l&apos;entreprise
         </span>
         <input
           name="entreprise"
           required
           defaultValue={artisan.entreprise ?? ""}
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          PRÉSENTATION
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Présentation
         </span>
         <textarea
           name="description"
           rows={4}
           defaultValue={artisan.description ?? ""}
           placeholder="Votre activité, votre expérience, vos réalisations…"
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       <div className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          SPÉCIALITÉS
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Spécialités
         </span>
         <div className="flex flex-wrap gap-2">
           {artisanCategories.map((cat) => {
@@ -66,7 +66,7 @@ export default function ArtisanProfileForm({
                 key={cat}
                 type="button"
                 onClick={() => toggle(categories, setCategories, cat)}
-                className="rounded-full px-3 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
+                className="rounded-full px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-surface"
                 style={{
                   background: active ? "var(--pvl-ink)" : "#fff",
                   color: active ? "#fff" : "var(--pvl-ink)",
@@ -84,8 +84,8 @@ export default function ArtisanProfileForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          COMMUNES DESSERVIES
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Communes desservies
         </span>
         <div className="flex flex-wrap gap-1.5">
           {villages.map((v) => {
@@ -95,11 +95,11 @@ export default function ArtisanProfileForm({
                 key={v.slug}
                 type="button"
                 onClick={() => toggle(communes, setCommunes, v.slug)}
-                className="rounded-full px-2.5 py-1.5 font-mono text-[10px] font-medium transition-colors hover:bg-surface"
+                className="rounded-full px-2.5 py-1.5 text-[12px] font-semibold transition-colors"
                 style={{
-                  background: active ? "var(--pvl-yellow)" : "#fff",
-                  color: "var(--pvl-ink)",
-                  border: `1px solid ${active ? "transparent" : "var(--pvl-line)"}`,
+                  background: active ? "var(--pvl-blue-soft)" : "#fff",
+                  color: active ? "var(--pvl-blue)" : "var(--pvl-ink)",
+                  border: `1px solid ${active ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
                 }}
               >
                 {v.nom}
@@ -113,70 +113,70 @@ export default function ArtisanProfileForm({
       </div>
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          TÉLÉPHONE
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Téléphone
         </span>
         <input
           name="telephone"
           type="tel"
           defaultValue={artisan.telephone ?? ""}
           placeholder="ex. 03 20 00 00 00"
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          ADRESSE
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Adresse
         </span>
         <input
           name="adresse"
           defaultValue={artisan.adresse ?? ""}
           placeholder="ex. 5 rue des Artisans"
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_2fr]">
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            CODE POSTAL
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Code postal
           </span>
           <input
             name="codePostal"
             defaultValue={artisan.codePostal ?? ""}
             placeholder="ex. 59830"
-            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            VILLE
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Ville
           </span>
           <input
             name="ville"
             defaultValue={artisan.ville ?? ""}
             placeholder="ex. Cysoing"
-            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       </div>
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10.5px] font-medium text-muted">
-          SITE WEB
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Site web
         </span>
         <input
           name="siteWeb"
           type="url"
           defaultValue={artisan.siteWeb ?? ""}
           placeholder="https://…"
-          className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
       {state.error ? (
-        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+        <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
           {state.error}
         </p>
       ) : null}
@@ -184,9 +184,9 @@ export default function ArtisanProfileForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
+        className="self-start rounded-full bg-yellow px-6.5 py-4 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
-        {pending ? "ENREGISTREMENT…" : "ENREGISTRER →"}
+        {pending ? "Enregistrement…" : "Enregistrer →"}
       </button>
     </form>
   );

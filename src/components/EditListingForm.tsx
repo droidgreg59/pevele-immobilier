@@ -34,10 +34,10 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
     <div className="flex flex-col gap-9">
       {listing.statut === "REFUSEE" ? (
         <div className="max-w-[720px] rounded-2xl bg-[#FBEAEA] px-5 py-4">
-          <span className="font-mono text-[10.5px] font-semibold text-ink">
-            ANNONCE REFUSÉE
+          <span className="text-[11px] font-semibold text-ink">
+            Annonce refusée
           </span>
-          <p className="m-0 mt-1.5 font-sans text-[13.5px] leading-[1.6] text-ink">
+          <p className="m-0 mt-1.5 text-[13.5px] leading-[1.6] text-ink">
             {listing.statutRaison ||
               "Aucun motif communiqué."}{" "}
             Modifiez l&apos;annonce ci-dessous pour la soumettre à nouveau à
@@ -53,49 +53,49 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
           <button
             type="button"
             onClick={() => setTransaction("VENTE")}
-            className="rounded-xl px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+            className="rounded-xl px-4 py-3.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-surface"
             style={{
-              background: transaction === "VENTE" ? "#FBF3DC" : "#fff",
-              border: `1px solid ${transaction === "VENTE" ? "transparent" : "var(--pvl-line)"}`,
+              background: transaction === "VENTE" ? "var(--pvl-blue-soft)" : "#fff",
+              border: `1px solid ${transaction === "VENTE" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
             }}
           >
-            JE VENDS
+            Je vends
           </button>
           <button
             type="button"
             onClick={() => setTransaction("LOCATION")}
-            className="rounded-xl px-4 py-3.5 text-left font-sans text-sm font-semibold text-ink transition-colors hover:bg-surface"
+            className="rounded-xl px-4 py-3.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-surface"
             style={{
-              background: transaction === "LOCATION" ? "#FBF3DC" : "#fff",
-              border: `1px solid ${transaction === "LOCATION" ? "transparent" : "var(--pvl-line)"}`,
+              background: transaction === "LOCATION" ? "var(--pvl-blue-soft)" : "#fff",
+              border: `1px solid ${transaction === "LOCATION" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
             }}
           >
-            JE LOUE
+            Je loue
           </button>
         </div>
 
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            TITRE DE L&apos;ANNONCE
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Titre de l&apos;annonce
           </span>
           <input
             name="titre"
             required
             defaultValue={listing.titre}
-            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              VILLAGE
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Village
             </span>
             <select
               name="villageSlug"
               required
               defaultValue={listing.villageSlug}
-              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             >
               {villages.map((v) => (
                 <option key={v.slug} value={v.slug}>
@@ -105,14 +105,14 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
             </select>
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              TYPE DE BIEN
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Type de bien
             </span>
             <select
               name="typeBien"
               required
               defaultValue={listing.typeBien}
-              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             >
               <option value="MAISON">Maison</option>
               <option value="APPARTEMENT">Appartement</option>
@@ -123,8 +123,8 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              {transaction === "VENTE" ? "PRIX (€)" : "LOYER (€/MOIS)"}
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              {transaction === "VENTE" ? "Prix (€)" : "Loyer (€/mois)"}
             </span>
             <input
               type="number"
@@ -132,12 +132,12 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.prix}
-              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-3 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              SURFACE (M²)
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Surface (m²)
             </span>
             <input
               type="number"
@@ -145,12 +145,12 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.surface}
-              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-3 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              PIÈCES
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Pièces
             </span>
             <input
               type="number"
@@ -158,12 +158,12 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.pieces}
-              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-3 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              CHAMBRES
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Chambres
             </span>
             <input
               type="number"
@@ -171,31 +171,31 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
               min={1}
               required
               defaultValue={listing.chambres}
-              className="rounded-xl border border-line bg-white px-3 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-3 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              EXTÉRIEUR
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Extérieur
             </span>
             <input
               name="exterieur"
               defaultValue={listing.exterieur === "—" ? "" : listing.exterieur}
-              placeholder="ex. 500 M² JARDIN, BALCON…"
-              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              placeholder="ex. 500 m² jardin, balcon…"
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              DPE (SI CONNU)
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              DPE (si connu)
             </span>
             <select
               name="dpe"
               defaultValue={listing.dpe ?? ""}
-              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             >
               <option value="">Non renseigné</option>
               {DPE_OPTIONS.map((letter) => (
@@ -208,14 +208,14 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            ÉQUIPEMENTS
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Équipements
           </span>
           <div className="flex flex-wrap gap-3">
             {EQUIPEMENTS.map((eq) => (
               <label
                 key={eq}
-                className="flex items-center gap-1.5 font-sans text-[13.5px] text-ink"
+                className="flex items-center gap-1.5 text-[13.5px] text-ink"
               >
                 <input
                   type="checkbox"
@@ -231,22 +231,22 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
         </div>
 
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            DESCRIPTION
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Description
           </span>
           <textarea
             name="description"
             required
             rows={4}
             defaultValue={listing.description}
-            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
 
         {visiblePhotos.length > 0 ? (
           <div className="flex flex-col gap-2">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              PHOTOS ACTUELLES
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Photos actuelles
             </span>
             <div className="flex flex-wrap gap-2">
               {visiblePhotos.map((p) => (
@@ -277,33 +277,33 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              LIEN VIDÉO (YOUTUBE/VIMEO, FACULTATIF)
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Lien vidéo (YouTube/Vimeo, facultatif)
             </span>
             <input
               name="videoUrl"
               type="url"
               defaultValue={listing.videoUrl ?? ""}
               placeholder="https://youtube.com/watch?v=…"
-              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10.5px] font-medium text-muted">
-              LIEN VISITE VIRTUELLE 360° (FACULTATIF)
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Lien visite virtuelle 360° (facultatif)
             </span>
             <input
               name="visiteVirtuelleUrl"
               type="url"
               defaultValue={listing.visiteVirtuelleUrl ?? ""}
               placeholder="https://…"
-              className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
           </label>
         </div>
 
         {state.error ? (
-          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
             {state.error}
           </p>
         ) : null}
@@ -311,17 +311,17 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
         <button
           type="submit"
           disabled={pending}
-          className="self-start rounded-full bg-yellow px-6.5 py-4 font-mono text-xs font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
+          className="self-start rounded-full bg-yellow px-6.5 py-4 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
         >
-          {pending ? "ENREGISTREMENT…" : "ENREGISTRER LES MODIFICATIONS →"}
+          {pending ? "Enregistrement…" : "Enregistrer les modifications →"}
         </button>
       </form>
 
       <div className="max-w-[720px] rounded-2xl border border-dashed border-line bg-surface p-6">
-        <span className="font-mono text-[10.5px] font-medium text-ink">
-          ZONE SENSIBLE
+        <span className="text-[11px] font-semibold text-ink">
+          Zone sensible
         </span>
-        <p className="m-0 mt-2 font-sans text-[13px] text-muted">
+        <p className="m-0 mt-2 text-[13px] text-muted">
           Supprimer cette annonce est définitif : elle disparaît des annonces
           et de votre compte.
         </p>
@@ -337,9 +337,9 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
           <input type="hidden" name="listingId" value={listing.id} />
           <button
             type="submit"
-            className="rounded-full border border-line px-4 py-2.5 font-mono text-[11px] font-semibold text-ink transition hover:bg-[#FBEAEA]"
+            className="rounded-full border border-line px-4 py-2.5 text-[12.5px] font-semibold text-ink transition hover:bg-[#FBEAEA]"
           >
-            SUPPRIMER CETTE ANNONCE
+            Supprimer cette annonce
           </button>
         </form>
       </div>

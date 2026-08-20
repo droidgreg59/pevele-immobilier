@@ -32,10 +32,10 @@ export type FavoriteHubItem = {
 type Filtre = "tout" | "a_visiter" | "visite" | "surveillance";
 
 const FILTRE_LABEL: Record<Filtre, string> = {
-  tout: "TOUS",
-  a_visiter: "À VISITER",
-  visite: "VISITÉS",
-  surveillance: "SURVEILLANCE PRIX",
+  tout: "Tous",
+  a_visiter: "À visiter",
+  visite: "Visités",
+  surveillance: "Surveillance prix",
 };
 
 function matchesFiltre(item: FavoriteHubItem, filtre: Filtre): boolean {
@@ -77,32 +77,32 @@ function FavoriteHubCard({
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-surface px-3 text-center font-mono text-[9.5px] text-muted-2">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface px-3 text-center text-[12px] text-muted-2">
             Aucune photo
           </div>
         )}
         <span
-          className="absolute left-2 top-2 whitespace-nowrap rounded-full px-2 py-1 font-mono text-[8.5px] font-semibold shadow-sm"
+          className="absolute left-2 top-2 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-semibold shadow-sm"
           style={{
-            background: particulier ? "#FBF3DC" : "#EDF1FB",
+            background: particulier ? "#FBF3DC" : "var(--pvl-blue-soft)",
             color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
           }}
         >
-          {particulier ? "ENTRE VOISINS" : item.ownerType === "AGENCE" ? "AGENCE" : "ARTISAN"}
+          {particulier ? "Entre voisins" : item.ownerType === "AGENCE" ? "Agence" : "Artisan"}
         </span>
       </Link>
 
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
-            <Link href={item.detailHref} className="font-sans text-[16.5px] font-bold text-ink">
+            <Link href={item.detailHref} className="text-[16.5px] font-bold text-ink">
               {item.titre}
             </Link>
             <Link
               href={`/villages/${item.villageSlug}`}
-              className="font-mono text-[10.5px] font-medium text-blue"
+              className="text-[12.5px] font-semibold text-blue"
             >
-              ◉ {item.commune.toUpperCase()}
+              {item.commune}
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -110,21 +110,21 @@ function FavoriteHubCard({
               {formatPrix(item.prix, item.transaction)}
             </span>
             {item.enVerification ? (
-              <span className="rounded-full bg-blue px-2 py-1 font-mono text-[8.5px] font-semibold text-white">
-                EN VÉRIFICATION
+              <span className="rounded-full bg-blue px-2 py-1 text-[11px] font-semibold text-white">
+                En vérification
               </span>
             ) : null}
           </div>
         </div>
 
-        <span className="font-mono text-[10.5px] font-medium text-muted-2">
-          {item.pieces} P. · {item.surface} M² · {item.exterieur} · favori depuis le{" "}
+        <span className="text-[12.5px] text-muted-2">
+          {item.pieces} p. · {item.surface} m² · {item.exterieur} · favori depuis le{" "}
           {item.favoritedLabel}
         </span>
 
         {item.surveillePrix && item.enBaisse ? (
-          <span className="w-fit rounded-full bg-[#EAF3E8] px-3 py-1.5 font-mono text-[10.5px] font-semibold text-green">
-            ↓ BAISSE DE PRIX DÉTECTÉE
+          <span className="w-fit rounded-full bg-[#EAF3E8] px-3 py-1.5 text-[12.5px] font-semibold text-green">
+            ↓ Baisse de prix détectée
           </span>
         ) : null}
 
@@ -132,7 +132,7 @@ function FavoriteHubCard({
           {TAGS.map(({ key, label }) => (
             <label
               key={key}
-              className="flex items-center gap-1.5 font-mono text-[10.5px] font-medium text-ink"
+              className="flex items-center gap-1.5 text-[13px] font-medium text-ink"
             >
               <input
                 type="checkbox"
@@ -157,9 +157,9 @@ function FavoriteHubCard({
                 await toggleFavoriteAction(item.listingId, "/compte/favoris");
               });
             }}
-            className="ml-auto font-mono text-[10.5px] font-medium text-muted hover:text-ink"
+            className="ml-auto text-[12.5px] font-semibold text-muted hover:text-ink"
           >
-            RETIRER DES FAVORIS
+            Retirer des favoris
           </button>
         </div>
       </div>
@@ -191,11 +191,11 @@ export default function FavoritesHub({ items: initialItems }: { items: FavoriteH
               key={key}
               type="button"
               onClick={() => setFiltre(key)}
-              className="cursor-pointer rounded-full px-4 py-2 font-mono text-[11px] font-medium transition-colors hover:bg-surface"
+              className="cursor-pointer rounded-full px-4 py-2 text-[13px] font-semibold transition-colors hover:bg-surface"
               style={{
-                background: active ? "var(--pvl-ink)" : "transparent",
-                color: active ? "#fff" : "var(--pvl-ink)",
-                border: active ? "none" : "1px solid var(--pvl-line)",
+                background: active ? "var(--pvl-blue-soft)" : "transparent",
+                color: active ? "var(--pvl-blue)" : "var(--pvl-ink)",
+                border: active ? "1px solid var(--pvl-blue)" : "1px solid var(--pvl-line)",
               }}
             >
               {FILTRE_LABEL[key]} ({count})
@@ -216,7 +216,7 @@ export default function FavoritesHub({ items: initialItems }: { items: FavoriteH
           ))}
         </div>
       ) : (
-        <p className="mt-8 font-sans text-[15px] text-muted">
+        <p className="mt-8 text-[15px] text-muted">
           {items.length === 0
             ? "Aucun favori pour le moment — cliquez sur ♡ sur une annonce pour l'ajouter ici."
             : "Aucun favori ne correspond à ce filtre."}

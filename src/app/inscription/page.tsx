@@ -25,17 +25,17 @@ export default async function InscriptionPage({
 
   return (
     <div className="animate-fade-up max-w-[640px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-        MON COMPTE
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
+        Mon compte
       </span>
       <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[44px]">
-        CRÉER UN COMPTE
+        Créer un compte
       </h1>
-      <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR À L&apos;ACCUEIL
+      <Link href="/" className="text-[13px] font-semibold text-blue">
+        ← Retour à l&apos;accueil
       </Link>
 
-      <p className="mt-6 max-w-[60ch] font-sans text-[14.5px] leading-[1.6] text-muted">
+      <p className="mt-6 max-w-[60ch] text-[14.5px] leading-[1.6] text-muted">
         Un compte particulier pour suivre vos annonces et vos favoris, ou un
         compte agence pour votre page professionnelle.
       </p>
@@ -44,7 +44,7 @@ export default async function InscriptionPage({
         <RegisterForm next={next} initialType={initialType} />
       </div>
 
-      <p className="mt-6 font-mono text-[11.5px] text-muted">
+      <p className="mt-6 text-[13.5px] text-muted">
         Déjà un compte ?{" "}
         <Link
           href={next ? `/connexion?next=${encodeURIComponent(next)}` : "/connexion"}
