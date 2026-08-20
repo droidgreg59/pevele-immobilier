@@ -12,6 +12,7 @@ import { respondToProposalAction } from "@/lib/proposal-actions";
 import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
 import { getVisitRequestsForOwner } from "@/lib/visits";
+import { getEstimationRequestsForAgency } from "@/lib/estimations";
 import { getAgencies } from "@/lib/agencies";
 import { isUserAdmin, getPendingListings } from "@/lib/admin";
 import { getVillageBySlug } from "@/data/villages";
@@ -19,6 +20,7 @@ import { formatPrix } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
 import DevisList from "@/components/DevisList";
 import VisitRequestList from "@/components/VisitRequestList";
+import EstimationList from "@/components/EstimationList";
 
 const MANDATE_LABEL: Record<string, string> = {
   EN_ATTENTE: "en attente",
@@ -74,6 +76,7 @@ export default async function ComptePage() {
     mesRecherches,
     devisRequests,
     visitRequests,
+    estimationRequests,
     agencies,
     pendingMandateCount,
     clientCount,
@@ -85,6 +88,7 @@ export default async function ComptePage() {
     getSavedSearchesByUser(session.userId),
     isArtisan ? getDevisRequestsForArtisan(session.userId) : Promise.resolve([]),
     isArtisan ? Promise.resolve([]) : getVisitRequestsForOwner(session.userId),
+    isAgence ? getEstimationRequestsForAgency(session.userId) : Promise.resolve([]),
     getAgencies(),
     isAgence ? getPendingMandateCount(session.userId) : Promise.resolve(0),
     isAgence ? getClientCount(session.userId) : Promise.resolve(0),
@@ -99,6 +103,24 @@ export default async function ComptePage() {
     createdLabel: d.createdAt.toLocaleDateString("fr-FR"),
     authorNom: d.author.nom,
     authorEmail: d.author.email,
+  }));
+  const estimationItems = estimationRequests.map((e) => ({
+    id: e.id,
+    adresse: e.adresse,
+    nom: e.nom,
+    telephone: e.telephone,
+    preferredDateLabel: e.preferredDate
+      ? e.preferredDate.toLocaleString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : null,
+    traite: e.traite,
+    createdLabel: e.createdAt.toLocaleDateString("fr-FR"),
+    authorEmail: e.author.email,
   }));
   const visitItems = visitRequests.map((v) => ({
     id: v.id,
@@ -192,6 +214,21 @@ export default async function ComptePage() {
           <Link href="/compte/agence/clients" className="text-[13px] font-semibold text-blue">
             Voir mes clients →
           </Link>
+        </div>
+      ) : null}
+
+      {isAgence ? (
+        <div className="mt-8">
+          <span className="text-[11px] font-semibold text-ink">
+            Demandes d&apos;estimation ({estimationItems.length})
+          </span>
+          {estimationItems.length > 0 ? (
+            <EstimationList items={estimationItems} />
+          ) : (
+            <p className="mt-3 text-[14px] text-muted">
+              Les demandes de rendez-vous d&apos;estimation envoyées depuis votre page agence apparaîtront ici.
+            </p>
+          )}
         </div>
       ) : null}
 

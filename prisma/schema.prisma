@@ -8,38 +8,40 @@ datasource db {
 }
 
 model User {
-  id                 String          @id @default(cuid())
-  email              String          @unique
-  passwordHash       String
-  nom                String
-  entreprise         String?
-  telephone          String?
-  adresse            String?
-  codePostal         String?
-  ville              String?
-  siteWeb            String?
-  googleAvisUrl      String?
-  logoUrl            String?
-  xmlImportUrl       String?
-  xmlLastSyncAt      DateTime?
-  xmlLastSyncCount   Int?
-  xmlLastSyncError   String?
-  isAdmin            Boolean         @default(false)
-  description        String?
-  categories         String?
-  communesDesservies String?
-  type               AccountType
-  createdAt          DateTime        @default(now())
-  listings           Listing[]
-  favorites          Favorite[]
-  agencyReviews      Review[]        @relation("AgencyReviews")
-  authoredReviews    Review[]        @relation("AuthoredReviews")
-  savedSearches      SavedSearch[]
-  devisRecus         DevisRequest[]  @relation("ArtisanDevis")
-  devisEnvoyees      DevisRequest[]  @relation("AuthorDevis")
-  clientMandates     SearchMandate[] @relation("ClientMandates")
-  agencyMandates     SearchMandate[] @relation("AgencyMandates")
-  visitRequests      VisitRequest[]
+  id                  String              @id @default(cuid())
+  email               String              @unique
+  passwordHash        String
+  nom                 String
+  entreprise          String?
+  telephone           String?
+  adresse             String?
+  codePostal          String?
+  ville               String?
+  siteWeb             String?
+  googleAvisUrl       String?
+  logoUrl             String?
+  xmlImportUrl        String?
+  xmlLastSyncAt       DateTime?
+  xmlLastSyncCount    Int?
+  xmlLastSyncError    String?
+  isAdmin             Boolean             @default(false)
+  description         String?
+  categories          String?
+  communesDesservies  String?
+  type                AccountType
+  createdAt           DateTime            @default(now())
+  listings            Listing[]
+  favorites           Favorite[]
+  agencyReviews       Review[]            @relation("AgencyReviews")
+  authoredReviews     Review[]            @relation("AuthoredReviews")
+  savedSearches       SavedSearch[]
+  devisRecus          DevisRequest[]      @relation("ArtisanDevis")
+  devisEnvoyees       DevisRequest[]      @relation("AuthorDevis")
+  clientMandates      SearchMandate[]     @relation("ClientMandates")
+  agencyMandates      SearchMandate[]     @relation("AgencyMandates")
+  visitRequests       VisitRequest[]
+  estimationsRecues   EstimationRequest[] @relation("AgencyEstimations")
+  estimationsEnvoyees EstimationRequest[] @relation("AuthorEstimations")
 }
 
 enum AccountType {
@@ -243,6 +245,26 @@ model VisitRequest {
   createdAt     DateTime  @default(now())
 
   @@index([listingId])
+  @@index([authorId])
+}
+
+/// Demande de rendez-vous d'estimation envoyée à une agence depuis sa fiche
+/// publique — pas de notification email pour l'instant, consultée depuis
+/// /compte côté agence.
+model EstimationRequest {
+  id            String    @id @default(cuid())
+  agency        User      @relation("AgencyEstimations", fields: [agencyId], references: [id], onDelete: Cascade)
+  agencyId      String
+  author        User      @relation("AuthorEstimations", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId      String
+  adresse       String
+  nom           String
+  telephone     String
+  preferredDate DateTime?
+  traite        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  @@index([agencyId])
   @@index([authorId])
 }
 

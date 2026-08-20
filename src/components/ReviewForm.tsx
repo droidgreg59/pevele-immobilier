@@ -29,8 +29,8 @@ export default function ReviewForm({
         <input type="hidden" name="note" value={note} />
 
         <div className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            VOTRE NOTE
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Votre note
           </span>
           <div className="flex gap-1.5">
             {[1, 2, 3, 4, 5].map((n) => (
@@ -49,8 +49,8 @@ export default function ReviewForm({
         </div>
 
         <label className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-medium text-muted">
-            VOTRE AVIS
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Votre avis
           </span>
           <textarea
             name="commentaire"
@@ -58,12 +58,12 @@ export default function ReviewForm({
             rows={3}
             defaultValue={existingReview?.commentaire ?? ""}
             placeholder="Votre expérience avec cette agence…"
-            className="rounded-xl border border-line bg-white px-4 py-3 font-sans text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
 
         {state.error ? (
-          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 font-mono text-[12px] text-ink">
+          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
             {state.error}
           </p>
         ) : null}
@@ -71,13 +71,13 @@ export default function ReviewForm({
         <button
           type="submit"
           disabled={pending}
-          className="self-start rounded-full bg-yellow px-5 py-3 font-mono text-[11px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
+          className="self-start rounded-full bg-yellow px-5 py-3 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
         >
           {pending
-            ? "ENVOI…"
+            ? "Envoi…"
             : existingReview
-              ? "MODIFIER MON AVIS →"
-              : "PUBLIER MON AVIS →"}
+              ? "Modifier mon avis →"
+              : "Publier mon avis →"}
         </button>
       </form>
 
@@ -92,7 +92,7 @@ export default function ReviewForm({
           <input type="hidden" name="agencyId" value={agencyId} />
           <button
             type="submit"
-            className="font-mono text-[11px] font-medium text-muted"
+            className="text-[12.5px] font-semibold text-muted"
           >
             Supprimer mon avis
           </button>

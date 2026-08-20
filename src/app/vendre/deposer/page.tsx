@@ -21,15 +21,15 @@ export default async function DeposerPage() {
   return (
     <div className="animate-fade-up max-w-[900px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-gold">
-          VENDRE
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-gold">
+          Vendre
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          VOTRE ANNONCE
+          Votre annonce
         </h2>
       </div>
-      <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR À L&apos;ACCUEIL
+      <Link href="/" className="text-[13px] font-semibold text-blue">
+        ← Retour à l&apos;accueil
       </Link>
 
       <div className="mt-6.5">
