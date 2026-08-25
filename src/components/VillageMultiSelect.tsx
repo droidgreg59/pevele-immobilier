@@ -63,7 +63,7 @@ export default function VillageMultiSelect({
                 key={slug}
                 type="button"
                 onClick={() => remove(slug)}
-                className="flex items-center gap-1.5 rounded-full bg-[#EDF1FB] px-3 py-1.5 font-mono text-[11px] font-medium text-blue transition hover:bg-[#DEE6F8]"
+                className="flex items-center gap-1.5 rounded-full bg-blue-soft px-3 py-1.5 text-[12.5px] font-semibold text-blue transition hover:brightness-95"
               >
                 {village.nom}
                 <span aria-hidden="true">×</span>
@@ -72,7 +72,7 @@ export default function VillageMultiSelect({
           })}
         </div>
       ) : (
-        <span className="font-sans text-[12.5px] text-muted-2">
+        <span className="text-[12.5px] text-muted-2">
           Aucun village sélectionné — toute la Pévèle sera prise en compte.
         </span>
       )}

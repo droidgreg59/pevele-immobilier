@@ -24,18 +24,18 @@ export default async function PrixPage() {
   return (
     <div className="animate-fade-up max-w-[1100px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
-        <span className="rounded-full border border-line bg-surface px-3 py-1.5 font-mono text-sm text-blue">
-          PRIX
+        <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
+          Prix
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          PRIX DE L&apos;IMMOBILIER
+          Prix de l&apos;immobilier
         </h2>
       </div>
-      <Link href="/" className="font-mono text-[11.5px] font-medium text-blue">
-        ← RETOUR À L&apos;ACCUEIL
+      <Link href="/" className="text-[13px] font-semibold text-blue">
+        ← Retour à l&apos;accueil
       </Link>
 
-      <p className="mt-6 max-w-[70ch] font-sans text-[15px] leading-[1.6] text-muted">
+      <p className="mt-6 max-w-[70ch] text-[15px] leading-[1.6] text-muted">
         Prix moyen au m² constaté dans chaque village, calculé à partir des
         ventes de maisons et d&apos;appartements réellement enregistrées
         (DVF, {anneeMin}–{anneeMax}). L&apos;historique du prix propre à
@@ -43,12 +43,12 @@ export default async function PrixPage() {
       </p>
 
       <div className="mt-7 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm">
-        <table className="w-full min-w-[560px] border-collapse font-mono text-[12.5px]">
+        <table className="w-full min-w-[560px] border-collapse text-[13.5px]">
           <thead>
             <tr className="border-b border-line bg-surface text-left">
-              <th className="px-4 py-3 font-medium text-muted">VILLAGE</th>
-              <th className="px-4 py-3 font-medium text-muted">PRIX MOYEN / M²</th>
-              <th className="px-4 py-3 font-medium text-muted">VENTES CONSTATÉES</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Village</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Prix moyen / m²</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Ventes constatées</th>
             </tr>
           </thead>
           <tbody>
@@ -71,7 +71,7 @@ export default async function PrixPage() {
         </table>
       </div>
 
-      <p className="mt-3 font-mono text-[10px] text-muted-2">
+      <p className="mt-3 text-[11.5px] text-muted-2">
         Source : DVF (Demandes de valeurs foncières), data.gouv.fr / Etalab —
         ventes de maisons et appartements en un seul lot, hors valeurs
         atypiques.

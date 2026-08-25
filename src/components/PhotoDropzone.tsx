@@ -13,7 +13,7 @@ export default function PhotoDropzone({
 
   if (maxNewPhotos <= 0) {
     return (
-      <p className="m-0 font-mono text-[11px] text-muted-2">
+      <p className="m-0 text-[12px] text-muted-2">
         Nombre maximum de photos atteint ({MAX_PHOTOS}). Retirez-en une pour
         en ajouter une autre.
       </p>

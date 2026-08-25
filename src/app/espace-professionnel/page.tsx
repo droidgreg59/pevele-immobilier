@@ -71,10 +71,10 @@ export default function EspaceProfessionnelPage() {
           <span className="font-display text-[18px] font-extrabold">
             Je suis une agence immobilière
           </span>
-          <span className="font-sans text-[13.5px] leading-[1.5] text-white/80">
+          <span className="text-[13.5px] leading-[1.5] text-white/80">
             Créez votre page agence et publiez vos annonces.
           </span>
-          <span className="mt-1 font-mono text-[11px] font-medium">
+          <span className="mt-1 text-[13px] font-semibold">
             Créer mon compte →
           </span>
         </Link>
@@ -86,16 +86,16 @@ export default function EspaceProfessionnelPage() {
           <span className="font-display text-[18px] font-extrabold">
             Je suis un artisan
           </span>
-          <span className="font-sans text-[13.5px] leading-[1.5] text-white/80">
+          <span className="text-[13.5px] leading-[1.5] text-white/80">
             Figurez dans l&apos;annuaire et recevez des demandes de devis.
           </span>
-          <span className="mt-1 font-mono text-[11px] font-medium">
+          <span className="mt-1 text-[13px] font-semibold">
             Créer mon compte →
           </span>
         </Link>
       </div>
 
-      <p className="mt-8 text-center font-mono text-[11.5px] text-muted">
+      <p className="mt-8 text-center text-[13.5px] text-muted">
         Déjà inscrit ?{" "}
         <Link href="/connexion" className="text-blue">
           Se connecter →
