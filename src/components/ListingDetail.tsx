@@ -125,7 +125,7 @@ export default function ListingDetail({
         <div>
           <PhotoGallery
             photos={listing.photos}
-            alt={listing.titre}
+            alt={`${listing.titre} — ${listing.commune}`}
             overlay={
               <>
                 <span

@@ -5,9 +5,12 @@ import { packs } from "@/data/packs";
 import PackCard from "@/components/PackCard";
 
 export const metadata: Metadata = {
-  title: "Vendre en Pévèle — Pévèle Immobilier",
+  title: "Vendre son bien en Pévèle",
   description:
-    "Composez votre accompagnement pour vendre votre bien en Pévèle : annonce seule, ou services à la carte.",
+    "Estimation gratuite, dépôt d'annonce ou accompagnement par une agence : composez votre parcours pour vendre votre bien dans les 19 communes de la Pévèle.",
+  alternates: {
+    canonical: "/vendre",
+  },
 };
 
 const ACTIONS = [

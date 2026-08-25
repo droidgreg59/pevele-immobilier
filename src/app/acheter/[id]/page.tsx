@@ -6,6 +6,9 @@ import { getSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
 import ListingDetail from "@/components/ListingDetail";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
+import { formatPrix } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +18,18 @@ export async function generateMetadata({
   const { id } = await params;
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "VENTE") return {};
+  const title = `${listing.titre} à vendre à ${listing.commune} — ${formatPrix(listing.prix, listing.transaction)}`;
   return {
-    title: `${listing.titre} — ${listing.commune} — Pévèle Immobilier`,
+    title,
     description: listing.description,
+    alternates: {
+      canonical: `/acheter/${listing.id}`,
+    },
+    openGraph: {
+      title,
+      description: listing.description,
+      images: listing.photos.length > 0 ? listing.photos.map((p) => ({ url: p.url })) : undefined,
+    },
   };
 }
 
@@ -40,15 +52,26 @@ export default async function AcheterListingPage({
     : false;
 
   return (
-    <ListingDetail
-      listing={listing}
-      dvfStats={dvfStats}
-      dvfRecent={dvfRecent}
-      priceHistory={priceHistory}
-      isOwner={session?.userId === listing.ownerId}
-      isLoggedIn={session !== null}
-      isFavorited={isFavorited}
-      artisans={artisans}
-    />
+    <>
+      <JsonLd data={listingJsonLd(listing)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Accueil", url: "/" },
+          { name: "Acheter", url: "/acheter" },
+          { name: listing.commune, url: `/villages/${listing.villageSlug}` },
+          { name: listing.titre, url: `/acheter/${listing.id}` },
+        ])}
+      />
+      <ListingDetail
+        listing={listing}
+        dvfStats={dvfStats}
+        dvfRecent={dvfRecent}
+        priceHistory={priceHistory}
+        isOwner={session?.userId === listing.ownerId}
+        isLoggedIn={session !== null}
+        isFavorited={isFavorited}
+        artisans={artisans}
+      />
+    </>
   );
 }

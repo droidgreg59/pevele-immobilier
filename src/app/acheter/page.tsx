@@ -7,9 +7,12 @@ import { getSession } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Acheter en Pévèle — Pévèle Immobilier",
+  title: "Acheter en Pévèle — Annonces et prix immobiliers",
   description:
-    "Toutes les annonces de maisons, appartements et terrains à vendre en Pévèle, agences et particuliers.",
+    "Toutes les annonces de maisons, appartements et terrains à vendre dans les 19 communes de la Pévèle, agences et particuliers, avec le prix moyen au m² de chaque village.",
+  alternates: {
+    canonical: "/acheter",
+  },
 };
 
 export default async function AcheterPage({

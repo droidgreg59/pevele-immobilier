@@ -6,9 +6,12 @@ import { getDvfStatsForVillage } from "@/lib/dvf";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Estimer mon bien — Pévèle Immobilier",
+  title: "Estimer son bien immobilier en Pévèle",
   description:
-    "Estimez gratuitement votre bien en Pévèle à partir des ventes DVF réellement enregistrées, sans engagement.",
+    "Estimez gratuitement votre maison ou appartement dans n'importe quelle commune de la Pévèle, à partir des prix DVF réellement constatés — sans engagement.",
+  alternates: {
+    canonical: "/estimer",
+  },
 };
 
 const TYPES = ["Peu importe", "Maison", "Appartement"] as const;

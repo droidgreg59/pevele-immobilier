@@ -13,6 +13,8 @@ import { getSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 import ReviewForm from "@/components/ReviewForm";
 import EstimationRequestForm from "@/components/EstimationRequestForm";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbJsonLd, localBusinessJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +24,17 @@ export async function generateMetadata({
   const { id } = await params;
   const agency = await getAgencyById(id);
   if (!agency) return {};
+  const nom = agency.entreprise ?? agency.nom;
   return {
-    title: `${agency.entreprise ?? agency.nom} — Pévèle Immobilier`,
-    description: `Les annonces de ${agency.entreprise ?? agency.nom} sur Pévèle Immobilier.`,
+    title: `${nom} — Agence immobilière en Pévèle`,
+    description: `${nom}, agence immobilière en Pévèle : annonces à vendre et à louer, coordonnées et avis clients sur Pévèle Immobilier.`,
+    alternates: {
+      canonical: `/professionnels/${agency.id}`,
+    },
+    openGraph: {
+      title: `${nom} — Agence immobilière en Pévèle`,
+      images: agency.logoUrl ? [{ url: agency.logoUrl }] : undefined,
+    },
   };
 }
 
@@ -109,11 +119,35 @@ export default async function AgencyPage({
 
   return (
     <div className="animate-fade-up max-w-[1200px] px-9 py-8">
+      <JsonLd
+        data={localBusinessJsonLd({
+          id: agency.id,
+          path: "professionnels",
+          nom: agency.entreprise ?? agency.nom,
+          telephone: agency.telephone,
+          email: agency.email,
+          adresse: agency.adresse,
+          codePostal: agency.codePostal,
+          ville: agency.ville,
+          logoUrl: agency.logoUrl,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Accueil", url: "/" },
+          { name: "Professionnels", url: "/professionnels" },
+          { name: agency.entreprise ?? agency.nom, url: `/professionnels/${agency.id}` },
+        ])}
+      />
       <div className="flex items-center gap-5">
         <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
           {agency.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={agency.logoUrl} alt="" className="h-full w-full object-cover" />
+            <img
+              src={agency.logoUrl}
+              alt={`Logo ${agency.entreprise ?? agency.nom}`}
+              className="h-full w-full object-cover"
+            />
           ) : (
             <span className="font-display text-3xl text-muted-2">
               {(agency.entreprise ?? agency.nom).charAt(0).toUpperCase()}

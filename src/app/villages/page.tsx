@@ -4,9 +4,12 @@ import { villages } from "@/data/villages";
 import VillageCard from "@/components/VillageCard";
 
 export const metadata: Metadata = {
-  title: "Les 19 villages de la Pévèle — Pévèle Immobilier",
+  title: "Les 19 communes de la Pévèle",
   description:
-    "Découvrez les 19 communes de la Pévèle : présentation, annonces et prix village par village.",
+    "Découvrez les 19 communes de la Pévèle : présentation, annonces immobilières et prix au m² village par village.",
+  alternates: {
+    canonical: "/villages",
+  },
 };
 
 export default function VillagesPage() {

@@ -5,6 +5,8 @@ import { getArtisanById } from "@/lib/artisans";
 import { getVillageBySlug } from "@/data/villages";
 import { getSession } from "@/lib/session";
 import DevisRequestForm from "@/components/DevisRequestForm";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbJsonLd, localBusinessJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +16,16 @@ export async function generateMetadata({
   const { id } = await params;
   const artisan = await getArtisanById(id);
   if (!artisan) return {};
+  const nom = artisan.entreprise ?? artisan.nom;
+  const categorie = artisan.categories[0];
   return {
-    title: `${artisan.entreprise ?? artisan.nom} — Pévèle Immobilier`,
-    description: artisan.description ?? `${artisan.entreprise ?? artisan.nom} sur Pévèle Immobilier.`,
+    title: categorie ? `${nom} — ${categorie} en Pévèle` : `${nom} — Artisan en Pévèle`,
+    description:
+      artisan.description ??
+      `${nom}, artisan${categorie ? ` (${categorie})` : ""} intervenant en Pévèle. Coordonnées et demande de devis sur Pévèle Immobilier.`,
+    alternates: {
+      canonical: `/artisans/${artisan.id}`,
+    },
   };
 }
 
@@ -36,6 +45,26 @@ export default async function ArtisanPage({
 
   return (
     <div className="animate-fade-up max-w-[1000px] px-9 py-8">
+      <JsonLd
+        data={localBusinessJsonLd({
+          id: artisan.id,
+          path: "artisans",
+          nom: artisan.entreprise ?? artisan.nom,
+          description: artisan.description,
+          telephone: artisan.telephone,
+          email: artisan.email,
+          adresse: artisan.adresse,
+          codePostal: artisan.codePostal,
+          ville: artisan.ville,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Accueil", url: "/" },
+          { name: "Artisans", url: "/artisans" },
+          { name: artisan.entreprise ?? artisan.nom, url: `/artisans/${artisan.id}` },
+        ])}
+      />
       <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-gold">
         Artisan
       </span>

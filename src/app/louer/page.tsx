@@ -7,9 +7,12 @@ import { getSession } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Louer en Pévèle — Pévèle Immobilier",
+  title: "Louer en Pévèle — Annonces de location",
   description:
-    "Toutes les annonces de location en Pévèle, agences et particuliers.",
+    "Toutes les annonces de maisons et appartements à louer dans les 19 communes de la Pévèle, agences et particuliers.",
+  alternates: {
+    canonical: "/louer",
+  },
 };
 
 export default async function LouerPage({

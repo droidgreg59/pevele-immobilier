@@ -8,6 +8,8 @@ import { getFavoriteListingIds } from "@/lib/favorites";
 import { getSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 import ResumeBanner from "@/components/ResumeBanner";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +19,20 @@ export async function generateMetadata({
   const { slug } = await params;
   const village = getVillageBySlug(slug);
   if (!village) return {};
+  const dvfStats = await getDvfStatsForVillage(village.slug);
+  const priceLine = dvfStats
+    ? `Prix moyen constaté : ${dvfStats.avgPrixM2.toLocaleString("fr-FR")} €/m² (${dvfStats.count} vente${dvfStats.count > 1 ? "s" : ""} DVF). `
+    : "";
   return {
-    title: `Immobilier à ${village.nom} — Pévèle Immobilier`,
-    description: village.description,
+    title: `Prix immobilier et annonces à ${village.nom}`,
+    description: `${priceLine}Annonces immobilières à vendre et à louer à ${village.nom} : ${village.description}`,
+    alternates: {
+      canonical: `/villages/${village.slug}`,
+    },
+    openGraph: {
+      title: `Prix immobilier et annonces à ${village.nom} — Pévèle Immobilier`,
+      description: priceLine || village.description,
+    },
   };
 }
 
@@ -44,6 +57,13 @@ export default async function VillagePage({
 
   return (
     <div className="animate-fade-up max-w-[1200px] px-9 py-8">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Accueil", url: "/" },
+          { name: "Villages", url: "/villages" },
+          { name: village.nom, url: `/villages/${village.slug}` },
+        ])}
+      />
       <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-green">
         Fiche village
       </span>

@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Espace professionnel — Pévèle Immobilier",
+  title: "Espace professionnel",
   description:
     "Agences immobilières et artisans de la Pévèle : développez votre activité sur le portail local.",
+  alternates: {
+    canonical: "/espace-professionnel",
+  },
 };
 
 const AVANTAGES = [

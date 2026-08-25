@@ -6,9 +6,12 @@ import { getAgencies } from "@/lib/agencies";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Professionnels — Pévèle Immobilier",
+  title: "Agences immobilières en Pévèle",
   description:
-    "Les agences immobilières partenaires de la Pévèle et leurs annonces en ligne.",
+    "L'annuaire des agences immobilières partenaires de la Pévèle : coordonnées, annonces en ligne et avis clients.",
+  alternates: {
+    canonical: "/professionnels",
+  },
 };
 
 const AVANTAGES = [
@@ -73,7 +76,7 @@ export default async function ProfessionnelsPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={a.logoUrl}
-                        alt=""
+                        alt={`Logo ${a.entreprise ?? a.nom}`}
                         className="h-full w-full object-cover"
                       />
                     ) : (

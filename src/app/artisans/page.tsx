@@ -6,9 +6,12 @@ import { getArtisans } from "@/lib/artisans";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Artisans & Habitat — Pévèle Immobilier",
+  title: "Artisans & habitat en Pévèle",
   description:
     "L'annuaire des artisans et professionnels de l'habitat en Pévèle : rénovation, toiture, électricité, jardin et plus.",
+  alternates: {
+    canonical: "/artisans",
+  },
 };
 
 export default async function ArtisansPage({

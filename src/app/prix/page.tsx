@@ -6,9 +6,12 @@ import { getDvfStatsForAllVillages } from "@/lib/dvf";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Prix de l'immobilier en Pévèle — Pévèle Immobilier",
+  title: "Prix de l'immobilier en Pévèle par commune",
   description:
-    "Le prix moyen au m² dans les 19 communes de la Pévèle, à partir des transactions DVF (data.gouv.fr).",
+    "Le prix moyen au m² dans chacune des 19 communes de la Pévèle, classé et comparé, à partir des transactions DVF réellement enregistrées (data.gouv.fr).",
+  alternates: {
+    canonical: "/prix",
+  },
 };
 
 export default async function PrixPage() {
