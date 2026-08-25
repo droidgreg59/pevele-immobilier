@@ -12,7 +12,7 @@ import { respondToProposalAction } from "@/lib/proposal-actions";
 import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
 import { getVisitRequestsForOwner } from "@/lib/visits";
-import { getEstimationRequestsForAgency } from "@/lib/estimations";
+import { getEstimationRequestsForAgency, getEstimationRequestsByUser } from "@/lib/estimations";
 import { getAgencies } from "@/lib/agencies";
 import { isUserAdmin, getPendingListings } from "@/lib/admin";
 import { getVillageBySlug } from "@/data/villages";
@@ -77,6 +77,7 @@ export default async function ComptePage() {
     devisRequests,
     visitRequests,
     estimationRequests,
+    myEstimationRequests,
     agencies,
     pendingMandateCount,
     clientCount,
@@ -89,6 +90,7 @@ export default async function ComptePage() {
     isArtisan ? getDevisRequestsForArtisan(session.userId) : Promise.resolve([]),
     isArtisan ? Promise.resolve([]) : getVisitRequestsForOwner(session.userId),
     isAgence ? getEstimationRequestsForAgency(session.userId) : Promise.resolve([]),
+    getEstimationRequestsByUser(session.userId),
     getAgencies(),
     isAgence ? getPendingMandateCount(session.userId) : Promise.resolve(0),
     isAgence ? getClientCount(session.userId) : Promise.resolve(0),
@@ -118,9 +120,25 @@ export default async function ComptePage() {
           minute: "2-digit",
         })
       : null,
-    traite: e.traite,
+    statut: e.statut,
     createdLabel: e.createdAt.toLocaleDateString("fr-FR"),
     authorEmail: e.author.email,
+  }));
+  const myEstimationItems = myEstimationRequests.map((e) => ({
+    id: e.id,
+    adresse: e.adresse,
+    agencyId: e.agencyId,
+    agencyNom: e.agencyNom,
+    statut: e.statut,
+    preferredDateLabel: e.preferredDate
+      ? e.preferredDate.toLocaleString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : null,
   }));
   const visitItems = visitRequests.map((v) => ({
     id: v.id,
@@ -334,6 +352,54 @@ export default async function ComptePage() {
           )}
         </div>
       ) : null}
+
+      <div className="mt-8">
+        <span className="text-[11px] font-semibold text-ink">
+          Mes demandes d&apos;estimation ({myEstimationItems.length})
+        </span>
+        {myEstimationItems.length > 0 ? (
+          <div className="mt-3 flex flex-col gap-2">
+            {myEstimationItems.map((e) => (
+              <div
+                key={e.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <Link
+                    href={`/professionnels/${e.agencyId}`}
+                    className="text-[14px] font-semibold text-ink hover:text-blue"
+                  >
+                    {e.agencyNom}
+                  </Link>
+                  <span className="text-[13px] text-muted">
+                    {e.adresse}
+                    {e.preferredDateLabel ? ` · ${e.preferredDateLabel}` : ""}
+                  </span>
+                </div>
+                <span
+                  className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                  style={{
+                    background:
+                      e.statut === "ACCEPTEE" ? "#EAF3E8" : e.statut === "REFUSEE" ? "var(--pvl-surface)" : "#FBF3DC",
+                    color:
+                      e.statut === "ACCEPTEE"
+                        ? "var(--pvl-green)"
+                        : e.statut === "REFUSEE"
+                          ? "var(--pvl-muted)"
+                          : "var(--pvl-gold)",
+                  }}
+                >
+                  {e.statut === "ACCEPTEE" ? "Acceptée" : e.statut === "REFUSEE" ? "Refusée" : "En attente"}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-[14px] text-muted">
+            Les demandes de rendez-vous d&apos;estimation envoyées à une agence apparaîtront ici.
+          </p>
+        )}
+      </div>
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
         <div className="flex flex-col gap-1">

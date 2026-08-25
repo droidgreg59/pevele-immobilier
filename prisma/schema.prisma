@@ -249,20 +249,22 @@ model VisitRequest {
 }
 
 /// Demande de rendez-vous d'estimation envoyée à une agence depuis sa fiche
-/// publique — pas de notification email pour l'instant, consultée depuis
-/// /compte côté agence.
+/// publique — l'agence accepte ou refuse (comme un SearchMandate), pas de
+/// notification email pour l'instant. Consultée depuis /compte des deux côtés
+/// : l'agence qui reçoit, l'auteur qui suit sa demande.
 model EstimationRequest {
-  id            String    @id @default(cuid())
-  agency        User      @relation("AgencyEstimations", fields: [agencyId], references: [id], onDelete: Cascade)
+  id            String        @id @default(cuid())
+  agency        User          @relation("AgencyEstimations", fields: [agencyId], references: [id], onDelete: Cascade)
   agencyId      String
-  author        User      @relation("AuthorEstimations", fields: [authorId], references: [id], onDelete: Cascade)
+  author        User          @relation("AuthorEstimations", fields: [authorId], references: [id], onDelete: Cascade)
   authorId      String
   adresse       String
   nom           String
   telephone     String
   preferredDate DateTime?
-  traite        Boolean   @default(false)
-  createdAt     DateTime  @default(now())
+  statut        MandateStatus @default(EN_ATTENTE)
+  respondedAt   DateTime?
+  createdAt     DateTime      @default(now())
 
   @@index([agencyId])
   @@index([authorId])

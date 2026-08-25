@@ -61,12 +61,20 @@ export async function createEstimationRequestAction(
   return { success: true };
 }
 
-export async function updateEstimationStatusAction(id: string, traite: boolean) {
+export async function respondToEstimationRequestAction(formData: FormData) {
+  const estimationRequestId = String(formData.get("estimationRequestId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
   const session = await getSession();
   if (!session) redirect("/connexion");
+  if (decision !== "accept" && decision !== "refuse") redirect("/compte");
 
   await prisma.estimationRequest.updateMany({
-    where: { id, agencyId: session.userId },
-    data: { traite },
+    where: { id: estimationRequestId, agencyId: session.userId, statut: "EN_ATTENTE" },
+    data: {
+      statut: decision === "accept" ? "ACCEPTEE" : "REFUSEE",
+      respondedAt: new Date(),
+    },
   });
+
+  redirect("/compte");
 }
