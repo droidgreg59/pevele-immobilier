@@ -8,7 +8,7 @@ import ArtisanProfileForm from "@/components/ArtisanProfileForm";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Ma fiche artisan — Pévèle Immobilier",
+  title: "Ma fiche artisan",
 };
 
 export default async function CompteArtisanPage() {

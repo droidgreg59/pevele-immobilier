@@ -6,7 +6,7 @@ import ProjectWizard from "@/components/ProjectWizard";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Définir mon projet — Pévèle Immobilier",
+  title: "Définir mon projet",
   description:
     "Décrivez votre projet immobilier en quelques clics pour retrouver les annonces qui vous correspondent.",
 };

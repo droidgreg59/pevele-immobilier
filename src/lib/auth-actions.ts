@@ -62,6 +62,10 @@ export async function registerAction(
     type: user.type,
   });
 
+  if (type === "AGENCE" || type === "ARTISAN") {
+    redirect("/bienvenue");
+  }
+
   redirect(safeNextPath(formData));
 }
 

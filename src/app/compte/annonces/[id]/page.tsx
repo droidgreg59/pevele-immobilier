@@ -8,7 +8,7 @@ import EditListingForm from "@/components/EditListingForm";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Modifier mon annonce — Pévèle Immobilier",
+  title: "Modifier mon annonce",
 };
 
 export default async function ModifierAnnoncePage({

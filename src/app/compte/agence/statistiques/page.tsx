@@ -7,7 +7,7 @@ import { getAgencyStats } from "@/lib/stats";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Statistiques — Pévèle Immobilier",
+  title: "Statistiques",
 };
 
 function StatTile({ value, label }: { value: string; label: string }) {

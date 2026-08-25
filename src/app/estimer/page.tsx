@@ -97,6 +97,17 @@ export default async function EstimerPage({
                         Voir {village!.nom} →
                       </Link>
                     </div>
+                    <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-blue-soft px-4 py-3">
+                      <span className="text-[13px] text-ink">
+                        Vous préférez un avis professionnel ?
+                      </span>
+                      <Link
+                        href="/professionnels"
+                        className="ml-auto whitespace-nowrap text-[12.5px] font-semibold text-blue"
+                      >
+                        Prendre RDV estimation avec une agence →
+                      </Link>
+                    </div>
                   </>
                 ) : (
                   <>

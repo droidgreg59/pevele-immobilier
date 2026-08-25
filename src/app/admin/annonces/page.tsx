@@ -7,7 +7,7 @@ import { formatPrix } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Modération des annonces — Pévèle Immobilier",
+  title: "Modération des annonces",
 };
 
 const TYPE_BIEN_LABEL: Record<string, string> = {

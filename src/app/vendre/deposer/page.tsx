@@ -7,7 +7,7 @@ import PublishForm from "@/components/PublishForm";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Déposer une annonce — Pévèle Immobilier",
+  title: "Déposer une annonce",
   description: "Publiez votre annonce immobilière en Pévèle.",
 };
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import LoginForm from "@/components/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Se connecter — Pévèle Immobilier",
+  title: "Se connecter",
   description: "Connectez-vous à votre compte Pévèle Immobilier.",
 };
 

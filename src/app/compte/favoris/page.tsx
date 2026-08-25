@@ -8,7 +8,7 @@ import FavoritesHub, { type FavoriteHubItem } from "@/components/FavoritesHub";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Mes favoris — Pévèle Immobilier",
+  title: "Mes favoris",
 };
 
 export default async function CompteFavorisPage() {

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createVisitRequestAction, type VisitFormState } from "@/lib/visit-actions";
+import { tomorrowDateString } from "@/lib/validation";
 
 const initialState: VisitFormState = {};
 
@@ -45,16 +46,18 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
           <input
             name="preferredDate"
             type="date"
+            min={tomorrowDateString()}
             className="rounded-xl border border-line bg-white px-3.5 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            Téléphone (facultatif)
+            Téléphone
           </span>
           <input
             name="telephone"
             type="tel"
+            required
             placeholder="ex. 06 00 00 00 00"
             className="rounded-xl border border-line bg-white px-3.5 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />

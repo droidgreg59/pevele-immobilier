@@ -9,7 +9,7 @@ import XmlImportPanel from "@/components/XmlImportPanel";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Coordonnées de mon agence — Pévèle Immobilier",
+  title: "Coordonnées de mon agence",
 };
 
 export default async function CompteAgencePage() {

@@ -12,7 +12,7 @@ import { getVillageBySlug } from "@/data/villages";
 import { getSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 import ReviewForm from "@/components/ReviewForm";
-import EstimationRequestForm from "@/components/EstimationRequestForm";
+import EstimationCta from "@/components/EstimationCta";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, localBusinessJsonLd } from "@/lib/seo";
 
@@ -332,11 +332,11 @@ export default async function AgencyPage({
             </span>
             <div>
               <span className="block text-[16px] font-bold text-ink">
-                Demander une estimation
+                Rdv estimation
               </span>
               <p className="m-0 mt-1 max-w-[60ch] text-[13.5px] leading-[1.5] text-muted">
-                {agency.entreprise ?? agency.nom} vous recontacte pour convenir
-                d&apos;un rendez-vous d&apos;estimation à l&apos;adresse de votre bien.
+                Choisissez une date et une heure, {agency.entreprise ?? agency.nom} vous
+                recontacte pour valider le rendez-vous à l&apos;adresse de votre bien.
               </p>
             </div>
           </div>
@@ -347,10 +347,10 @@ export default async function AgencyPage({
                 href={`/connexion?next=${encodeURIComponent(`/professionnels/${agency.id}`)}`}
                 className="rounded-full bg-blue px-5 py-2.5 text-[13px] font-semibold text-white transition hover:brightness-110"
               >
-                Se connecter pour demander une estimation →
+                Se connecter pour prendre RDV →
               </Link>
             ) : (
-              <EstimationRequestForm agencyId={agency.id} />
+              <EstimationCta agencyId={agency.id} />
             )}
           </div>
         </div>

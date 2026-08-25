@@ -49,7 +49,7 @@ function locationLabel(villageSlugs: string | null, q: string | null): string {
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Mon compte — Pévèle Immobilier",
+  title: "Mon compte",
 };
 
 const STUBS_PARTICULIER: string[] = [];

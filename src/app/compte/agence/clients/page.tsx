@@ -11,7 +11,7 @@ import { formatPrix } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Mes clients — Pévèle Immobilier",
+  title: "Mes clients",
 };
 
 function searchSummary(s: { transaction: "VENTE" | "LOCATION"; q: string | null; budgetMax: number | null }) {

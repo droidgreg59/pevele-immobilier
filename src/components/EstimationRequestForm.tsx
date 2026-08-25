@@ -1,10 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
+import { Clock } from "lucide-react";
 import {
   createEstimationRequestAction,
   type EstimationFormState,
 } from "@/lib/estimation-actions";
+import { tomorrowDateString } from "@/lib/validation";
 
 const initialState: EstimationFormState = {};
 
@@ -16,10 +18,14 @@ export default function EstimationRequestForm({ agencyId }: { agencyId: string }
 
   if (state.success) {
     return (
-      <p className="m-0 max-w-[560px] rounded-xl bg-[#EAF3E8] px-4 py-3.5 text-[14px] text-ink">
-        Votre demande de rendez-vous a été envoyée — l&apos;agence vous
-        recontactera pour la confirmer.
-      </p>
+      <div className="flex max-w-[560px] items-start gap-3 rounded-xl bg-[#EAF3E8] px-4 py-3.5">
+        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-green" strokeWidth={1.75} />
+        <p className="m-0 text-[14px] leading-[1.5] text-ink">
+          Votre demande de rendez-vous a été envoyée.{" "}
+          <b>Elle est en attente de validation par l&apos;agence</b> : c&apos;est elle qui
+          confirme (ou propose un autre créneau) en vous recontactant directement.
+        </p>
+      </div>
     );
   }
 
@@ -73,6 +79,7 @@ export default function EstimationRequestForm({ agencyId }: { agencyId: string }
             name="preferredDate"
             type="date"
             required
+            min={tomorrowDateString()}
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
@@ -100,7 +107,7 @@ export default function EstimationRequestForm({ agencyId }: { agencyId: string }
         disabled={pending}
         className="self-start rounded-full bg-blue px-5 py-3 text-[13px] font-semibold text-white shadow-sm transition hover:brightness-110 disabled:opacity-60"
       >
-        {pending ? "Envoi…" : "Demander une estimation →"}
+        {pending ? "Envoi…" : "Envoyer la demande de RDV →"}
       </button>
     </form>
   );

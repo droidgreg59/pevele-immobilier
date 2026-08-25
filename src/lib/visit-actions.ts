@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 
 export type VisitFormState = { error?: string; success?: boolean };
 
@@ -30,6 +31,15 @@ export async function createVisitRequestAction(
   if (!message) {
     return { error: "Merci d'ajouter un message." };
   }
+  if (!telephone) {
+    return { error: "Merci d'indiquer votre téléphone." };
+  }
+  if (!isValidPhoneNumber(telephone)) {
+    return { error: "Merci d'indiquer un numéro de téléphone valide." };
+  }
+  if (preferredDateRaw && !isDateAfterToday(preferredDateRaw)) {
+    return { error: "La date souhaitée doit être postérieure à aujourd'hui." };
+  }
 
   const preferredDate = preferredDateRaw ? new Date(preferredDateRaw) : null;
   if (preferredDate && Number.isNaN(preferredDate.getTime())) {
@@ -41,7 +51,7 @@ export async function createVisitRequestAction(
       listingId,
       authorId: session.userId,
       message,
-      telephone: telephone || null,
+      telephone,
       preferredDate,
     },
   });

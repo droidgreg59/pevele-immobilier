@@ -3,7 +3,7 @@ import Link from "next/link";
 import RegisterForm from "@/components/RegisterForm";
 
 export const metadata: Metadata = {
-  title: "Créer un compte — Pévèle Immobilier",
+  title: "Créer un compte",
   description:
     "Créez votre compte particulier ou agence sur Pévèle Immobilier.",
 };

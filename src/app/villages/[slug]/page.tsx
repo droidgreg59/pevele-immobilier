@@ -9,7 +9,7 @@ import { getSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 import ResumeBanner from "@/components/ResumeBanner";
 import JsonLd from "@/components/JsonLd";
-import { breadcrumbJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, SITE_NAME } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export async function generateMetadata({
       canonical: `/villages/${village.slug}`,
     },
     openGraph: {
-      title: `Prix immobilier et annonces à ${village.nom} — Pévèle Immobilier`,
+      title: `Prix immobilier et annonces à ${village.nom} — ${SITE_NAME}`,
       description: priceLine || village.description,
     },
   };

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 
 export type EstimationFormState = { error?: string; success?: boolean };
 
@@ -28,7 +29,13 @@ export async function createEstimationRequestAction(
   if (!adresse) return { error: "Merci d'indiquer l'adresse du bien." };
   if (!nom) return { error: "Merci d'indiquer votre nom et prénom." };
   if (!telephone) return { error: "Merci d'indiquer votre téléphone." };
+  if (!isValidPhoneNumber(telephone)) {
+    return { error: "Merci d'indiquer un numéro de téléphone valide." };
+  }
   if (!dateRaw || !timeRaw) return { error: "Merci d'indiquer une date et une heure souhaitées." };
+  if (!isDateAfterToday(dateRaw)) {
+    return { error: "La date souhaitée doit être postérieure à aujourd'hui." };
+  }
 
   const preferredDate = new Date(`${dateRaw}T${timeRaw}`);
   if (Number.isNaN(preferredDate.getTime())) {
