@@ -3,7 +3,7 @@
 import { villages } from "@/data/villages";
 
 /**
- * Mini-carte tactile (mêmes coordonnées 420×560 que VillageMap/villages.ts)
+ * Mini-carte tactile (mêmes coordonnées 440×600 que VillageMap/villages.ts)
  * pour sélectionner des villages en tapant sur un point plutôt qu'en tapant
  * du texte — complète VillageMultiSelect, ne le remplace pas.
  */
@@ -20,7 +20,7 @@ export default function VillageTapMap({
 
   return (
     <div className="relative h-[190px] overflow-hidden rounded-2xl bg-blue-soft">
-      <svg viewBox="0 0 420 560" className="h-full w-full">
+      <svg viewBox="0 0 440 600" className="h-full w-full">
         {villages.map((v) => {
           const active = value.includes(v.slug);
           return (

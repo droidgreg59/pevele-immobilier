@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: `%s — ${SITE_NAME}`,
   },
   description:
-    "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 19 communes, agences et particuliers réunis.",
+    "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 35 communes, agences et particuliers réunis.",
   alternates: {
     canonical: "/",
   },
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: "Pévèle Immobilier — Annonces et prix immobiliers dans toute la Pévèle",
     description:
-      "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 19 communes.",
+      "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 35 communes.",
     images: [{ url: "/images/camphin-en-pevele.png" }],
   },
   twitter: {

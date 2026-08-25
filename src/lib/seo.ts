@@ -23,7 +23,7 @@ export function organizationJsonLd() {
     name: SITE_NAME,
     url: SITE_URL,
     description:
-      "Le portail local des annonces et des prix immobiliers de la Pévèle : agences, particuliers et artisans réunis pour les 19 communes.",
+      "Le portail local des annonces et des prix immobiliers de la Pévèle : agences, particuliers et artisans réunis pour les 35 communes.",
     areaServed: {
       "@type": "Place",
       name: "La Pévèle",
