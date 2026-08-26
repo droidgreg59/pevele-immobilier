@@ -52,7 +52,7 @@ enum AccountType {
 
 model Listing {
   id                 String            @id @default(cuid())
-  owner              User              @relation(fields: [ownerId], references: [id])
+  owner              User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId            String
   transaction        TransactionType
   statut             ListingStatus     @default(EN_VERIFICATION)
@@ -134,6 +134,9 @@ model Review {
   authorId    String
   note        Int
   commentaire String
+  /// Avis posté par un administrateur depuis le back-office, affiché comme
+  /// un avis officiel « Pévèle Immobilier » plutôt qu'au nom de l'auteur.
+  isOfficial  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

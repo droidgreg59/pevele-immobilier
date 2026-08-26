@@ -397,8 +397,13 @@ export default async function AgencyPage({
             {reviews.map((r) => (
               <li key={r.id} className="rounded-2xl border border-line bg-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[13.5px] font-semibold text-ink">
-                    {r.author.nom}
+                  <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-ink">
+                    {r.isOfficial ? "Pévèle Immobilier" : r.author.nom}
+                    {r.isOfficial ? (
+                      <span className="rounded-full bg-blue-soft px-2 py-0.5 text-[10.5px] font-semibold text-blue">
+                        ✓ Avis officiel
+                      </span>
+                    ) : null}
                   </span>
                   <Stars note={r.note} />
                 </div>

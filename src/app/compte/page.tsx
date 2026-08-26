@@ -488,8 +488,8 @@ export default async function ComptePage() {
                 : "Aucune annonce en attente."}
             </span>
           </div>
-          <Link href="/admin/annonces" className="text-[13px] font-semibold text-blue">
-            Modérer les annonces →
+          <Link href="/admin" className="text-[13px] font-semibold text-blue">
+            Ouvrir le super admin →
           </Link>
         </div>
       ) : null}

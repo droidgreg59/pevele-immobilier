@@ -5,6 +5,7 @@ export type ReviewWithAuthor = {
   id: string;
   note: number;
   commentaire: string;
+  isOfficial: boolean;
   createdAt: Date;
   updatedAt: Date;
   authorId: string;
@@ -21,12 +22,50 @@ export async function getAgencyReviews(
       id: true,
       note: true,
       commentaire: true,
+      isOfficial: true,
       createdAt: true,
       updatedAt: true,
       authorId: true,
       author: { select: { nom: true } },
     },
   });
+}
+
+export type ReviewSummary = {
+  id: string;
+  note: number;
+  commentaire: string;
+  isOfficial: boolean;
+  createdAt: Date;
+  agencyId: string;
+  agencyNom: string;
+  authorNom: string;
+};
+
+export async function getAllReviews(): Promise<ReviewSummary[]> {
+  const reviews = await prisma.review.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      note: true,
+      commentaire: true,
+      isOfficial: true,
+      createdAt: true,
+      agencyId: true,
+      agency: { select: { nom: true, entreprise: true } },
+      author: { select: { nom: true } },
+    },
+  });
+  return reviews.map((r) => ({
+    id: r.id,
+    note: r.note,
+    commentaire: r.commentaire,
+    isOfficial: r.isOfficial,
+    createdAt: r.createdAt,
+    agencyId: r.agencyId,
+    agencyNom: r.agency.entreprise ?? r.agency.nom,
+    authorNom: r.author.nom,
+  }));
 }
 
 export type AgencyReviewStats = { count: number; average: number | null };

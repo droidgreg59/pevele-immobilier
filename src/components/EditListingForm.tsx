@@ -15,9 +15,18 @@ import PhotoDropzone from "./PhotoDropzone";
 const initialState: ListingFormState = {};
 const DPE_OPTIONS = ["A", "B", "C", "D", "E", "F", "G"];
 
-export default function EditListingForm({ listing }: { listing: ListingWithOwner }) {
+export default function EditListingForm({
+  listing,
+  updateAction = updateListingAction,
+  deleteAction = deleteListingAction,
+}: {
+  listing: ListingWithOwner;
+  /** Permet au back-office admin de réutiliser ce formulaire sur une annonce qui n'appartient pas à l'utilisateur connecté. */
+  updateAction?: typeof updateListingAction;
+  deleteAction?: typeof deleteListingAction;
+}) {
   const [state, formAction, pending] = useActionState(
-    updateListingAction,
+    updateAction,
     initialState
   );
   const [transaction, setTransaction] = useState<"VENTE" | "LOCATION">(
@@ -326,7 +335,7 @@ export default function EditListingForm({ listing }: { listing: ListingWithOwner
           et de votre compte.
         </p>
         <form
-          action={deleteListingAction}
+          action={deleteAction}
           className="mt-3"
           onSubmit={(e) => {
             if (!window.confirm("Supprimer définitivement cette annonce ?")) {

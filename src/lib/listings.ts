@@ -86,6 +86,13 @@ export async function getListingForEdit(
   return listing;
 }
 
+/** Comme `getListingForEdit`, mais sans vérification de propriétaire — réservé au back-office admin. */
+export async function getListingForEditAsAdmin(
+  id: string
+): Promise<ListingWithOwner | null> {
+  return prisma.listing.findUnique({ where: { id }, ...listingWithOwner });
+}
+
 export type ListingFieldsInput = {
   transaction: TransactionType;
   typeBien: TypeBien;
@@ -120,15 +127,11 @@ export async function createListing(input: CreateListingInput) {
   });
 }
 
-/** Renvoie `null` si l'annonce n'existe pas ou n'appartient pas à `ownerId`. */
-export async function updateListing(
+async function applyListingUpdate(
   id: string,
-  ownerId: string,
+  existing: { statut: string; prix: number },
   input: ListingFieldsInput
 ) {
-  const existing = await prisma.listing.findUnique({ where: { id } });
-  if (!existing || existing.ownerId !== ownerId) return null;
-
   return prisma.$transaction(async (tx) => {
     const updated = await tx.listing.update({
       where: { id },
@@ -151,12 +154,41 @@ export async function updateListing(
 }
 
 /** Renvoie `null` si l'annonce n'existe pas ou n'appartient pas à `ownerId`. */
+export async function updateListing(
+  id: string,
+  ownerId: string,
+  input: ListingFieldsInput
+) {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing || existing.ownerId !== ownerId) return null;
+  return applyListingUpdate(id, existing, input);
+}
+
+/** Comme `updateListing`, mais sans vérification de propriétaire — réservé au back-office admin. */
+export async function adminUpdateListing(id: string, input: ListingFieldsInput) {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) return null;
+  return applyListingUpdate(id, existing, input);
+}
+
+/** Renvoie `null` si l'annonce n'existe pas ou n'appartient pas à `ownerId`. */
 export async function deleteListing(id: string, ownerId: string) {
   const existing = await prisma.listing.findUnique({
     where: { id },
     include: { photos: true },
   });
   if (!existing || existing.ownerId !== ownerId) return null;
+  await prisma.listing.delete({ where: { id } });
+  return existing;
+}
+
+/** Comme `deleteListing`, mais sans vérification de propriétaire — réservé au back-office admin. */
+export async function adminDeleteListing(id: string) {
+  const existing = await prisma.listing.findUnique({
+    where: { id },
+    include: { photos: true },
+  });
+  if (!existing) return null;
   await prisma.listing.delete({ where: { id } });
   return existing;
 }
