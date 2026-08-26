@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVillageBySlug } from "@/data/villages";
+import { villageAmenities } from "@/data/village-amenities";
 import { getPublicListingsByVillage } from "@/lib/listings";
 import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
 import { getFavoriteListingIds } from "@/lib/favorites";
@@ -36,8 +37,6 @@ export async function generateMetadata({
   };
 }
 
-const STUB_SECTIONS = ["Écoles", "Commerces", "Transports"];
-
 export default async function VillagePage({
   params,
 }: PageProps<"/villages/[slug]">) {
@@ -54,6 +53,11 @@ export default async function VillagePage({
   const favoriteIds = session
     ? await getFavoriteListingIds(session.userId)
     : new Set<string>();
+  const amenities = villageAmenities[village.insee] ?? {
+    commerces: [],
+    ecoles: [],
+    transports: { gares: [], arretsBus: 0 },
+  };
 
   return (
     <div className="animate-fade-up max-w-[1200px] px-9 py-8">
@@ -165,16 +169,73 @@ export default async function VillagePage({
       </div>
 
       <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {STUB_SECTIONS.map((section) => (
-          <div
-            key={section}
-            className="rounded-2xl border border-dashed border-line bg-surface p-5"
-          >
-            <span className="text-[11px] font-semibold text-muted">{section}</span>
-            <p className="m-0 mt-2 text-[13px] text-muted-2">Bientôt disponible.</p>
-          </div>
-        ))}
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Commerces</span>
+          {amenities.commerces.length > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {amenities.commerces.map((c, i) => (
+                <li key={i} className="text-[13px] text-ink">
+                  <span className="font-semibold">{c.nom}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">{c.type}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucun supermarché, épicerie ou boulangerie recensé dans la commune.
+            </p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Écoles</span>
+          {amenities.ecoles.length > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {amenities.ecoles.map((e, i) => (
+                <li key={i} className="text-[13px] text-ink">
+                  <span className="font-semibold">{e.nom}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">
+                    {e.type} · {e.secteur}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucun établissement scolaire recensé dans la commune.
+            </p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Transports</span>
+          {amenities.transports.gares.length > 0 || amenities.transports.arretsBus > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {amenities.transports.gares.map((g, i) => (
+                <li key={`gare-${i}`} className="text-[13px] text-ink">
+                  <span className="font-semibold">{g}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">Gare SNCF</span>
+                </li>
+              ))}
+              {amenities.transports.arretsBus > 0 ? (
+                <li className="text-[13px] text-ink">
+                  <span className="font-semibold">
+                    {amenities.transports.arretsBus} arrêt
+                    {amenities.transports.arretsBus > 1 ? "s" : ""} de bus
+                  </span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">recensé{amenities.transports.arretsBus > 1 ? "s" : ""}</span>
+                </li>
+              ) : null}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucune gare ni arrêt de bus recensé dans la commune.
+            </p>
+          )}
+        </div>
       </div>
+      <p className="mt-3 text-[11px] text-muted-2">
+        Source : OpenStreetMap (commerces, transports) et annuaire de l&apos;Éducation nationale
+        (écoles).
+      </p>
     </div>
   );
 }

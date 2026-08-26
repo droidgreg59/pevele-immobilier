@@ -163,6 +163,295 @@ export default async function ComptePage() {
       ),
     0
   );
+  // Un particulier qui n'a encore rien déposé est ici pour chercher, pas pour
+  // vendre : ses favoris et ses recherches sauvegardées sont ce qui compte,
+  // pas deux sections "(0)" vides sur ses annonces et ses demandes de visite.
+  const isChercheur = !isAgence && !isArtisan && mesAnnonces.length === 0;
+
+  const favorisSection = (
+    <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
+      <div className="flex flex-col gap-1">
+        <span className="text-[11px] font-semibold text-ink">Mes favoris ({favoriteCount})</span>
+        <span className="text-[13.5px] text-muted">
+          Visité, à surveiller, contacté — organisez vos coups de cœur.
+        </span>
+      </div>
+      <Link href="/compte/favoris" className="text-[13px] font-semibold text-blue">
+        Gérer mes favoris →
+      </Link>
+    </div>
+  );
+
+  const recherchesSection = (
+    <div id="recherches" className="mt-8 scroll-mt-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="text-[11px] font-semibold text-ink">
+          Mes recherches sauvegardées ({mesRecherches.length})
+        </span>
+        <Link href="/mon-projet" className="text-[13px] font-semibold text-blue">
+          + Définir un nouveau projet →
+        </Link>
+      </div>
+      {mesRecherches.length > 0 ? (
+        <div className="mt-3 flex flex-col gap-3">
+          {mesRecherches.map((s) => {
+            const availableAgencies = agencies.filter(
+              (a) => !s.mandates.some((m) => m.agencyId === a.id)
+            );
+            return (
+              <div
+                key={s.id}
+                className="flex flex-col gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[14px] text-ink">
+                      {s.transaction === "VENTE" ? "Achat" : "Location"}
+                      {s.typeBien ? ` · ${TYPE_BIEN_LABEL[s.typeBien]}` : ""}
+                      {` · ${locationLabel(s.villageSlugs, s.q)}`}
+                      {s.chambresMin != null ? ` · ${s.chambresMin}+ chambres` : ""}
+                      {s.equipements
+                        ? ` · ${s.equipements.split(",").filter(Boolean).join(", ")}`
+                        : ""}
+                      {s.budgetMin != null && s.budgetMax != null
+                        ? ` · ${s.budgetMin.toLocaleString("fr-FR")} – ${s.budgetMax.toLocaleString("fr-FR")} €`
+                        : s.budgetMax != null
+                          ? ` · ≤ ${s.budgetMax.toLocaleString("fr-FR")} €`
+                          : s.budgetMin != null
+                            ? ` · ≥ ${s.budgetMin.toLocaleString("fr-FR")} €`
+                            : ""}
+                    </span>
+                    <span className="text-[12px] font-semibold text-blue">
+                      {s.newMatches > 0
+                        ? `${s.newMatches} nouvelle${s.newMatches > 1 ? "s" : ""} annonce${s.newMatches > 1 ? "s" : ""} depuis l'enregistrement`
+                        : "Aucune nouvelle annonce depuis l'enregistrement"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Link href={savedSearchUrl(s)} className="text-[12.5px] font-semibold text-blue">
+                      Relancer →
+                    </Link>
+                    <form action={deleteSavedSearchAction}>
+                      <input type="hidden" name="id" value={s.id} />
+                      <button
+                        type="submit"
+                        className="text-[12.5px] font-semibold text-muted hover:text-ink"
+                      >
+                        Supprimer
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                {s.mandates.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {s.mandates.map((m) => (
+                      <span
+                        key={m.id}
+                        className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-muted"
+                      >
+                        {m.agencyNom} · {MANDATE_LABEL[m.statut]}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
+                {s.mandates.some((m) => m.proposals.length > 0) ? (
+                  <div className="flex flex-col gap-2">
+                    {s.mandates
+                      .filter((m) => m.proposals.length > 0)
+                      .map((m) => (
+                        <div key={m.id} className="flex flex-col gap-1.5">
+                          <span className="text-[11px] font-semibold text-muted-2">
+                            Propositions de {m.agencyNom}
+                          </span>
+                          {m.proposals.map((p) => (
+                            <div
+                              key={p.proposalId}
+                              className="flex flex-col gap-2 rounded-xl bg-[#FBF3DC] px-3 py-2"
+                            >
+                              <Link
+                                href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
+                                className="flex flex-wrap items-center justify-between gap-2 hover:underline"
+                              >
+                                <span className="text-[13px] font-medium text-ink">{p.titre}</span>
+                                <span className="text-[12px] font-semibold text-gold">
+                                  {formatPrix(p.prix, p.transaction)}
+                                </span>
+                              </Link>
+                              {p.statut === "PROPOSEE" ? (
+                                <form action={respondToProposalAction} className="flex items-center gap-4">
+                                  <input type="hidden" name="proposalId" value={p.proposalId} />
+                                  <button
+                                    type="submit"
+                                    name="decision"
+                                    value="interesse"
+                                    className="text-[12px] font-semibold text-green"
+                                  >
+                                    ♥ Intéressé(e)
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    name="decision"
+                                    value="pas_interesse"
+                                    className="text-[12px] font-medium text-muted hover:text-ink"
+                                  >
+                                    Pas pour moi
+                                  </button>
+                                </form>
+                              ) : (
+                                <span
+                                  className="text-[12px] font-semibold"
+                                  style={{
+                                    color:
+                                      p.statut === "INTERESSE" ? "var(--pvl-green)" : "var(--pvl-muted)",
+                                  }}
+                                >
+                                  {p.statut === "INTERESSE"
+                                    ? "♥ Vous avez indiqué être intéressé(e)"
+                                    : "Vous avez indiqué que ce bien ne vous intéresse pas"}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                  </div>
+                ) : null}
+
+                {availableAgencies.length > 0 ? (
+                  <form action={sendMandateAction} className="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="savedSearchId" value={s.id} />
+                    <select
+                      name="agencyId"
+                      required
+                      defaultValue=""
+                      className="rounded-full border border-line bg-white px-3 py-2 text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+                    >
+                      <option value="" disabled>
+                        Choisir une agence…
+                      </option>
+                      {availableAgencies.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.entreprise ?? a.nom}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="submit"
+                      className="rounded-full border border-line px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+                    >
+                      Confier cette recherche →
+                    </button>
+                  </form>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="mt-3 text-[14px] text-muted">
+          Enregistrez une recherche depuis « Acheter » ou « Louer » pour la retrouver ici.
+        </p>
+      )}
+    </div>
+  );
+
+  const annoncesSection = (
+    <div className="mt-8">
+      <span className="text-[11px] font-semibold text-ink">
+        Mes annonces ({mesAnnonces.length})
+      </span>
+      {mesAnnonces.length > 0 ? (
+        <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {mesAnnonces.map((listing) => (
+            <div key={listing.id} className="flex flex-col gap-2">
+              <ListingCard listing={listing} isFavorited={favoriteIds.has(listing.id)} />
+              {listing.statut === "REFUSEE" ? (
+                <p className="m-0 text-[12.5px] text-muted">
+                  Refusée
+                  {listing.statutRaison ? ` — ${listing.statutRaison}` : ""}
+                </p>
+              ) : null}
+              <Link
+                href={`/compte/annonces/${listing.id}`}
+                className="self-start text-[12.5px] font-semibold text-blue"
+              >
+                Modifier cette annonce →
+              </Link>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-[14px] text-muted">Vous n&apos;avez pas encore déposé d&apos;annonce.</p>
+      )}
+    </div>
+  );
+
+  const visitesSection = (
+    <div className="mt-8">
+      <span className="text-[11px] font-semibold text-ink">
+        Demandes de visite ({visitItems.length})
+      </span>
+      {visitItems.length > 0 ? (
+        <VisitRequestList items={visitItems} />
+      ) : (
+        <p className="mt-3 text-[14px] text-muted">
+          Les demandes de visite envoyées sur vos annonces apparaîtront ici.
+        </p>
+      )}
+    </div>
+  );
+
+  const myEstimationSection = (
+    <div className="mt-8">
+      <span className="text-[11px] font-semibold text-ink">
+        Mes demandes d&apos;estimation ({myEstimationItems.length})
+      </span>
+      {myEstimationItems.length > 0 ? (
+        <div className="mt-3 flex flex-col gap-2">
+          {myEstimationItems.map((e) => (
+            <div
+              key={e.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
+            >
+              <div className="flex flex-col gap-0.5">
+                <Link
+                  href={`/professionnels/${e.agencyId}`}
+                  className="text-[14px] font-semibold text-ink hover:text-blue"
+                >
+                  {e.agencyNom}
+                </Link>
+                <span className="text-[13px] text-muted">
+                  {e.adresse}
+                  {e.preferredDateLabel ? ` · ${e.preferredDateLabel}` : ""}
+                </span>
+              </div>
+              <span
+                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                style={{
+                  background:
+                    e.statut === "ACCEPTEE" ? "#EAF3E8" : e.statut === "REFUSEE" ? "var(--pvl-surface)" : "#FBF3DC",
+                  color:
+                    e.statut === "ACCEPTEE"
+                      ? "var(--pvl-green)"
+                      : e.statut === "REFUSEE"
+                        ? "var(--pvl-muted)"
+                        : "var(--pvl-gold)",
+                }}
+              >
+                {e.statut === "ACCEPTEE" ? "Acceptée" : e.statut === "REFUSEE" ? "Refusée" : "En attente"}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-[14px] text-muted">
+          Les demandes de rendez-vous d&apos;estimation envoyées à une agence apparaîtront ici.
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <div className="animate-fade-up max-w-[900px] px-9 py-8">
@@ -307,284 +596,23 @@ export default async function ComptePage() {
         </div>
       ) : null}
 
-      {!isArtisan ? (
-        <div className="mt-8">
-          <span className="text-[11px] font-semibold text-ink">
-            Mes annonces ({mesAnnonces.length})
-          </span>
-          {mesAnnonces.length > 0 ? (
-            <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
-              {mesAnnonces.map((listing) => (
-                <div key={listing.id} className="flex flex-col gap-2">
-                  <ListingCard listing={listing} isFavorited={favoriteIds.has(listing.id)} />
-                  {listing.statut === "REFUSEE" ? (
-                    <p className="m-0 text-[12.5px] text-muted">
-                      Refusée
-                      {listing.statutRaison ? ` — ${listing.statutRaison}` : ""}
-                    </p>
-                  ) : null}
-                  <Link
-                    href={`/compte/annonces/${listing.id}`}
-                    className="self-start text-[12.5px] font-semibold text-blue"
-                  >
-                    Modifier cette annonce →
-                  </Link>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 text-[14px] text-muted">Vous n&apos;avez pas encore déposé d&apos;annonce.</p>
-          )}
-        </div>
-      ) : null}
-
-      {!isArtisan ? (
-        <div className="mt-8">
-          <span className="text-[11px] font-semibold text-ink">
-            Demandes de visite ({visitItems.length})
-          </span>
-          {visitItems.length > 0 ? (
-            <VisitRequestList items={visitItems} />
-          ) : (
-            <p className="mt-3 text-[14px] text-muted">
-              Les demandes de visite envoyées sur vos annonces apparaîtront ici.
-            </p>
-          )}
-        </div>
-      ) : null}
-
-      <div className="mt-8">
-        <span className="text-[11px] font-semibold text-ink">
-          Mes demandes d&apos;estimation ({myEstimationItems.length})
-        </span>
-        {myEstimationItems.length > 0 ? (
-          <div className="mt-3 flex flex-col gap-2">
-            {myEstimationItems.map((e) => (
-              <div
-                key={e.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <Link
-                    href={`/professionnels/${e.agencyId}`}
-                    className="text-[14px] font-semibold text-ink hover:text-blue"
-                  >
-                    {e.agencyNom}
-                  </Link>
-                  <span className="text-[13px] text-muted">
-                    {e.adresse}
-                    {e.preferredDateLabel ? ` · ${e.preferredDateLabel}` : ""}
-                  </span>
-                </div>
-                <span
-                  className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                  style={{
-                    background:
-                      e.statut === "ACCEPTEE" ? "#EAF3E8" : e.statut === "REFUSEE" ? "var(--pvl-surface)" : "#FBF3DC",
-                    color:
-                      e.statut === "ACCEPTEE"
-                        ? "var(--pvl-green)"
-                        : e.statut === "REFUSEE"
-                          ? "var(--pvl-muted)"
-                          : "var(--pvl-gold)",
-                  }}
-                >
-                  {e.statut === "ACCEPTEE" ? "Acceptée" : e.statut === "REFUSEE" ? "Refusée" : "En attente"}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-3 text-[14px] text-muted">
-            Les demandes de rendez-vous d&apos;estimation envoyées à une agence apparaîtront ici.
-          </p>
-        )}
-      </div>
-
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
-        <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-semibold text-ink">Mes favoris ({favoriteCount})</span>
-          <span className="text-[13.5px] text-muted">
-            Visité, à surveiller, contacté — organisez vos coups de cœur.
-          </span>
-        </div>
-        <Link href="/compte/favoris" className="text-[13px] font-semibold text-blue">
-          Gérer mes favoris →
-        </Link>
-      </div>
-
-      <div id="recherches" className="mt-8 scroll-mt-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-[11px] font-semibold text-ink">
-            Mes recherches sauvegardées ({mesRecherches.length})
-          </span>
-          <Link href="/mon-projet" className="text-[13px] font-semibold text-blue">
-            + Définir un nouveau projet →
-          </Link>
-        </div>
-        {mesRecherches.length > 0 ? (
-          <div className="mt-3 flex flex-col gap-3">
-            {mesRecherches.map((s) => {
-              const availableAgencies = agencies.filter(
-                (a) => !s.mandates.some((m) => m.agencyId === a.id)
-              );
-              return (
-                <div
-                  key={s.id}
-                  className="flex flex-col gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[14px] text-ink">
-                        {s.transaction === "VENTE" ? "Achat" : "Location"}
-                        {s.typeBien ? ` · ${TYPE_BIEN_LABEL[s.typeBien]}` : ""}
-                        {` · ${locationLabel(s.villageSlugs, s.q)}`}
-                        {s.chambresMin != null ? ` · ${s.chambresMin}+ chambres` : ""}
-                        {s.equipements
-                          ? ` · ${s.equipements.split(",").filter(Boolean).join(", ")}`
-                          : ""}
-                        {s.budgetMin != null && s.budgetMax != null
-                          ? ` · ${s.budgetMin.toLocaleString("fr-FR")} – ${s.budgetMax.toLocaleString("fr-FR")} €`
-                          : s.budgetMax != null
-                            ? ` · ≤ ${s.budgetMax.toLocaleString("fr-FR")} €`
-                            : s.budgetMin != null
-                              ? ` · ≥ ${s.budgetMin.toLocaleString("fr-FR")} €`
-                              : ""}
-                      </span>
-                      <span className="text-[12px] font-semibold text-blue">
-                        {s.newMatches > 0
-                          ? `${s.newMatches} nouvelle${s.newMatches > 1 ? "s" : ""} annonce${s.newMatches > 1 ? "s" : ""} depuis l'enregistrement`
-                          : "Aucune nouvelle annonce depuis l'enregistrement"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Link href={savedSearchUrl(s)} className="text-[12.5px] font-semibold text-blue">
-                        Relancer →
-                      </Link>
-                      <form action={deleteSavedSearchAction}>
-                        <input type="hidden" name="id" value={s.id} />
-                        <button
-                          type="submit"
-                          className="text-[12.5px] font-semibold text-muted hover:text-ink"
-                        >
-                          Supprimer
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-
-                  {s.mandates.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {s.mandates.map((m) => (
-                        <span
-                          key={m.id}
-                          className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-muted"
-                        >
-                          {m.agencyNom} · {MANDATE_LABEL[m.statut]}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  {s.mandates.some((m) => m.proposals.length > 0) ? (
-                    <div className="flex flex-col gap-2">
-                      {s.mandates
-                        .filter((m) => m.proposals.length > 0)
-                        .map((m) => (
-                          <div key={m.id} className="flex flex-col gap-1.5">
-                            <span className="text-[11px] font-semibold text-muted-2">
-                              Propositions de {m.agencyNom}
-                            </span>
-                            {m.proposals.map((p) => (
-                              <div
-                                key={p.proposalId}
-                                className="flex flex-col gap-2 rounded-xl bg-[#FBF3DC] px-3 py-2"
-                              >
-                                <Link
-                                  href={`/${p.transaction === "VENTE" ? "acheter" : "louer"}/${p.listingId}`}
-                                  className="flex flex-wrap items-center justify-between gap-2 hover:underline"
-                                >
-                                  <span className="text-[13px] font-medium text-ink">{p.titre}</span>
-                                  <span className="text-[12px] font-semibold text-gold">
-                                    {formatPrix(p.prix, p.transaction)}
-                                  </span>
-                                </Link>
-                                {p.statut === "PROPOSEE" ? (
-                                  <form action={respondToProposalAction} className="flex items-center gap-4">
-                                    <input type="hidden" name="proposalId" value={p.proposalId} />
-                                    <button
-                                      type="submit"
-                                      name="decision"
-                                      value="interesse"
-                                      className="text-[12px] font-semibold text-green"
-                                    >
-                                      ♥ Intéressé(e)
-                                    </button>
-                                    <button
-                                      type="submit"
-                                      name="decision"
-                                      value="pas_interesse"
-                                      className="text-[12px] font-medium text-muted hover:text-ink"
-                                    >
-                                      Pas pour moi
-                                    </button>
-                                  </form>
-                                ) : (
-                                  <span
-                                    className="text-[12px] font-semibold"
-                                    style={{
-                                      color:
-                                        p.statut === "INTERESSE" ? "var(--pvl-green)" : "var(--pvl-muted)",
-                                    }}
-                                  >
-                                    {p.statut === "INTERESSE"
-                                      ? "♥ Vous avez indiqué être intéressé(e)"
-                                      : "Vous avez indiqué que ce bien ne vous intéresse pas"}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                    </div>
-                  ) : null}
-
-                  {availableAgencies.length > 0 ? (
-                    <form action={sendMandateAction} className="flex flex-wrap items-center gap-2">
-                      <input type="hidden" name="savedSearchId" value={s.id} />
-                      <select
-                        name="agencyId"
-                        required
-                        defaultValue=""
-                        className="rounded-full border border-line bg-white px-3 py-2 text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-                      >
-                        <option value="" disabled>
-                          Choisir une agence…
-                        </option>
-                        {availableAgencies.map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.entreprise ?? a.nom}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="submit"
-                        className="rounded-full border border-line px-3.5 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
-                      >
-                        Confier cette recherche →
-                      </button>
-                    </form>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="mt-3 text-[14px] text-muted">
-            Enregistrez une recherche depuis « Acheter » ou « Louer » pour la retrouver ici.
-          </p>
-        )}
-      </div>
+      {isChercheur ? (
+        <>
+          {favorisSection}
+          {recherchesSection}
+          {annoncesSection}
+          {visitesSection}
+          {myEstimationSection}
+        </>
+      ) : (
+        <>
+          {!isArtisan ? annoncesSection : null}
+          {!isArtisan ? visitesSection : null}
+          {myEstimationSection}
+          {favorisSection}
+          {recherchesSection}
+        </>
+      )}
 
       {stubs.length > 0 ? (
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
