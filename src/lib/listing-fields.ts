@@ -39,6 +39,10 @@ export function parseListingFields(
   const exterieur = String(formData.get("exterieur") ?? "").trim();
   const equipements = formData.getAll("equipements").map(String).join(",");
   const dpe = String(formData.get("dpe") ?? "").trim();
+  const modeChauffageRaw = String(formData.get("modeChauffage") ?? "").trim();
+  // `null` explicite (pas `undefined`) : voir la même remarque pour typeMaison
+  // ci-dessus — sinon une mise à jour laisserait une ancienne valeur en place.
+  const modeChauffage = typeBien !== "TERRAIN" && modeChauffageRaw ? modeChauffageRaw : null;
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
   const visiteVirtuelleUrl = String(formData.get("visiteVirtuelleUrl") ?? "").trim();
 
@@ -79,6 +83,7 @@ export function parseListingFields(
       exterieur: exterieur || "—",
       equipements,
       dpe: dpe || undefined,
+      modeChauffage,
       videoUrl: videoUrl || undefined,
       visiteVirtuelleUrl: visiteVirtuelleUrl || undefined,
     },

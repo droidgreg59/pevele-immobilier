@@ -8,6 +8,7 @@ import {
 } from "@/lib/listing-actions";
 import { villages } from "@/data/villages";
 import { EQUIPEMENTS } from "@/data/equipements";
+import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
 import { MAX_PHOTOS } from "@/lib/photo-constants";
 import type { ListingWithOwner } from "@/lib/listings";
 import PhotoDropzone from "./PhotoDropzone";
@@ -237,6 +238,29 @@ export default function EditListingForm({
             </select>
           </label>
         </div>
+
+        {typeBien !== "TERRAIN" ? (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Mode de chauffage
+            </span>
+            <select
+              name="modeChauffage"
+              defaultValue={listing.modeChauffage ?? ""}
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            >
+              <option value="">Non précisé</option>
+              {MODE_CHAUFFAGE_OPTIONS.map((mode) => (
+                <option key={mode} value={mode}>
+                  {mode}
+                </option>
+              ))}
+              {listing.modeChauffage && !MODE_CHAUFFAGE_OPTIONS.includes(listing.modeChauffage as (typeof MODE_CHAUFFAGE_OPTIONS)[number]) ? (
+                <option value={listing.modeChauffage}>{listing.modeChauffage}</option>
+              ) : null}
+            </select>
+          </label>
+        ) : null}
 
         <div className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">

@@ -31,6 +31,7 @@ export type ParsedAc3Listing = {
   exterieur: string;
   equipements: string;
   dpe?: string;
+  modeChauffage?: string | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
   photoUrls: string[];
@@ -198,6 +199,11 @@ export function parseAc3Feed(xml: string): {
     const dpeRaw = textOf(typeNode.CONSOMMATIONENERGETIQUE).toUpperCase();
     const dpe = /^[A-G]$/.test(dpeRaw) ? dpeRaw : undefined;
     const typeMaison = typeBien === "MAISON" ? parseTypeMaison(typeNode) : undefined;
+    // Balise MODE_CHAUFFAGE (source d'énergie) du flux réel — valeurs
+    // observées : "Gaz", "Electrique", "Fuel". Reprise telle quelle, sans
+    // reformulation, absente pour un terrain (pas de bâti à chauffer).
+    const modeChauffageRaw = textOf(typeNode.MODE_CHAUFFAGE);
+    const modeChauffage = typeBien !== "TERRAIN" && modeChauffageRaw ? modeChauffageRaw : undefined;
 
     const videoUrl = textOf(bien?.INFO_GENERALES?.LIEN_VIDEO) || undefined;
     const visiteVirtuelleUrl = textOf(bien?.INFO_GENERALES?.VISITE_VIRTUELLE) || undefined;
@@ -211,6 +217,7 @@ export function parseAc3Feed(xml: string): {
       transaction,
       typeBien,
       typeMaison,
+      modeChauffage,
       titre,
       description,
       prix,

@@ -2,7 +2,21 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Heart } from "lucide-react";
+import {
+  Heart,
+  Thermometer,
+  Gauge,
+  TreePine,
+  Warehouse,
+  SquareParking,
+  DoorOpen,
+  Sun,
+  Archive,
+  Waves,
+  Flame,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import type { ArtisanSummary } from "@/lib/artisans";
@@ -14,6 +28,17 @@ import FavoriteButton from "./FavoriteButton";
 import PhotoGallery from "./PhotoGallery";
 import VisitRequestForm from "./VisitRequestForm";
 import BottomSheet from "./BottomSheet";
+
+const EQUIPEMENT_ICON: Record<string, LucideIcon> = {
+  Jardin: TreePine,
+  Garage: Warehouse,
+  Parking: SquareParking,
+  Balcon: DoorOpen,
+  Terrasse: Sun,
+  Cave: Archive,
+  Piscine: Waves,
+  Cheminée: Flame,
+};
 
 const TYPE_MAISON_LABEL_LOWER: Record<string, string> = {
   INDIVIDUELLE: "individuelle",
@@ -102,6 +127,13 @@ export default function ListingDetail({
   const equipements = listing.equipements
     ? listing.equipements.split(",").filter(Boolean)
     : [];
+  const features: { label: string; value?: string; Icon: LucideIcon }[] = [
+    ...(listing.modeChauffage
+      ? [{ label: "Chauffage", value: listing.modeChauffage, Icon: Thermometer }]
+      : []),
+    ...(listing.dpe ? [{ label: `DPE ${listing.dpe}`, Icon: Gauge }] : []),
+    ...equipements.map((eq) => ({ label: eq, Icon: EQUIPEMENT_ICON[eq] ?? Sparkles })),
+  ];
   const prixInitial = priceHistory[0]?.prix ?? listing.prix;
   const enBaisse = priceHistory.length > 1 && listing.prix < prixInitial;
   const baissePct = enBaisse
@@ -216,22 +248,33 @@ export default function ListingDetail({
             <p className="mt-3 max-w-[70ch] font-sans text-[15px] leading-[1.65] text-muted">
               {listing.description}
             </p>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              {listing.dpe ? (
-                <span className="rounded-full border border-line px-3 py-1.5 text-[12px] font-semibold text-ink">
-                  DPE {listing.dpe}
-                </span>
-              ) : null}
-              {equipements.map((eq) => (
-                <span
-                  key={eq}
-                  className="rounded-full bg-surface px-2.5 py-1 text-[12px] text-muted"
-                >
-                  {eq}
-                </span>
-              ))}
-            </div>
           </section>
+
+          {features.length > 0 ? (
+            <section className="mt-8">
+              <h2 className="m-0 font-display text-2xl text-ink">Les équipements</h2>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {features.map((f) => (
+                  <div
+                    key={f.label}
+                    className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3.5 shadow-sm transition hover:shadow-md"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-soft text-blue">
+                      <f.Icon className="h-5 w-5" strokeWidth={1.75} />
+                    </span>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-[13.5px] font-semibold text-ink">
+                        {f.label}
+                      </span>
+                      {f.value ? (
+                        <span className="truncate text-[11.5px] text-muted">{f.value}</span>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           {listing.transaction === "VENTE" ? (
             <section className="mt-8">

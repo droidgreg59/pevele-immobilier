@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { createListingAction, type ListingFormState } from "@/lib/listing-actions";
 import { villages } from "@/data/villages";
 import { EQUIPEMENTS } from "@/data/equipements";
+import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
 import PhotoDropzone from "./PhotoDropzone";
 
 const initialState: ListingFormState = {};
@@ -203,6 +204,26 @@ export default function PublishForm({
           </select>
         </label>
       </div>
+
+      {typeBien !== "TERRAIN" ? (
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Mode de chauffage
+          </span>
+          <select
+            name="modeChauffage"
+            defaultValue=""
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          >
+            <option value="">Non précisé</option>
+            {MODE_CHAUFFAGE_OPTIONS.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
 
       <div className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">

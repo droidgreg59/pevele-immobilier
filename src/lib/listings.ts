@@ -108,6 +108,7 @@ export type ListingFieldsInput = {
   exterieur: string;
   equipements: string;
   dpe?: string;
+  modeChauffage?: string | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
 };
@@ -215,6 +216,7 @@ export async function upsertImportedListing(
   const fieldsData = {
     ...fields,
     typeMaison: fields.typeMaison ?? null,
+    modeChauffage: fields.modeChauffage || null,
     dpe: fields.dpe || null,
     videoUrl: fields.videoUrl || null,
     visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,

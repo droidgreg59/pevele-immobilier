@@ -70,6 +70,10 @@ model Listing {
   surface            Int
   exterieur          String
   dpe                String?
+  /// Source d'énergie du chauffage (Gaz, Électrique, Fioul, Bois…) — champ
+  /// texte libre plutôt qu'un enum fermé : les flux agence (AC3/Immofacile,
+  /// balise MODE_CHAUFFAGE) renvoient des valeurs variées non exhaustives.
+  modeChauffage      String?
   equipements        String            @default("")
   badge              String?
   videoUrl           String?
