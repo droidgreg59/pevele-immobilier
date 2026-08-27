@@ -19,6 +19,7 @@ export default function PublishForm({
     initialState
   );
   const [transaction, setTransaction] = useState<"VENTE" | "LOCATION">("VENTE");
+  const [typeBien, setTypeBien] = useState<"MAISON" | "APPARTEMENT" | "TERRAIN">("MAISON");
 
   return (
     <form action={formAction} className="flex max-w-[720px] flex-col gap-5">
@@ -93,7 +94,8 @@ export default function PublishForm({
           <select
             name="typeBien"
             required
-            defaultValue="MAISON"
+            value={typeBien}
+            onChange={(e) => setTypeBien(e.target.value as typeof typeBien)}
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           >
             <option value="MAISON">Maison</option>
@@ -102,6 +104,24 @@ export default function PublishForm({
           </select>
         </label>
       </div>
+
+      {typeBien === "MAISON" ? (
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Type de maison
+          </span>
+          <select
+            name="typeMaison"
+            defaultValue=""
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          >
+            <option value="">Non précisé</option>
+            <option value="INDIVIDUELLE">Individuelle</option>
+            <option value="SEMI_INDIVIDUELLE">Semi-individuelle (mitoyenne d&apos;un côté)</option>
+            <option value="MITOYENNE">Mitoyenne (des deux côtés)</option>
+          </select>
+        </label>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <label className="flex flex-col gap-1.5">

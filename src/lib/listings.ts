@@ -1,6 +1,6 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
-import type { TransactionType, TypeBien } from "@prisma/client";
+import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 import { prisma } from "./prisma";
 import { saveRemotePhotos, deletePhotoFilesByUrl } from "./photo-upload";
 
@@ -96,6 +96,7 @@ export async function getListingForEditAsAdmin(
 export type ListingFieldsInput = {
   transaction: TransactionType;
   typeBien: TypeBien;
+  typeMaison?: TypeMaison | null;
   titre: string;
   description: string;
   prix: number;
@@ -213,6 +214,7 @@ export async function upsertImportedListing(
   const { externalRef, importSource, photoUrls, ...fields } = input;
   const fieldsData = {
     ...fields,
+    typeMaison: fields.typeMaison ?? null,
     dpe: fields.dpe || null,
     videoUrl: fields.videoUrl || null,
     visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,

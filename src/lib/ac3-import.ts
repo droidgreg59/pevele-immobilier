@@ -2,7 +2,7 @@ import "server-only";
 import { XMLParser } from "fast-xml-parser";
 import { villages } from "@/data/villages";
 import { EQUIPEMENTS } from "@/data/equipements";
-import type { TransactionType, TypeBien } from "@prisma/client";
+import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 
 /**
  * Import du flux XML "passerelle" AC3 / Immofacile utilisé par les agences
@@ -19,6 +19,7 @@ export type ParsedAc3Listing = {
   externalRef: string;
   transaction: TransactionType;
   typeBien: TypeBien;
+  typeMaison?: TypeMaison | null;
   titre: string;
   description: string;
   prix: number;
@@ -73,6 +74,20 @@ export async function fetchAc3Feed(url: string): Promise<string> {
   }
   const buffer = await res.arrayBuffer();
   return new TextDecoder("iso-8859-1").decode(buffer);
+}
+
+/**
+ * Balise MITOYENNETE du flux AC3, propre à la fiche MAISON — valeurs
+ * observées sur le flux réel de PVL Immobilier : "Indépendant", "1 côté",
+ * "2 côtés". Toute autre valeur (absente, inattendue) reste non renseignée
+ * plutôt que d'être devinée.
+ */
+function parseTypeMaison(typeNode: Record<string, unknown>): TypeMaison | undefined {
+  const raw = textOf(typeNode.MITOYENNETE).toLowerCase();
+  if (raw === "indépendant" || raw === "independant") return "INDIVIDUELLE";
+  if (raw === "1 côté" || raw === "1 cote") return "SEMI_INDIVIDUELLE";
+  if (raw === "2 côtés" || raw === "2 cotes") return "MITOYENNE";
+  return undefined;
 }
 
 function buildExterieur(typeBien: TypeBien, typeNode: Record<string, unknown>): string {
@@ -182,6 +197,7 @@ export function parseAc3Feed(xml: string): {
 
     const dpeRaw = textOf(typeNode.CONSOMMATIONENERGETIQUE).toUpperCase();
     const dpe = /^[A-G]$/.test(dpeRaw) ? dpeRaw : undefined;
+    const typeMaison = typeBien === "MAISON" ? parseTypeMaison(typeNode) : undefined;
 
     const videoUrl = textOf(bien?.INFO_GENERALES?.LIEN_VIDEO) || undefined;
     const visiteVirtuelleUrl = textOf(bien?.INFO_GENERALES?.VISITE_VIRTUELLE) || undefined;
@@ -194,6 +210,7 @@ export function parseAc3Feed(xml: string): {
       externalRef,
       transaction,
       typeBien,
+      typeMaison,
       titre,
       description,
       prix,

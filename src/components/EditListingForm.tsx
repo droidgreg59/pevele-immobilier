@@ -32,6 +32,9 @@ export default function EditListingForm({
   const [transaction, setTransaction] = useState<"VENTE" | "LOCATION">(
     listing.transaction
   );
+  const [typeBien, setTypeBien] = useState<"MAISON" | "APPARTEMENT" | "TERRAIN">(
+    listing.typeBien
+  );
   const [removedIds, setRemovedIds] = useState<string[]>([]);
 
   const visiblePhotos = listing.photos.filter((p) => !removedIds.includes(p.id));
@@ -120,7 +123,8 @@ export default function EditListingForm({
             <select
               name="typeBien"
               required
-              defaultValue={listing.typeBien}
+              value={typeBien}
+              onChange={(e) => setTypeBien(e.target.value as typeof typeBien)}
               className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             >
               <option value="MAISON">Maison</option>
@@ -129,6 +133,24 @@ export default function EditListingForm({
             </select>
           </label>
         </div>
+
+        {typeBien === "MAISON" ? (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Type de maison
+            </span>
+            <select
+              name="typeMaison"
+              defaultValue={listing.typeMaison ?? ""}
+              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            >
+              <option value="">Non précisé</option>
+              <option value="INDIVIDUELLE">Individuelle</option>
+              <option value="SEMI_INDIVIDUELLE">Semi-individuelle (mitoyenne d&apos;un côté)</option>
+              <option value="MITOYENNE">Mitoyenne (des deux côtés)</option>
+            </select>
+          </label>
+        ) : null}
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <label className="flex flex-col gap-1.5">

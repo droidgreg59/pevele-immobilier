@@ -58,6 +58,8 @@ model Listing {
   statut             ListingStatus     @default(EN_VERIFICATION)
   statutRaison       String?
   typeBien           TypeBien          @default(MAISON)
+  /// Uniquement pour typeBien = MAISON : individuelle / semi-individuelle (mitoyenne d'un côté) / mitoyenne (des deux côtés).
+  typeMaison         TypeMaison?
   titre              String
   description        String
   prix               Int
@@ -153,6 +155,7 @@ model SavedSearch {
   userId       String
   transaction  TransactionType
   typeBien     TypeBien?
+  typeMaison   TypeMaison?
   q            String?
   villageSlugs String?
   chambresMin  Int?
@@ -288,6 +291,14 @@ enum TypeBien {
   MAISON
   APPARTEMENT
   TERRAIN
+}
+
+/// Mitoyenneté d'une maison — champ retrouvé dans les flux agence (AC3 /
+/// Immofacile, balise MITOYENNETE : "Indépendant" / "1 côté" / "2 côtés").
+enum TypeMaison {
+  INDIVIDUELLE
+  SEMI_INDIVIDUELLE
+  MITOYENNE
 }
 
 /// Transactions immobilières issues des DVF (Demandes de Valeurs Foncières,

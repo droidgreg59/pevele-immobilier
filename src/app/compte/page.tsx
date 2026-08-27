@@ -28,6 +28,12 @@ const MANDATE_LABEL: Record<string, string> = {
   REFUSEE: "refusée",
 };
 
+const TYPE_MAISON_LABEL: Record<string, string> = {
+  INDIVIDUELLE: "individuelle",
+  SEMI_INDIVIDUELLE: "semi-individuelle",
+  MITOYENNE: "mitoyenne",
+};
+
 const TYPE_BIEN_LABEL: Record<string, string> = {
   MAISON: "Maison",
   APPARTEMENT: "Appartement",
@@ -208,6 +214,9 @@ export default async function ComptePage() {
                     <span className="text-[14px] text-ink">
                       {s.transaction === "VENTE" ? "Achat" : "Location"}
                       {s.typeBien ? ` · ${TYPE_BIEN_LABEL[s.typeBien]}` : ""}
+                      {s.typeBien === "MAISON" && s.typeMaison
+                        ? ` (${TYPE_MAISON_LABEL[s.typeMaison]})`
+                        : ""}
                       {` · ${locationLabel(s.villageSlugs, s.q)}`}
                       {s.chambresMin != null ? ` · ${s.chambresMin}+ chambres` : ""}
                       {s.equipements

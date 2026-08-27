@@ -13,6 +13,8 @@ export type ProjectDraft = {
   transaction: "VENTE" | "LOCATION" | null;
   typeBien: "MAISON" | "APPARTEMENT" | "TERRAIN" | null;
   typeAnswered: boolean;
+  typeMaison: "INDIVIDUELLE" | "SEMI_INDIVIDUELLE" | "MITOYENNE" | null;
+  typeMaisonAnswered: boolean;
   chambresMin: number | null;
   chambresAnswered: boolean;
   equipements: string[];

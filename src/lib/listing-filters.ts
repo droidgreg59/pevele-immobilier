@@ -8,11 +8,13 @@ import type { ListingWithOwner } from "@/lib/listings";
 
 export type ListingFiltre = "tout" | "agence" | "particulier";
 export type TypeBienFiltre = "TOUS" | "MAISON" | "APPARTEMENT" | "TERRAIN";
+export type TypeMaisonFiltre = "TOUS" | "INDIVIDUELLE" | "SEMI_INDIVIDUELLE" | "MITOYENNE";
 export type ListingSort = "prix_desc" | "prix_asc" | "recent" | "surface_desc";
 
 export type ListingFilterCriteria = {
   filtre?: ListingFiltre;
   typeBien?: TypeBienFiltre;
+  typeMaison?: TypeMaisonFiltre;
   villageSlugs?: string[];
   querySlug?: string;
   budgetMin?: number;
@@ -30,6 +32,10 @@ export function matchesTypeBien(listing: ListingWithOwner, typeBien: TypeBienFil
   return typeBien === "TOUS" || listing.typeBien === typeBien;
 }
 
+export function matchesTypeMaison(listing: ListingWithOwner, typeMaison: TypeMaisonFiltre): boolean {
+  return typeMaison === "TOUS" || listing.typeMaison === typeMaison;
+}
+
 export function filterListings(
   listings: ListingWithOwner[],
   criteria: ListingFilterCriteria
@@ -37,6 +43,7 @@ export function filterListings(
   const {
     filtre = "tout",
     typeBien = "TOUS",
+    typeMaison = "TOUS",
     villageSlugs = [],
     querySlug = "",
     budgetMin,
@@ -49,6 +56,7 @@ export function filterListings(
     (l) =>
       matchesFiltre(l, filtre) &&
       matchesTypeBien(l, typeBien) &&
+      matchesTypeMaison(l, typeMaison) &&
       (villageSlugs.length > 0
         ? villageSlugs.includes(l.villageSlug)
         : querySlug === "" || l.villageSlug.includes(querySlug)) &&

@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { slugify } from "./slugify";
-import type { TransactionType, TypeBien } from "@prisma/client";
+import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 
 export type ProposedListing = {
   proposalId: string;
@@ -24,6 +24,7 @@ export type SavedSearchSummary = {
   id: string;
   transaction: TransactionType;
   typeBien: TypeBien | null;
+  typeMaison: TypeMaison | null;
   q: string | null;
   villageSlugs: string | null;
   chambresMin: number | null;
@@ -82,6 +83,7 @@ export async function getSavedSearchesByUser(
               ? { villageSlug: { contains: qSlug } }
               : {}),
           ...(row.typeBien ? { typeBien: row.typeBien } : {}),
+          ...(row.typeMaison ? { typeMaison: row.typeMaison } : {}),
           ...(row.chambresMin != null ? { chambres: { gte: row.chambresMin } } : {}),
           ...(equipementList.length > 0
             ? { AND: equipementList.map((tag) => ({ equipements: { contains: tag } })) }
@@ -149,6 +151,7 @@ export async function getMostRecentSavedSearchSummary(
           ? { villageSlug: { contains: qSlug } }
           : {}),
       ...(row.typeBien ? { typeBien: row.typeBien } : {}),
+      ...(row.typeMaison ? { typeMaison: row.typeMaison } : {}),
       ...(row.chambresMin != null ? { chambres: { gte: row.chambresMin } } : {}),
       ...(equipementList.length > 0
         ? { AND: equipementList.map((tag) => ({ equipements: { contains: tag } })) }
@@ -172,6 +175,7 @@ export function savedSearchUrl(
     SavedSearchSummary,
     | "transaction"
     | "typeBien"
+    | "typeMaison"
     | "q"
     | "villageSlugs"
     | "chambresMin"
@@ -185,6 +189,9 @@ export function savedSearchUrl(
   if (search.villageSlugs) params.set("villages", search.villageSlugs);
   else if (search.q) params.set("q", search.q);
   if (search.typeBien) params.set("type", search.typeBien);
+  if (search.typeBien === "MAISON" && search.typeMaison) {
+    params.set("typeMaison", search.typeMaison);
+  }
   if (search.chambresMin != null) params.set("chambresMin", String(search.chambresMin));
   if (search.equipements) params.set("equip", search.equipements);
   if (search.budgetMin != null) params.set("budgetMin", String(search.budgetMin));

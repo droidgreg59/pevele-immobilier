@@ -18,6 +18,7 @@ import VillageTapMap from "./VillageTapMap";
 
 type Transaction = "VENTE" | "LOCATION";
 type TypeBienChoice = "MAISON" | "APPARTEMENT" | "TERRAIN" | null;
+type TypeMaisonChoice = "INDIVIDUELLE" | "SEMI_INDIVIDUELLE" | "MITOYENNE" | null;
 type Step =
   | "projet"
   | "lieu"
@@ -35,6 +36,12 @@ const TYPE_BIEN_LABEL: Record<string, string> = {
   MAISON: "Maison",
   APPARTEMENT: "Appartement",
   TERRAIN: "Terrain",
+};
+
+const TYPE_MAISON_LABEL: Record<string, string> = {
+  INDIVIDUELLE: "Individuelle",
+  SEMI_INDIVIDUELLE: "Semi-individuelle",
+  MITOYENNE: "Mitoyenne",
 };
 
 const CHAMBRES_OPTIONS = [1, 2, 3, 4] as const;
@@ -163,6 +170,8 @@ export default function ProjectWizard({
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [typeBien, setTypeBien] = useState<TypeBienChoice>(null);
   const [typeAnswered, setTypeAnswered] = useState(false);
+  const [typeMaison, setTypeMaison] = useState<TypeMaisonChoice>(null);
+  const [typeMaisonAnswered, setTypeMaisonAnswered] = useState(false);
   const [chambresMin, setChambresMin] = useState<number | null>(null);
   const [chambresAnswered, setChambresAnswered] = useState(false);
   const [equipements, setEquipements] = useState<string[]>([]);
@@ -184,6 +193,8 @@ export default function ProjectWizard({
     setTransaction(draft.transaction);
     setTypeBien(draft.typeBien);
     setTypeAnswered(draft.typeAnswered);
+    setTypeMaison(draft.typeMaison);
+    setTypeMaisonAnswered(draft.typeMaisonAnswered);
     setChambresMin(draft.chambresMin);
     setChambresAnswered(draft.chambresAnswered);
     setEquipements(draft.equipements);
@@ -202,6 +213,8 @@ export default function ProjectWizard({
       transaction,
       typeBien,
       typeAnswered,
+      typeMaison,
+      typeMaisonAnswered,
       chambresMin,
       chambresAnswered,
       equipements,
@@ -222,6 +235,8 @@ export default function ProjectWizard({
     if (overrides.transaction !== undefined) setTransaction(overrides.transaction);
     if (overrides.typeBien !== undefined) setTypeBien(overrides.typeBien);
     if (overrides.typeAnswered !== undefined) setTypeAnswered(overrides.typeAnswered);
+    if (overrides.typeMaison !== undefined) setTypeMaison(overrides.typeMaison);
+    if (overrides.typeMaisonAnswered !== undefined) setTypeMaisonAnswered(overrides.typeMaisonAnswered);
     if (overrides.chambresMin !== undefined) setChambresMin(overrides.chambresMin);
     if (overrides.chambresAnswered !== undefined) setChambresAnswered(overrides.chambresAnswered);
     if (overrides.equipements !== undefined) setEquipements(overrides.equipements);
@@ -279,6 +294,7 @@ export default function ProjectWizard({
       await createSavedSearchAction({
         transaction: transaction ?? "VENTE",
         typeBien: typeBien ?? undefined,
+        typeMaison: typeBien === "MAISON" ? (typeMaison ?? undefined) : undefined,
         villageSlugs: villageSlugs.length > 0 ? villageSlugs : undefined,
         chambresMin: chambresMin ?? undefined,
         equipements: equipements.length > 0 ? equipements : undefined,
@@ -314,6 +330,7 @@ export default function ProjectWizard({
     const params = new URLSearchParams();
     if (villageSlugs.length > 0) params.set("villages", villageSlugs.join(","));
     if (typeBien) params.set("type", typeBien);
+    if (typeBien === "MAISON" && typeMaison) params.set("typeMaison", typeMaison);
     if (chambresMin) params.set("chambresMin", String(chambresMin));
     if (equipements.length > 0) params.set("equip", equipements.join(","));
     if (budgetMin) params.set("budgetMin", budgetMin);
@@ -327,6 +344,7 @@ export default function ProjectWizard({
     : listings;
   const matchCount = filterListings(scopedListings, {
     typeBien: typeAnswered && typeBien ? typeBien : "TOUS",
+    typeMaison: typeMaisonAnswered && typeMaison ? typeMaison : "TOUS",
     villageSlugs,
     budgetMin: budgetMin ? Number(budgetMin) : undefined,
     budgetMax: budgetMax ? Number(budgetMax) : undefined,
@@ -517,7 +535,7 @@ export default function ProjectWizard({
         </div>
       ) : null}
 
-      {step === "type" ? (
+      {step === "type" && !(typeAnswered && typeBien === "MAISON" && !typeMaisonAnswered) ? (
         <div className="animate-fade-up flex flex-col gap-5">
           <div>
             <h1 className="m-0 font-display text-[32px] leading-tight text-ink sm:text-[38px]">
@@ -530,16 +548,71 @@ export default function ProjectWizard({
                 key={t}
                 title={TYPE_BIEN_LABEL[t]}
                 active={typeAnswered && typeBien === t}
-                onClick={() =>
-                  goToDelayed("chambres", { typeBien: t, typeAnswered: true })
-                }
+                onClick={() => {
+                  if (t === "MAISON") {
+                    // Étape intermédiaire : on affiche (ou réaffiche, si déjà
+                    // répondu) la sous-question individuelle/semi-individuelle/
+                    // mitoyenne avant d'avancer.
+                    const overrides = { typeBien: t, typeAnswered: true, typeMaisonAnswered: false };
+                    applyOverrides(overrides);
+                    persist(overrides);
+                  } else {
+                    goToDelayed("chambres", {
+                      typeBien: t,
+                      typeAnswered: true,
+                      typeMaison: null,
+                      typeMaisonAnswered: false,
+                    });
+                  }
+                }}
               />
             ))}
             <OptionCard
               title="Peu importe"
               active={typeAnswered && typeBien === null}
               onClick={() =>
-                goToDelayed("chambres", { typeBien: null, typeAnswered: true })
+                goToDelayed("chambres", {
+                  typeBien: null,
+                  typeAnswered: true,
+                  typeMaison: null,
+                  typeMaisonAnswered: false,
+                })
+              }
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {step === "type" && typeAnswered && typeBien === "MAISON" && !typeMaisonAnswered ? (
+        <div className="animate-fade-up flex flex-col gap-5">
+          <div>
+            <button
+              type="button"
+              onClick={() => setTypeAnswered(false)}
+              className="text-[13px] font-semibold text-blue"
+            >
+              ← Un autre type de bien
+            </button>
+            <h1 className="mt-2 m-0 font-display text-[32px] leading-tight text-ink sm:text-[38px]">
+              Une maison plutôt…
+            </h1>
+          </div>
+          <div className="grid grid-cols-2 gap-3.5">
+            {(["INDIVIDUELLE", "SEMI_INDIVIDUELLE", "MITOYENNE"] as const).map((tm) => (
+              <OptionCard
+                key={tm}
+                title={TYPE_MAISON_LABEL[tm]}
+                active={typeMaisonAnswered && typeMaison === tm}
+                onClick={() =>
+                  goToDelayed("chambres", { typeMaison: tm, typeMaisonAnswered: true })
+                }
+              />
+            ))}
+            <OptionCard
+              title="Peu importe"
+              active={typeMaisonAnswered && typeMaison === null}
+              onClick={() =>
+                goToDelayed("chambres", { typeMaison: null, typeMaisonAnswered: true })
               }
             />
           </div>
@@ -672,7 +745,13 @@ export default function ProjectWizard({
             <RecapTag label={villagesLabel()} onClick={() => goTo("lieu")} />
             <RecapTag label={budgetLabel()} onClick={() => goTo("budget")} />
             <RecapTag
-              label={typeBien ? TYPE_BIEN_LABEL[typeBien] : "Tous types"}
+              label={
+                typeBien
+                  ? typeBien === "MAISON" && typeMaison
+                    ? `${TYPE_BIEN_LABEL[typeBien]} (${TYPE_MAISON_LABEL[typeMaison].toLowerCase()})`
+                    : TYPE_BIEN_LABEL[typeBien]
+                  : "Tous types"
+              }
               onClick={() => goTo("type")}
             />
             {chambresMin ? (

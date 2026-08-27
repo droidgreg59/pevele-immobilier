@@ -12,8 +12,10 @@ import {
   sortListings,
   matchesFiltre,
   matchesTypeBien,
+  matchesTypeMaison,
   type ListingFiltre,
   type TypeBienFiltre,
+  type TypeMaisonFiltre,
   type ListingSort,
 } from "@/lib/listing-filters";
 import { useBrowseView } from "@/lib/browse-view";
@@ -44,6 +46,13 @@ const TYPE_BIEN_LABEL: Record<TypeBienFiltre, string> = {
   TERRAIN: "Terrain",
 };
 
+const TYPE_MAISON_LABEL: Record<TypeMaisonFiltre, string> = {
+  TOUS: "Toutes",
+  INDIVIDUELLE: "Individuelle",
+  SEMI_INDIVIDUELLE: "Semi-individuelle",
+  MITOYENNE: "Mitoyenne",
+};
+
 const BATCH_SIZE = 24;
 
 function chipClass(active: boolean, tone: "ink" | "gold" | "blue" = "ink"): string {
@@ -68,6 +77,7 @@ export default function ListingsBrowser({
   initialBudgetMin,
   initialBudgetMax,
   initialTypeBien,
+  initialTypeMaison,
   initialVillageSlugs,
   initialChambresMin,
   initialEquipements,
@@ -84,6 +94,7 @@ export default function ListingsBrowser({
   initialBudgetMin?: number;
   initialBudgetMax?: number;
   initialTypeBien?: TypeBienFiltre;
+  initialTypeMaison?: TypeMaisonFiltre;
   initialVillageSlugs?: string[];
   initialChambresMin?: number;
   initialEquipements?: string[];
@@ -96,6 +107,7 @@ export default function ListingsBrowser({
   const router = useRouter();
   const [filtre, setFiltre] = useState<ListingFiltre>(initialFiltre ?? "tout");
   const [typeBien, setTypeBien] = useState<TypeBienFiltre>(initialTypeBien ?? "TOUS");
+  const [typeMaison, setTypeMaison] = useState<TypeMaisonFiltre>(initialTypeMaison ?? "TOUS");
   const [budgetMin, setBudgetMin] = useState<number | undefined>(initialBudgetMin);
   const [budgetMax, setBudgetMax] = useState<number | undefined>(initialBudgetMax);
   const [villageSlugs, setVillageSlugs] = useState<string[]>(initialVillageSlugs ?? []);
@@ -114,6 +126,7 @@ export default function ListingsBrowser({
   const filtered = filterListings(listings, {
     filtre,
     typeBien,
+    typeMaison,
     villageSlugs,
     querySlug,
     budgetMin,
@@ -131,6 +144,7 @@ export default function ListingsBrowser({
     if (villageSlugs.length > 0) params.set("villages", villageSlugs.join(","));
     else if (initialQuery) params.set("q", initialQuery);
     if (typeBien !== "TOUS") params.set("type", typeBien);
+    if (typeBien === "MAISON" && typeMaison !== "TOUS") params.set("typeMaison", typeMaison);
     if (chambresMin !== undefined) params.set("chambresMin", String(chambresMin));
     if (equipements.length > 0) params.set("equip", equipements.join(","));
     if (budgetMin !== undefined) params.set("budgetMin", String(budgetMin));
@@ -140,7 +154,7 @@ export default function ListingsBrowser({
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [villageSlugs, typeBien, chambresMin, equipements, budgetMin, budgetMax, tri, filtre]);
+  }, [villageSlugs, typeBien, typeMaison, chambresMin, equipements, budgetMin, budgetMax, tri, filtre]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -176,6 +190,7 @@ export default function ListingsBrowser({
       await createSavedSearchAction({
         transaction,
         typeBien: typeBien === "TOUS" ? undefined : typeBien,
+        typeMaison: typeBien === "MAISON" && typeMaison !== "TOUS" ? typeMaison : undefined,
         q: villageSlugs.length > 0 ? undefined : initialQuery,
         villageSlugs: villageSlugs.length > 0 ? villageSlugs : undefined,
         chambresMin,
@@ -216,6 +231,7 @@ export default function ListingsBrowser({
               type="button"
               onClick={() => {
                 setTypeBien(key);
+                if (key !== "MAISON") setTypeMaison("TOUS");
                 setVisibleCount(BATCH_SIZE);
               }}
               className={chipClass(typeBien === key, "gold")}
@@ -225,6 +241,30 @@ export default function ListingsBrowser({
           );
         })}
       </div>
+
+      {typeBien === "MAISON" ? (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-[12px] font-medium text-muted">Type de maison</span>
+          {(Object.keys(TYPE_MAISON_LABEL) as TypeMaisonFiltre[]).map((key) => {
+            const count = listings.filter(
+              (l) => matchesTypeBien(l, "MAISON") && matchesTypeMaison(l, key)
+            ).length;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  setTypeMaison(key);
+                  setVisibleCount(BATCH_SIZE);
+                }}
+                className={chipClass(typeMaison === key, "blue")}
+              >
+                {TYPE_MAISON_LABEL[key]} ({count})
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {EQUIPEMENTS.map((eq) => (

@@ -22,6 +22,17 @@ export function parseListingFields(
   const typeBienRaw = String(formData.get("typeBien") ?? "");
   const typeBien =
     typeBienRaw === "APPARTEMENT" || typeBienRaw === "TERRAIN" ? typeBienRaw : "MAISON";
+  const typeMaisonRaw = String(formData.get("typeMaison") ?? "");
+  // `null` explicite (pas `undefined`) : sur une mise à jour, Prisma ignore
+  // un champ `undefined` (« ne pas toucher ») alors qu'on veut bien effacer
+  // typeMaison si le bien n'est plus une maison ou si « peu importe » a été choisi.
+  const typeMaison: "INDIVIDUELLE" | "SEMI_INDIVIDUELLE" | "MITOYENNE" | null =
+    typeBien === "MAISON" &&
+    (typeMaisonRaw === "INDIVIDUELLE" ||
+      typeMaisonRaw === "SEMI_INDIVIDUELLE" ||
+      typeMaisonRaw === "MITOYENNE")
+      ? typeMaisonRaw
+      : null;
   const villageSlug = String(formData.get("villageSlug") ?? "");
   const titre = String(formData.get("titre") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -56,6 +67,7 @@ export function parseListingFields(
     fields: {
       transaction,
       typeBien,
+      typeMaison,
       titre,
       description,
       prix,

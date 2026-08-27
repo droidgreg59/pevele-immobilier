@@ -15,6 +15,12 @@ import PhotoGallery from "./PhotoGallery";
 import VisitRequestForm from "./VisitRequestForm";
 import BottomSheet from "./BottomSheet";
 
+const TYPE_MAISON_LABEL_LOWER: Record<string, string> = {
+  INDIVIDUELLE: "individuelle",
+  SEMI_INDIVIDUELLE: "semi-individuelle",
+  MITOYENNE: "mitoyenne",
+};
+
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
   if (owner.type === "PARTICULIER") return "Entre voisins — particulier";
   return `Agence — ${owner.entreprise ?? owner.nom}`;
@@ -307,7 +313,15 @@ export default function ListingDetail({
         <aside className="flex flex-col gap-5 lg:sticky lg:top-[88px] lg:self-start">
           <div className="relative rounded-2xl border border-line bg-white p-6 shadow-sm">
             <span className="text-[11px] font-semibold text-muted">
-              ◉ {listing.commune} · {listing.typeBien === "MAISON" ? "Maison" : listing.typeBien === "APPARTEMENT" ? "Appartement" : "Terrain"}
+              ◉ {listing.commune} ·{" "}
+              {listing.typeBien === "MAISON"
+                ? "Maison"
+                : listing.typeBien === "APPARTEMENT"
+                  ? "Appartement"
+                  : "Terrain"}
+              {listing.typeBien === "MAISON" && listing.typeMaison
+                ? ` ${TYPE_MAISON_LABEL_LOWER[listing.typeMaison]}`
+                : ""}
             </span>
             <h1 className="m-0 mt-1 font-display text-[28px] leading-tight text-ink">
               {listing.titre}

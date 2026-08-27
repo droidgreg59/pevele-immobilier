@@ -29,6 +29,13 @@ export default async function LouerPage({
   const type = typeof params.type === "string" ? params.type : undefined;
   const initialTypeBien =
     type === "MAISON" || type === "APPARTEMENT" || type === "TERRAIN" ? type : undefined;
+  const typeMaisonParam = typeof params.typeMaison === "string" ? params.typeMaison : undefined;
+  const initialTypeMaison =
+    typeMaisonParam === "INDIVIDUELLE" ||
+    typeMaisonParam === "SEMI_INDIVIDUELLE" ||
+    typeMaisonParam === "MITOYENNE"
+      ? typeMaisonParam
+      : undefined;
   const villagesParam = typeof params.villages === "string" ? params.villages : undefined;
   const initialVillageSlugs = villagesParam
     ? villagesParam.split(",").filter(Boolean)
@@ -71,6 +78,7 @@ export default async function LouerPage({
       }
       initialBudgetMax={budget !== undefined && Number.isFinite(budget) ? budget : undefined}
       initialTypeBien={initialTypeBien}
+      initialTypeMaison={initialTypeMaison}
       initialVillageSlugs={initialVillageSlugs}
       initialChambresMin={initialChambresMin}
       initialEquipements={initialEquipements}
