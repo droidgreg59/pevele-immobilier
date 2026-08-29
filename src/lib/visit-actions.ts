@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
+import { sendEmail } from "./email";
+import { visitRequestReceivedEmail } from "./email-templates";
 
 export type VisitFormState = { error?: string; success?: boolean };
 
@@ -12,7 +14,10 @@ export async function createVisitRequestAction(
   formData: FormData
 ): Promise<VisitFormState> {
   const listingId = String(formData.get("listingId") ?? "");
-  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    include: { owner: { select: { email: true } } },
+  });
   if (!listing) return { error: "Annonce introuvable." };
 
   const detailPath = `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listingId}`;
@@ -55,6 +60,14 @@ export async function createVisitRequestAction(
       preferredDate,
     },
   });
+
+  const { subject, html } = visitRequestReceivedEmail({
+    listingTitre: listing.titre,
+    listingHref: detailPath,
+    authorNom: session.nom,
+    message,
+  });
+  await sendEmail({ to: listing.owner.email, subject, html });
 
   return { success: true };
 }

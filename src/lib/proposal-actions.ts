@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { sendEmail } from "./email";
+import { proposalReceivedEmail } from "./email-templates";
 
 export async function createProposalAction(formData: FormData) {
   const mandateId = String(formData.get("mandateId") ?? "");
@@ -13,6 +15,7 @@ export async function createProposalAction(formData: FormData) {
 
   const mandate = await prisma.searchMandate.findFirst({
     where: { id: mandateId, agencyId: session.userId, statut: "ACCEPTEE" },
+    include: { client: { select: { email: true } } },
   });
   if (!mandate) redirect("/compte/agence/clients");
 
@@ -26,6 +29,13 @@ export async function createProposalAction(formData: FormData) {
     update: {},
     create: { mandateId, listingId },
   });
+
+  const { subject, html } = proposalReceivedEmail({
+    agencyNom: session.nom,
+    listingTitre: listing.titre,
+    listingHref: `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`,
+  });
+  await sendEmail({ to: mandate.client.email, subject, html });
 
   redirect("/compte/agence/clients");
 }

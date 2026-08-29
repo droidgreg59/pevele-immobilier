@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { sendEmail } from "./email";
+import { mandateReceivedEmail, mandateRespondedEmail } from "./email-templates";
 
 export async function sendMandateAction(formData: FormData) {
   const savedSearchId = String(formData.get("savedSearchId") ?? "");
@@ -27,6 +29,9 @@ export async function sendMandateAction(formData: FormData) {
     create: { savedSearchId, agencyId, clientId: session.userId },
   });
 
+  const { subject, html } = mandateReceivedEmail({ clientNom: session.nom });
+  await sendEmail({ to: agency.email, subject, html });
+
   redirect("/compte");
 }
 
@@ -37,6 +42,11 @@ export async function respondToMandateAction(formData: FormData) {
   if (!session) redirect("/connexion");
   if (decision !== "accept" && decision !== "refuse") redirect("/compte/agence/clients");
 
+  const existing = await prisma.searchMandate.findFirst({
+    where: { id: mandateId, agencyId: session.userId, statut: "EN_ATTENTE" },
+    select: { client: { select: { email: true } }, agency: { select: { nom: true, entreprise: true } } },
+  });
+
   await prisma.searchMandate.updateMany({
     where: { id: mandateId, agencyId: session.userId, statut: "EN_ATTENTE" },
     data: {
@@ -44,6 +54,14 @@ export async function respondToMandateAction(formData: FormData) {
       respondedAt: new Date(),
     },
   });
+
+  if (existing) {
+    const { subject, html } = mandateRespondedEmail({
+      agencyNom: existing.agency.entreprise ?? existing.agency.nom,
+      accepted: decision === "accept",
+    });
+    await sendEmail({ to: existing.client.email, subject, html });
+  }
 
   redirect("/compte/agence/clients");
 }

@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
+import { sendEmail } from "./email";
+import { estimationRequestReceivedEmail, estimationRequestRespondedEmail } from "./email-templates";
 
 export type EstimationFormState = { error?: string; success?: boolean };
 
@@ -58,6 +60,9 @@ export async function createEstimationRequestAction(
     },
   });
 
+  const { subject, html } = estimationRequestReceivedEmail({ adresse, authorNom: session.nom });
+  await sendEmail({ to: agency.email, subject, html });
+
   return { success: true };
 }
 
@@ -68,6 +73,11 @@ export async function respondToEstimationRequestAction(formData: FormData) {
   if (!session) redirect("/connexion");
   if (decision !== "accept" && decision !== "refuse") redirect("/compte");
 
+  const existing = await prisma.estimationRequest.findFirst({
+    where: { id: estimationRequestId, agencyId: session.userId, statut: "EN_ATTENTE" },
+    select: { author: { select: { email: true } }, agency: { select: { nom: true, entreprise: true } } },
+  });
+
   await prisma.estimationRequest.updateMany({
     where: { id: estimationRequestId, agencyId: session.userId, statut: "EN_ATTENTE" },
     data: {
@@ -75,6 +85,14 @@ export async function respondToEstimationRequestAction(formData: FormData) {
       respondedAt: new Date(),
     },
   });
+
+  if (existing) {
+    const { subject, html } = estimationRequestRespondedEmail({
+      agencyNom: existing.agency.entreprise ?? existing.agency.nom,
+      accepted: decision === "accept",
+    });
+    await sendEmail({ to: existing.author.email, subject, html });
+  }
 
   redirect("/compte");
 }

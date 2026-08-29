@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { sendEmail } from "./email";
+import { devisRequestReceivedEmail } from "./email-templates";
 
 export type DevisFormState = { error?: string; success?: boolean };
 
@@ -39,6 +41,9 @@ export async function createDevisRequestAction(
       telephone: telephone || null,
     },
   });
+
+  const { subject, html } = devisRequestReceivedEmail({ authorNom: session.nom, message });
+  await sendEmail({ to: artisan.email, subject, html });
 
   return { success: true };
 }

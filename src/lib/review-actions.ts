@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { sendEmail } from "./email";
+import { reviewReceivedEmail } from "./email-templates";
 
 export type ReviewFormState = { error?: string };
 
@@ -34,11 +36,20 @@ export async function upsertReviewAction(
   });
   if (!agency) return { error: "Agence introuvable." };
 
+  const existing = await prisma.review.findUnique({
+    where: { agencyId_authorId: { agencyId, authorId: session.userId } },
+  });
+
   await prisma.review.upsert({
     where: { agencyId_authorId: { agencyId, authorId: session.userId } },
     update: { note, commentaire },
     create: { agencyId, authorId: session.userId, note, commentaire },
   });
+
+  if (!existing) {
+    const { subject, html } = reviewReceivedEmail({ authorNom: session.nom, note });
+    await sendEmail({ to: agency.email, subject, html });
+  }
 
   redirect(`/professionnels/${agencyId}`);
 }
