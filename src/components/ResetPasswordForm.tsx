@@ -1,47 +1,41 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
-import { loginAction, type AuthState } from "@/lib/auth-actions";
+import { resetPasswordAction, type ResetPasswordState } from "@/lib/auth-actions";
 
-const initialState: AuthState = {};
+const initialState: ResetPasswordState = {};
 
-export default function LoginForm({ next }: { next?: string }) {
-  const [state, formAction, pending] = useActionState(
-    loginAction,
-    initialState
-  );
+export default function ResetPasswordForm({ token }: { token: string }) {
+  const [state, formAction, pending] = useActionState(resetPasswordAction, initialState);
 
   return (
     <form action={formAction} className="flex max-w-[440px] flex-col gap-4">
-      {next ? <input type="hidden" name="next" value={next} /> : null}
+      <input type="hidden" name="token" value={token} />
       <label className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          Email
-        </span>
-        <input
-          type="email"
-          name="email"
-          required
-          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          Mot de passe
+          Nouveau mot de passe
         </span>
         <input
           type="password"
           name="password"
           required
+          minLength={8}
           className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
 
-      <Link href="/mot-de-passe-oublie" className="self-start text-[12.5px] font-semibold text-blue">
-        Mot de passe oublié ?
-      </Link>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Confirmer le mot de passe
+        </span>
+        <input
+          type="password"
+          name="confirmPassword"
+          required
+          minLength={8}
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+        />
+      </label>
 
       {state.error ? (
         <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
@@ -54,7 +48,7 @@ export default function LoginForm({ next }: { next?: string }) {
         disabled={pending}
         className="self-start rounded-full bg-yellow px-6.5 py-4 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
-        {pending ? "Connexion…" : "Se connecter →"}
+        {pending ? "Enregistrement…" : "Choisir ce mot de passe →"}
       </button>
     </form>
   );

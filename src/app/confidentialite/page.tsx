@@ -132,13 +132,20 @@ export default function ConfidentialitePage() {
         <section>
           <h2 className="m-0 font-display text-xl text-ink">Cookies et stockage local</h2>
           <p className="mt-3">
-            Le site utilise uniquement un cookie de session, strictement nécessaire à
+            Le site utilise un cookie de session, strictement nécessaire à
             l&apos;authentification (technique, non soumis à consentement). Certaines pages
             utilisent également le stockage local de votre navigateur (localStorage) pour
             mémoriser des préférences propres à votre appareil (brouillon de recherche en cours,
             annonces déjà consultées) — ces informations restent sur votre appareil et ne sont
             jamais transmises au site. Le site n&apos;utilise aucun cookie publicitaire ni
             traceur tiers à ce jour.
+          </p>
+          <p className="mt-2">
+            Le site utilise <b>Cloudflare Web Analytics</b> pour mesurer sa fréquentation. Cet
+            outil ne dépose aucun cookie, ne collecte aucune donnée personnelle et
+            n&apos;effectue aucun suivi individuel ou inter-sites : il produit uniquement des
+            statistiques agrégées et anonymes (pages vues, provenance générale du trafic). À ce
+            titre, il ne nécessite pas de consentement préalable.
           </p>
         </section>
 

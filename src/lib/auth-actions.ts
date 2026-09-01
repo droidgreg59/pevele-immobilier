@@ -1,12 +1,20 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { setSessionCookie, clearSessionCookie } from "./session";
+import { sendEmail } from "./email";
+import { passwordResetEmail } from "./email-templates";
+import { SITE_URL } from "./seo";
 import type { AccountType } from "@prisma/client";
 
 export type AuthState = { error?: string };
+export type ResetRequestState = { error?: string; success?: boolean };
+export type ResetPasswordState = { error?: string };
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1h
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -99,4 +107,72 @@ export async function loginAction(
 export async function logoutAction() {
   await clearSessionCookie();
   redirect("/");
+}
+
+/**
+ * Ne révèle jamais si l'email existe en base (évite l'énumération de
+ * comptes) : le message de succès est identique dans tous les cas.
+ */
+export async function requestPasswordResetAction(
+  _prevState: ResetRequestState,
+  formData: FormData
+): Promise<ResetRequestState> {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  if (!EMAIL_RE.test(email)) {
+    return { error: "Adresse email invalide." };
+  }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (user) {
+    const resetToken = randomBytes(32).toString("hex");
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { resetToken, resetTokenExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS) },
+    });
+    const { subject, html } = passwordResetEmail({
+      resetUrl: `${SITE_URL}/reinitialiser-mot-de-passe?token=${resetToken}`,
+    });
+    await sendEmail({ to: user.email, subject, html });
+  }
+
+  return { success: true };
+}
+
+export async function resetPasswordAction(
+  _prevState: ResetPasswordState,
+  formData: FormData
+): Promise<ResetPasswordState> {
+  const token = String(formData.get("token") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  if (!token) return { error: "Lien de réinitialisation invalide." };
+  if (password.length < 8) {
+    return { error: "Le mot de passe doit contenir au moins 8 caractères." };
+  }
+  if (password !== confirmPassword) {
+    return { error: "Les deux mots de passe ne correspondent pas." };
+  }
+
+  const user = await prisma.user.findUnique({ where: { resetToken: token } });
+  if (!user || !user.resetTokenExpiresAt || user.resetTokenExpiresAt < new Date()) {
+    return { error: "Ce lien de réinitialisation est invalide ou a expiré." };
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash, resetToken: null, resetTokenExpiresAt: null },
+  });
+
+  await setSessionCookie({
+    userId: user.id,
+    email: user.email,
+    nom: user.nom,
+    type: user.type,
+  });
+
+  redirect("/compte");
 }

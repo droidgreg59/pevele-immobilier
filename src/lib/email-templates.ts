@@ -200,3 +200,15 @@ export function reviewReceivedEmail(opts: { authorNom: string; note: number }): 
     ),
   };
 }
+
+export function passwordResetEmail(opts: { resetUrl: string }): { subject: string; html: string } {
+  return {
+    subject: "Réinitialisez votre mot de passe",
+    html: layout(
+      "Réinitialisation du mot de passe",
+      p("Vous avez demandé à réinitialiser votre mot de passe. Ce lien est valable 1 heure.") +
+        p("Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email."),
+      { label: "Choisir un nouveau mot de passe", href: opts.resetUrl }
+    ),
+  };
+}
