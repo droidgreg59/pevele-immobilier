@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ListingWithOwner } from "@/lib/listings";
@@ -73,13 +74,15 @@ export default function ListingCard({
             className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {photos.map((p) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={p.id}
-                src={p.url}
-                alt={listing.titre}
-                className="h-full w-full shrink-0 snap-center object-cover"
-              />
+              <div key={p.id} className="relative h-full w-full shrink-0 snap-center">
+                <Image
+                  src={p.url}
+                  alt={listing.titre}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
             ))}
           </div>
         ) : (
@@ -181,10 +184,11 @@ export default function ListingCard({
           ) : (
             <span className="flex items-center gap-1.5 text-[11px] text-muted">
               {listing.owner.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={listing.owner.logoUrl}
                   alt=""
+                  width={20}
+                  height={20}
                   className="h-5 w-5 rounded-full object-cover"
                 />
               ) : (

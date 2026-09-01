@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ClipboardCheck, ShieldCheck, Users, Star } from "lucide-react";
 import { getAgencies } from "@/lib/agencies";
 
@@ -73,10 +74,11 @@ export default async function ProfessionnelsPage() {
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-surface">
                     {a.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={a.logoUrl}
                         alt={`Logo ${a.entreprise ?? a.nom}`}
+                        width={44}
+                        height={44}
                         className="h-full w-full object-cover"
                       />
                     ) : (

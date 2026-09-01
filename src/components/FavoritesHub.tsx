@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { TransactionType } from "@prisma/client";
 import { formatPrix } from "@/lib/format";
 import { toggleFavoriteAction, updateFavoriteTagAction } from "@/lib/favorite-actions";
@@ -70,11 +71,12 @@ function FavoriteHubCard({
         className="relative h-[140px] w-full shrink-0 overflow-hidden rounded-xl sm:h-[120px] sm:w-[160px]"
       >
         {item.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={item.coverUrl}
             alt={item.titre}
-            className="absolute inset-0 h-full w-full object-cover"
+            fill
+            sizes="(max-width: 640px) 100vw, 160px"
+            className="object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-surface px-3 text-center text-[12px] text-muted-2">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, Mail, Globe, ExternalLink, Send, Calculator } from "lucide-react";
 import { getAgencyById } from "@/lib/agencies";
@@ -142,10 +143,11 @@ export default async function AgencyPage({
       <div className="flex items-center gap-5">
         <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
           {agency.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={agency.logoUrl}
               alt={`Logo ${agency.entreprise ?? agency.nom}`}
+              width={80}
+              height={80}
               className="h-full w-full object-cover"
             />
           ) : (

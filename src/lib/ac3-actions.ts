@@ -2,9 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
-import { updateXmlImportUrl, recordXmlSyncResult, getAgencyById } from "./agencies";
-import { fetchAc3Feed, parseAc3Feed } from "./ac3-import";
-import { upsertImportedListing } from "./listings";
+import { updateXmlImportUrl, getAgencyById } from "./agencies";
+import { syncAgencyFeed } from "./ac3-sync";
 
 export type XmlImportUrlFormState = { error?: string; success?: boolean };
 
@@ -61,26 +60,12 @@ export async function syncAgencyXmlAction(
     return { error: "Aucune adresse de flux configurée." };
   }
 
-  try {
-    const xml = await fetchAc3Feed(agency.xmlImportUrl);
-    const { imported, skipped } = parseAc3Feed(xml);
-
-    let created = 0;
-    let updated = 0;
-    for (const bien of imported) {
-      const { created: wasCreated } = await upsertImportedListing(session.userId, {
-        ...bien,
-        importSource: "AC3",
-      });
-      if (wasCreated) created += 1;
-      else updated += 1;
-    }
-
-    await recordXmlSyncResult(session.userId, { count: imported.length });
-    return { success: true, imported: created, updated, skipped: skipped.length };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Échec de la synchronisation.";
-    await recordXmlSyncResult(session.userId, { error: message });
-    return { error: message };
-  }
+  const result = await syncAgencyFeed(session.userId, agency.xmlImportUrl);
+  if ("error" in result) return { error: result.error };
+  return {
+    success: true,
+    imported: result.created,
+    updated: result.updated,
+    skipped: result.skipped,
+  };
 }
