@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
@@ -8,6 +9,7 @@ import { setSessionCookie, clearSessionCookie } from "./session";
 import { sendEmail } from "./email";
 import { passwordResetEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
+import { verifyTurnstileToken } from "./turnstile";
 import type { AccountType } from "@prisma/client";
 
 export type AuthState = { error?: string };
@@ -21,6 +23,11 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function safeNextPath(formData: FormData): string {
   const next = String(formData.get("next") ?? "");
   return next.startsWith("/") && !next.startsWith("//") ? next : "/compte";
+}
+
+async function clientIp(): Promise<string | undefined> {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
 }
 
 export async function registerAction(
@@ -47,6 +54,12 @@ export async function registerAction(
   }
   if (type === "ARTISAN" && !entreprise) {
     return { error: "Merci d'indiquer le nom de votre entreprise." };
+  }
+
+  const turnstileToken = formData.get("cf-turnstile-response");
+  const turnstileOk = await verifyTurnstileToken(turnstileToken, "register", await clientIp());
+  if (!turnstileOk) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });

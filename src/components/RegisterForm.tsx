@@ -1,11 +1,18 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import Script from "next/script";
 import { registerAction, type AuthState } from "@/lib/auth-actions";
 
 const initialState: AuthState = {};
 
 type AccountType = "PARTICULIER" | "AGENCE" | "ARTISAN";
+
+declare global {
+  interface Window {
+    turnstile?: { reset: (widgetId?: string) => void };
+  }
+}
 
 export default function RegisterForm({
   next,
@@ -21,8 +28,17 @@ export default function RegisterForm({
   const [type, setType] = useState<AccountType>(initialType ?? "PARTICULIER");
   const isPro = type === "AGENCE" || type === "ARTISAN";
 
+  // Un token Turnstile est à usage unique : après un échec (email déjà pris,
+  // mot de passe trop court…) il faut regénérer le widget pour la resoumission.
+  useEffect(() => {
+    if (state.error) {
+      window.turnstile?.reset();
+    }
+  }, [state.error]);
+
   return (
     <form action={formAction} className="flex max-w-[520px] flex-col gap-4">
+      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       <input type="hidden" name="type" value={type} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
@@ -110,6 +126,12 @@ export default function RegisterForm({
           className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
+
+      <div
+        className="cf-turnstile"
+        data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        data-action="register"
+      />
 
       {state.error ? (
         <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
