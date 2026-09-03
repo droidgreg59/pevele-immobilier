@@ -179,8 +179,16 @@ export default async function VillagePage({
         )}
         <p className="mt-3 text-[11px] text-muted-2">
           Source : DVF (data.gouv.fr / Etalab) —{" "}
+          {dvfStats ? (
+            <>
+              <Link href={`/prix/${village.slug}`} className="text-blue">
+                prix détaillé à {village.nom} →
+              </Link>{" "}
+              ·{" "}
+            </>
+          ) : null}
           <Link href="/prix" className="text-blue">
-            voir tous les villages →
+            tous les villages →
           </Link>
         </p>
       </div>

@@ -3,6 +3,7 @@ import { villages } from "@/data/villages";
 import { getPublicListings } from "@/lib/listings";
 import { getAgencies } from "@/lib/agencies";
 import { getArtisans } from "@/lib/artisans";
+import { getDvfStatsForAllVillages } from "@/lib/dvf";
 import { SITE_URL } from "@/lib/seo";
 
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
@@ -20,11 +21,12 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [ventes, locations, agencies, artisans] = await Promise.all([
+  const [ventes, locations, agencies, artisans, dvfStats] = await Promise.all([
     getPublicListings("VENTE"),
     getPublicListings("LOCATION"),
     getAgencies(),
     getArtisans(),
+    getDvfStatsForAllVillages(),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
@@ -38,6 +40,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly",
     priority: 0.85,
   }));
+
+  // Page prix approfondie par commune : seulement celles qui ont des données DVF.
+  const dvfSlugs = new Set(dvfStats.map((s) => s.villageSlug));
+  const prixEntries: MetadataRoute.Sitemap = villages
+    .filter((v) => dvfSlugs.has(v.slug))
+    .map((v) => ({
+      url: `${SITE_URL}/prix/${v.slug}`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    }));
 
   // Pages d'atterrissage par intention : uniquement les combinaisons
   // commune × type × transaction qui ont au moins une annonce en ligne (les
@@ -87,6 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...villageEntries,
+    ...prixEntries,
     ...intentEntries,
     ...ventesEntries,
     ...locationEntries,

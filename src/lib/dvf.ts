@@ -83,6 +83,74 @@ export async function getRecentDvfTransactions(
   });
 }
 
+export type DvfYearPoint = { year: number; count: number; avgPrixM2: number };
+
+/** Prix moyen /m² par millésime DVF pour une commune (ordre chronologique). */
+export async function getDvfPriceByYear(
+  villageSlug: string,
+  typeLocal?: string
+): Promise<DvfYearPoint[]> {
+  const rows = await prisma.dvfTransaction.groupBy({
+    by: ["sourceAnnee"],
+    where: { villageSlug, ...(typeLocal ? { typeLocal } : {}) },
+    _count: { _all: true },
+    _avg: { prixM2: true },
+    orderBy: { sourceAnnee: "asc" },
+  });
+  return rows
+    .filter((r) => r._avg.prixM2 !== null)
+    .map((r) => ({
+      year: r.sourceAnnee,
+      count: r._count._all,
+      avgPrixM2: Math.round(r._avg.prixM2 as number),
+    }));
+}
+
+export type DvfTypeBreakdown = {
+  typeLocal: string;
+  count: number;
+  avgPrixM2: number;
+  medianPrixM2: number;
+  minPrixM2: number;
+  maxPrixM2: number;
+};
+
+/** Détail par type de bien (Maison / Appartement) : moyenne, médiane, fourchette du prix/m². */
+export async function getDvfBreakdownByType(
+  villageSlug: string
+): Promise<DvfTypeBreakdown[]> {
+  const rows = await prisma.dvfTransaction.findMany({
+    where: { villageSlug },
+    select: { typeLocal: true, prixM2: true },
+  });
+
+  const byType = new Map<string, number[]>();
+  for (const r of rows) {
+    const arr = byType.get(r.typeLocal) ?? [];
+    arr.push(r.prixM2);
+    byType.set(r.typeLocal, arr);
+  }
+
+  return [...byType.entries()]
+    .map(([typeLocal, values]) => {
+      values.sort((a, b) => a - b);
+      const mid = Math.floor(values.length / 2);
+      const medianPrixM2 =
+        values.length % 2 === 0
+          ? Math.round((values[mid - 1] + values[mid]) / 2)
+          : values[mid];
+      return {
+        typeLocal,
+        count: values.length,
+        avgPrixM2: Math.round(values.reduce((s, v) => s + v, 0) / values.length),
+        medianPrixM2,
+        minPrixM2: values[0],
+        maxPrixM2: values[values.length - 1],
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+}
+
 export async function getDvfStatsForAllVillages(): Promise<DvfVillageStats[]> {
   const rows = await prisma.dvfTransaction.groupBy({
     by: ["villageSlug"],

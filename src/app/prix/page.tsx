@@ -58,9 +58,15 @@ export default async function PrixPage() {
             {rows.map(({ village, stats: s }) => (
               <tr key={village.slug} className="border-b border-line last:border-b-0">
                 <td className="px-4 py-3">
-                  <Link href={`/villages/${village.slug}`} className="font-semibold text-blue">
-                    {village.nom}
-                  </Link>
+                  {s ? (
+                    <Link href={`/prix/${village.slug}`} className="font-semibold text-blue">
+                      {village.nom}
+                    </Link>
+                  ) : (
+                    <Link href={`/villages/${village.slug}`} className="font-semibold text-muted">
+                      {village.nom}
+                    </Link>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-ink">
                   {s ? `${s.avgPrixM2.toLocaleString("fr-FR")} €` : "—"}
