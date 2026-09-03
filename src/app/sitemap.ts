@@ -39,6 +39,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
+  // Pages d'atterrissage par intention : uniquement les combinaisons
+  // commune × type × transaction qui ont au moins une annonce en ligne (les
+  // pages sans annonce sont en noindex, inutile de les soumettre).
+  const INTENT_SLUG: Record<string, Record<string, string>> = {
+    MAISON: { VENTE: "maisons-a-vendre", LOCATION: "maisons-a-louer" },
+    APPARTEMENT: { VENTE: "appartements-a-vendre", LOCATION: "appartements-a-louer" },
+    TERRAIN: { VENTE: "terrains-a-vendre", LOCATION: "terrains-a-louer" },
+  };
+  const intentKeys = new Set<string>();
+  for (const l of [...ventes, ...locations]) {
+    const intent = INTENT_SLUG[l.typeBien]?.[l.transaction];
+    if (intent) intentKeys.add(`${l.villageSlug}/${intent}`);
+  }
+  const intentEntries: MetadataRoute.Sitemap = [...intentKeys].map((key) => ({
+    url: `${SITE_URL}/immobilier/${key}`,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
   const ventesEntries: MetadataRoute.Sitemap = ventes.map((l) => ({
     url: `${SITE_URL}/acheter/${l.id}`,
     lastModified: l.createdAt,
@@ -68,6 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...villageEntries,
+    ...intentEntries,
     ...ventesEntries,
     ...locationEntries,
     ...agencyEntries,

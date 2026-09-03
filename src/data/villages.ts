@@ -389,3 +389,19 @@ export function getVillageByInsee(insee: string): Village | undefined {
 export function getVillageBySlug(slug: string): Village | undefined {
   return villages.find((v) => v.slug === slug);
 }
+
+/**
+ * Communes les plus proches d'une commune donnée, par distance sur la carte
+ * (repère SVG 440x600 partagé). Sert au maillage interne des pages
+ * d'atterrissage SEO. Approximatif mais suffisant pour « communes proches ».
+ */
+export function nearestVillages(slug: string, count = 4): Village[] {
+  const origin = getVillageBySlug(slug);
+  if (!origin) return [];
+  return villages
+    .filter((v) => v.slug !== slug)
+    .map((v) => ({ v, d: (v.mapX - origin.mapX) ** 2 + (v.mapY - origin.mapY) ** 2 }))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, count)
+    .map((x) => x.v);
+}

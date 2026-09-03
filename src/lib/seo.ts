@@ -19,6 +19,20 @@ export function breadcrumbJsonLd(items: BreadcrumbItem[]) {
   };
 }
 
+export function itemListJsonLd(items: { url: string; name: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${SITE_URL}${it.url}`,
+      name: it.name,
+    })),
+  };
+}
+
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",

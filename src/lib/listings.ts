@@ -38,6 +38,19 @@ export async function getPublicListingsByVillage(
   });
 }
 
+/** Annonces publiées d'un type et d'une transaction donnés dans une commune — pages d'atterrissage SEO. */
+export async function getListingsForIntent(
+  villageSlug: string,
+  typeBien: TypeBien,
+  transaction: TransactionType
+): Promise<ListingWithOwner[]> {
+  return prisma.listing.findMany({
+    where: { villageSlug, typeBien, transaction, statut: "PUBLIEE" },
+    orderBy: { createdAt: "desc" },
+    ...listingWithOwner,
+  });
+}
+
 export async function getListingById(
   id: string
 ): Promise<ListingWithOwner | null> {
