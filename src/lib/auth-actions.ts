@@ -5,9 +5,9 @@ import { headers } from "next/headers";
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
-import { setSessionCookie, clearSessionCookie } from "./session";
+import { getSession, setSessionCookie, clearSessionCookie } from "./session";
 import { sendEmail } from "./email";
-import { passwordResetEmail } from "./email-templates";
+import { emailVerificationEmail, passwordResetEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
 import { verifyTurnstileToken } from "./turnstile";
 import type { AccountType } from "@prisma/client";
@@ -17,6 +17,23 @@ export type ResetRequestState = { error?: string; success?: boolean };
 export type ResetPasswordState = { error?: string };
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1h
+const EMAIL_VERIFY_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
+
+/** Génère un jeton de vérification, l'enregistre et envoie l'email de confirmation. */
+async function sendEmailVerification(userId: string, email: string): Promise<void> {
+  const token = randomBytes(32).toString("hex");
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      emailVerifyToken: token,
+      emailVerifyTokenExpiresAt: new Date(Date.now() + EMAIL_VERIFY_TTL_MS),
+    },
+  });
+  const { subject, html } = emailVerificationEmail({
+    verifyUrl: `${SITE_URL}/verifier-email?token=${token}`,
+  });
+  await sendEmail({ to: email, subject, html });
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -83,11 +100,52 @@ export async function registerAction(
     type: user.type,
   });
 
+  await sendEmailVerification(user.id, user.email);
+
   if (type === "AGENCE" || type === "ARTISAN") {
     redirect("/bienvenue");
   }
 
   redirect(safeNextPath(formData));
+}
+
+export type VerifyEmailOutcome = "ok" | "already" | "invalid";
+
+/**
+ * Valide un jeton de vérification d'email. Fonctionne connecté ou non (le lien
+ * peut être ouvert sur un autre appareil). Idempotent : un jeton déjà consommé
+ * mais correspondant à un compte vérifié renvoie « already » plutôt qu'une erreur.
+ */
+export async function verifyEmailToken(token: string): Promise<VerifyEmailOutcome> {
+  if (!token) return "invalid";
+
+  const user = await prisma.user.findFirst({ where: { emailVerifyToken: token } });
+  if (!user) return "invalid";
+  // Le jeton n'est PAS consommé au premier appel : les clients mail préchargent
+  // souvent les liens, ce qui verrouillerait l'utilisateur. On s'appuie sur
+  // `emailVerifiedAt` (idempotent) et sur l'expiration du jeton (7 j).
+  if (user.emailVerifiedAt) return "already";
+  if (!user.emailVerifyTokenExpiresAt || user.emailVerifyTokenExpiresAt < new Date()) {
+    return "invalid";
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerifiedAt: new Date() },
+  });
+  return "ok";
+}
+
+/** Renvoie l'email de vérification à l'utilisateur connecté s'il n'est pas encore vérifié. */
+export async function resendEmailVerificationAction(): Promise<void> {
+  const session = await getSession();
+  if (!session) redirect("/connexion");
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (user && !user.emailVerifiedAt) {
+    await sendEmailVerification(user.id, user.email);
+  }
+  redirect("/compte?verif=renvoye");
 }
 
 export async function loginAction(

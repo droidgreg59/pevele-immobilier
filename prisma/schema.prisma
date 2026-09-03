@@ -28,6 +28,13 @@ model User {
   /// Jeton de réinitialisation de mot de passe (à usage unique, expire après 1h) — null hors demande en cours.
   resetToken          String?             @unique
   resetTokenExpiresAt DateTime?
+  /// Date de vérification de l'adresse email (clic sur le lien reçu à l'inscription).
+  /// Null tant que non vérifiée : certaines actions (déposer une annonce) l'exigent.
+  /// `emailVerifyToken` : jeton à usage unique (32 octets aléatoires, non contraint
+  /// `@unique` pour éviter une migration destructive sur SQLite — lookup par findFirst).
+  emailVerifiedAt            DateTime?
+  emailVerifyToken          String?
+  emailVerifyTokenExpiresAt DateTime?
   description         String?
   categories          String?
   communesDesservies  String?
@@ -46,6 +53,8 @@ model User {
   estimationsRecues   EstimationRequest[] @relation("AgencyEstimations")
   estimationsEnvoyees EstimationRequest[] @relation("AuthorEstimations")
   openHouseRegistrations OpenHouseRegistration[]
+
+  @@index([emailVerifyToken])
 }
 
 enum AccountType {

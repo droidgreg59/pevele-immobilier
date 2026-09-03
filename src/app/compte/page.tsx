@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { logoutAction } from "@/lib/auth-actions";
+import { logoutAction, resendEmailVerificationAction } from "@/lib/auth-actions";
+import { prisma } from "@/lib/prisma";
 import { getListingsByUser } from "@/lib/listings";
 import { getFavoriteListingIds, getFavoriteCount } from "@/lib/favorites";
 import { getSavedSearchesByUser, savedSearchUrl } from "@/lib/saved-searches";
@@ -84,9 +85,17 @@ const TYPE_LABEL: Record<string, string> = {
   ARTISAN: "Artisan",
 };
 
-export default async function ComptePage() {
+export default async function ComptePage({ searchParams }: PageProps<"/compte">) {
   const session = await getSession();
   if (!session) redirect("/connexion");
+
+  const sp = await searchParams;
+  const verifEmailRenvoye = sp.verif === "renvoye";
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { emailVerifiedAt: true },
+  });
+  const emailNonVerifie = currentUser != null && currentUser.emailVerifiedAt == null;
 
   const isAgence = session.type === "AGENCE";
   const isArtisan = session.type === "ARTISAN";
@@ -589,6 +598,31 @@ export default async function ComptePage() {
       <Link href="/" className="text-[13px] font-semibold text-blue">
         ← Retour à l&apos;accueil
       </Link>
+
+      {emailNonVerifie ? (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E7D9A8] bg-[#FBF3DC] px-5 py-4">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[13px] font-semibold text-ink">
+              Vérifiez votre adresse email
+            </span>
+            <span className="text-[13px] text-muted">
+              {verifEmailRenvoye
+                ? "Email de vérification renvoyé — pensez à regarder vos spams."
+                : "Un lien de confirmation vous a été envoyé à l'inscription. Certaines actions (déposer une annonce) l'exigent."}
+            </span>
+          </div>
+          {!verifEmailRenvoye ? (
+            <form action={resendEmailVerificationAction}>
+              <button
+                type="submit"
+                className="rounded-full border border-line bg-white px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+              >
+                Renvoyer l&apos;email
+              </button>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-line bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-1.5 text-[13px] text-ink">

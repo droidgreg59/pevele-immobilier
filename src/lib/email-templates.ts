@@ -320,6 +320,21 @@ export function reviewReceivedEmail(opts: { authorNom: string; note: number }): 
   };
 }
 
+export function emailVerificationEmail(opts: { verifyUrl: string }): {
+  subject: string;
+  html: string;
+} {
+  return {
+    subject: "Confirmez votre adresse email",
+    html: layout(
+      "Confirmez votre adresse email",
+      p("Bienvenue sur Pévèle Immobilier. Confirmez votre adresse pour finaliser votre inscription.") +
+        p("Ce lien est valable 7 jours."),
+      { label: "Confirmer mon adresse", href: opts.verifyUrl }
+    ),
+  };
+}
+
 export function passwordResetEmail(opts: { resetUrl: string }): { subject: string; html: string } {
   return {
     subject: "Réinitialisez votre mot de passe",

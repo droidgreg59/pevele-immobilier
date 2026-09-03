@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
+import { prisma } from "./prisma";
 import {
   createListing,
   updateListing,
@@ -28,6 +29,17 @@ export async function createListingAction(
   const session = await getSession();
   if (!session) {
     redirect("/connexion?next=/vendre/deposer");
+  }
+
+  const author = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { emailVerifiedAt: true },
+  });
+  if (!author?.emailVerifiedAt) {
+    return {
+      error:
+        "Vérifiez votre adresse email avant de publier une annonce. Un lien de confirmation vous a été envoyé — regardez aussi vos spams, ou renvoyez-le depuis « Mon compte ».",
+    };
   }
 
   const photoFiles = pickPhotoFiles(formData);
