@@ -6,9 +6,9 @@ import { villages } from "@/data/villages";
 import { EQUIPEMENTS } from "@/data/equipements";
 import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
 import PhotoDropzone from "./PhotoDropzone";
+import DpeFields from "./DpeFields";
 
 const initialState: ListingFormState = {};
-const DPE_OPTIONS = ["A", "B", "C", "D", "E", "F", "G"];
 
 export default function PublishForm({
   accountLabel,
@@ -175,35 +175,19 @@ export default function PublishForm({
         </label>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            Extérieur
-          </span>
-          <input
-            name="exterieur"
-            placeholder="ex. 500 m² jardin, balcon…"
-            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-          />
-        </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            DPE (si connu)
-          </span>
-          <select
-            name="dpe"
-            defaultValue=""
-            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-          >
-            <option value="">Non renseigné</option>
-            {DPE_OPTIONS.map((letter) => (
-              <option key={letter} value={letter}>
-                {letter}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Extérieur
+        </span>
+        <input
+          name="exterieur"
+          placeholder="ex. 500 m² jardin, balcon…"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+        />
+      </label>
+
+      <DpeFields />
+
 
       {typeBien !== "TERRAIN" ? (
         <label className="flex flex-col gap-1.5">

@@ -121,6 +121,13 @@ export type ListingFieldsInput = {
   exterieur: string;
   equipements: string;
   dpe?: string;
+  ges?: string;
+  dpeConsommation?: number | null;
+  dpeEmissions?: number | null;
+  dpeCoutMin?: number | null;
+  dpeCoutMax?: number | null;
+  dpeCoutAnneeRef?: number | null;
+  dpeDate?: Date | null;
   modeChauffage?: string | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
@@ -140,13 +147,27 @@ export async function createListing(input: CreateListingInput) {
   return prisma.listing.create({
     data: {
       ...fields,
-      dpe: fields.dpe || null,
+      ...dpeData(fields),
       videoUrl: fields.videoUrl || null,
       visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
       owner: { connect: { id: ownerId } },
       priceHistory: { create: [{ prix: fields.prix }] },
     },
   });
+}
+
+/** Normalise le bloc DPE : chaîne vide → null, nombre absent → null. */
+function dpeData(f: ListingFieldsInput) {
+  return {
+    dpe: f.dpe || null,
+    ges: f.ges || null,
+    dpeConsommation: f.dpeConsommation ?? null,
+    dpeEmissions: f.dpeEmissions ?? null,
+    dpeCoutMin: f.dpeCoutMin ?? null,
+    dpeCoutMax: f.dpeCoutMax ?? null,
+    dpeCoutAnneeRef: f.dpeCoutAnneeRef ?? null,
+    dpeDate: f.dpeDate ?? null,
+  };
 }
 
 async function applyListingUpdate(
@@ -159,7 +180,7 @@ async function applyListingUpdate(
       where: { id },
       data: {
         ...input,
-        dpe: input.dpe || null,
+        ...dpeData(input),
         videoUrl: input.videoUrl || null,
         visiteVirtuelleUrl: input.visiteVirtuelleUrl || null,
         // Une annonce refusée repasse en vérification après correction.
@@ -237,7 +258,7 @@ export async function upsertImportedListing(
     ...fields,
     typeMaison: fields.typeMaison ?? null,
     modeChauffage: fields.modeChauffage || null,
-    dpe: fields.dpe || null,
+    ...dpeData(fields),
     videoUrl: fields.videoUrl || null,
     visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
   };

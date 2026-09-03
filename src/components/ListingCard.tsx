@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ListingWithOwner } from "@/lib/listings";
-import { formatPrix, formatPrixM2 } from "@/lib/format";
+import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
 import { isRecentListing } from "@/lib/listing-filters";
 import { useViewedListingIds } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
@@ -158,6 +158,18 @@ export default function ListingCard({
             {formatPrix(listing.prix, listing.transaction)}
           </span>
           {prixM2 ? <span className="text-[12px] text-muted-2">{prixM2}</span> : null}
+          {listing.dpe ? (
+            <span
+              className="ml-auto rounded px-1.5 py-0.5 text-[10.5px] font-bold"
+              title={`DPE ${listing.dpe}`}
+              style={{
+                background: dpeClassColor(listing.dpe),
+                color: "DEF".includes(listing.dpe) ? "var(--pvl-ink)" : "#fff",
+              }}
+            >
+              DPE {listing.dpe}
+            </span>
+          ) : null}
         </div>
         <p className="m-0 truncate text-[14px] font-semibold text-ink">
           {TYPE_BIEN_LABEL[listing.typeBien] ?? listing.typeBien} · {listing.surface} m² ·{" "}

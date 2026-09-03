@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import {
   Heart,
   Thermometer,
-  Gauge,
   TreePine,
   Warehouse,
   SquareParking,
@@ -23,7 +22,7 @@ import type { ArtisanSummary } from "@/lib/artisans";
 import type { OpenHouseForListing } from "@/lib/open-house";
 import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
-import { formatPrix, formatPrixM2 } from "@/lib/format";
+import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
 import { markListingViewed } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
 import PhotoGallery from "./PhotoGallery";
@@ -52,6 +51,81 @@ function sourceLabel(owner: ListingWithOwner["owner"]): string {
   if (owner.type === "PARTICULIER") return "Entre voisins — particulier";
   const prefix = owner.verifStatut === "VERIFIEE" ? "Agence vérifiée" : "Agence";
   return `${prefix} — ${owner.entreprise ?? owner.nom}`;
+}
+
+function DpeClassBadge({ letter }: { letter: string }) {
+  const bg = dpeClassColor(letter);
+  const dark = "DEF".includes(letter);
+  return (
+    <span
+      className="flex h-9 w-9 items-center justify-center rounded-lg font-display text-[18px] font-bold"
+      style={{ background: bg, color: dark || letter === "" ? "var(--pvl-ink)" : "#fff" }}
+    >
+      {letter}
+    </span>
+  );
+}
+
+function DpeBlock({ listing }: { listing: ListingWithOwner }) {
+  const { dpe, ges, dpeConsommation, dpeEmissions, dpeCoutMin, dpeCoutMax, dpeCoutAnneeRef, dpeDate } =
+    listing;
+  if (!dpe && !ges) return null;
+
+  const passoire = dpe === "F" || dpe === "G" || ges === "F" || ges === "G";
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">Diagnostic énergétique</h2>
+      <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {dpe ? (
+            <div className="flex items-center gap-3">
+              <DpeClassBadge letter={dpe} />
+              <div className="flex flex-col">
+                <span className="text-[12px] font-semibold text-muted">Consommation d&apos;énergie</span>
+                <span className="text-[13.5px] text-ink">
+                  Classe {dpe}
+                  {dpeConsommation ? ` · ${dpeConsommation} kWh/m²/an` : ""}
+                </span>
+              </div>
+            </div>
+          ) : null}
+          {ges ? (
+            <div className="flex items-center gap-3">
+              <DpeClassBadge letter={ges} />
+              <div className="flex flex-col">
+                <span className="text-[12px] font-semibold text-muted">Émissions de gaz à effet de serre</span>
+                <span className="text-[13.5px] text-ink">
+                  Classe {ges}
+                  {dpeEmissions ? ` · ${dpeEmissions} kgCO₂/m²/an` : ""}
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {passoire ? (
+          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] font-semibold text-[#b3261e]">
+            Logement à consommation énergétique excessive (classe F ou G).
+          </p>
+        ) : null}
+
+        {dpeCoutMin && dpeCoutMax ? (
+          <p className="m-0 text-[12.5px] text-muted">
+            Dépenses annuelles d&apos;énergie estimées : {dpeCoutMin.toLocaleString("fr-FR")} –{" "}
+            {dpeCoutMax.toLocaleString("fr-FR")} €
+            {dpeCoutAnneeRef ? ` (prix de l'énergie ${dpeCoutAnneeRef})` : ""}.
+          </p>
+        ) : null}
+
+        {dpeDate ? (
+          <p className="m-0 text-[11.5px] text-muted-2">
+            DPE réalisé le {new Date(dpeDate).toLocaleDateString("fr-FR")}.
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
 }
 
 function marketComparison(
@@ -138,7 +212,6 @@ export default function ListingDetail({
     ...(listing.modeChauffage
       ? [{ label: "Chauffage", value: listing.modeChauffage, Icon: Thermometer }]
       : []),
-    ...(listing.dpe ? [{ label: `DPE ${listing.dpe}`, Icon: Gauge }] : []),
     ...equipements.map((eq) => ({ label: eq, Icon: EQUIPEMENT_ICON[eq] ?? Sparkles })),
   ];
   const prixInitial = priceHistory[0]?.prix ?? listing.prix;
@@ -282,6 +355,8 @@ export default function ListingDetail({
               </div>
             </section>
           ) : null}
+
+          <DpeBlock listing={listing} />
 
           {listing.transaction === "VENTE" ? (
             <section className="mt-8">

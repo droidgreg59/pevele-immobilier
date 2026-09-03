@@ -102,7 +102,20 @@ model Listing {
   chambres           Int
   surface            Int
   exterieur          String
+  /// Diagnostic de performance énergétique. `dpe` = classe énergie (A–G),
+  /// `ges` = classe climat (A–G). `dpeConsommation` en kWh/m²/an (énergie
+  /// primaire), `dpeEmissions` en kgCO₂/m²/an. `dpeCoutMin`/`dpeCoutMax` =
+  /// fourchette du coût annuel d'énergie estimé (€), obligatoire sur une
+  /// annonce depuis 2022 (loi Climat). Un logement F ou G est une « passoire
+  /// thermique » à mentionner explicitement.
   dpe                String?
+  ges                String?
+  dpeConsommation    Int?
+  dpeEmissions       Int?
+  dpeCoutMin         Int?
+  dpeCoutMax         Int?
+  dpeCoutAnneeRef    Int?
+  dpeDate            DateTime?
   /// Source d'énergie du chauffage (Gaz, Électrique, Fioul, Bois…) — champ
   /// texte libre plutôt qu'un enum fermé : les flux agence (AC3/Immofacile,
   /// balise MODE_CHAUFFAGE) renvoient des valeurs variées non exhaustives.
