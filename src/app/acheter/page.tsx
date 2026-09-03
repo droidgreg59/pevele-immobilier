@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import ListingsBrowser from "@/components/ListingsBrowser";
-import { getPublicListings } from "@/lib/listings";
+import {
+  parseBrowseSearchParams,
+  getBrowsePage,
+  getBrowseMapAggregates,
+  getBrowseFacets,
+  BROWSE_PAGE_SIZE,
+} from "@/lib/listing-query";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import { getSession } from "@/lib/session";
 
@@ -15,51 +21,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function AcheterPage({
-  searchParams,
-}: PageProps<"/acheter">) {
+export default async function AcheterPage({ searchParams }: PageProps<"/acheter">) {
   const params = await searchParams;
-  const q = typeof params.q === "string" ? params.q : undefined;
-  const budget =
-    typeof params.budget === "string" && params.budget !== "" ? Number(params.budget) : undefined;
-  const budgetMin =
-    typeof params.budgetMin === "string" && params.budgetMin !== ""
-      ? Number(params.budgetMin)
-      : undefined;
-  const type = typeof params.type === "string" ? params.type : undefined;
-  const initialTypeBien =
-    type === "MAISON" || type === "APPARTEMENT" || type === "TERRAIN" ? type : undefined;
-  const typeMaisonParam = typeof params.typeMaison === "string" ? params.typeMaison : undefined;
-  const initialTypeMaison =
-    typeMaisonParam === "INDIVIDUELLE" ||
-    typeMaisonParam === "SEMI_INDIVIDUELLE" ||
-    typeMaisonParam === "MITOYENNE"
-      ? typeMaisonParam
-      : undefined;
-  const villagesParam = typeof params.villages === "string" ? params.villages : undefined;
-  const initialVillageSlugs = villagesParam
-    ? villagesParam.split(",").filter(Boolean)
-    : undefined;
-  const chambresMinParam =
-    typeof params.chambresMin === "string" && params.chambresMin !== ""
-      ? Number(params.chambresMin)
-      : undefined;
-  const initialChambresMin =
-    chambresMinParam !== undefined && Number.isFinite(chambresMinParam)
-      ? chambresMinParam
-      : undefined;
-  const equipParam = typeof params.equip === "string" ? params.equip : undefined;
-  const initialEquipements = equipParam ? equipParam.split(",").filter(Boolean) : undefined;
-  const triParam = typeof params.tri === "string" ? params.tri : undefined;
-  const initialTri =
-    triParam === "prix_desc" || triParam === "prix_asc" || triParam === "recent" || triParam === "surface_desc"
-      ? triParam
-      : undefined;
-  const filtreParam = typeof params.filtre === "string" ? params.filtre : undefined;
-  const initialFiltre =
-    filtreParam === "agence" || filtreParam === "particulier" ? filtreParam : undefined;
-  const [listings, session] = await Promise.all([
-    getPublicListings("VENTE"),
+  const { criteria, tri, page } = parseBrowseSearchParams(params);
+
+  const [{ listings, total }, mapAggregates, facets, session] = await Promise.all([
+    getBrowsePage("VENTE", criteria, tri, page),
+    getBrowseMapAggregates("VENTE", criteria),
+    getBrowseFacets("VENTE"),
     getSession(),
   ]);
   const favoriteIds = session
@@ -69,21 +38,24 @@ export default async function AcheterPage({
   return (
     <ListingsBrowser
       listings={listings}
+      total={total}
+      page={page}
+      pageSize={BROWSE_PAGE_SIZE}
+      mapAggregates={mapAggregates}
+      facets={facets}
       pieceBadge="ACHAT"
       titre="ACHETER EN PÉVÈLE"
       transaction="VENTE"
-      initialQuery={q}
-      initialBudgetMin={
-        budgetMin !== undefined && Number.isFinite(budgetMin) ? budgetMin : undefined
-      }
-      initialBudgetMax={budget !== undefined && Number.isFinite(budget) ? budget : undefined}
-      initialTypeBien={initialTypeBien}
-      initialTypeMaison={initialTypeMaison}
-      initialVillageSlugs={initialVillageSlugs}
-      initialChambresMin={initialChambresMin}
-      initialEquipements={initialEquipements}
-      initialTri={initialTri}
-      initialFiltre={initialFiltre}
+      initialQuery={criteria.querySlug}
+      initialBudgetMin={criteria.budgetMin}
+      initialBudgetMax={criteria.budgetMax}
+      initialTypeBien={criteria.typeBien}
+      initialTypeMaison={criteria.typeMaison}
+      initialVillageSlugs={criteria.villageSlugs}
+      initialChambresMin={criteria.chambresMin}
+      initialEquipements={criteria.equipements}
+      initialTri={tri}
+      initialFiltre={criteria.filtre}
       isLoggedIn={session !== null}
       favoriteIds={favoriteIds}
     />
