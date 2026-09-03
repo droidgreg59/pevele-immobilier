@@ -31,6 +31,13 @@ nécessitent une action manuelle :
 Les deux exigent le secret `CRON_SECRET` (défini dans `.env`), soit en
 en-tête `Authorization: Bearer <secret>`, soit en paramètre `?secret=<secret>`.
 
+Les **équipements des villages** (commerces / écoles / transports) sont un
+fichier généré (`src/data/village-amenities.ts`), rafraîchi mensuellement par
+le workflow GitHub Actions `.github/workflows/refresh-village-amenities.yml`
+(`npx tsx scripts/fetch-village-amenities.ts --force`), qui commit le fichier
+s'il a changé. À lancer aussi à la main après l'ajout d'une commune (sans
+`--force`, pour ne récupérer que les nouvelles).
+
 **Avec Vercel Cron** (si déployé sur Vercel), ajouter à `vercel.json` :
 
 ```json

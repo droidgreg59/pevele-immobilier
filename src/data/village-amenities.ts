@@ -7,7 +7,14 @@
 
 export type Commerce = {
   nom: string;
-  type: "Supermarché" | "Épicerie" | "Boulangerie";
+  type:
+    | "Supermarché"
+    | "Épicerie"
+    | "Boulangerie"
+    | "Boucherie"
+    | "Primeur"
+    | "Pharmacie"
+    | "Marché";
 };
 
 export type Ecole = {
@@ -44,11 +51,75 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       "arretsBus": 16
     }
   },
+  "59022": {
+    "commerces": [
+      {
+        "nom": "Boulangerie Thomas",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "Pharmacie des Quatres Saisons",
+        "type": "Pharmacie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole élémentaire Jules Ferry",
+        "type": "École élémentaire",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole maternelle La Fontenelle",
+        "type": "École maternelle",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 8
+    }
+  },
+  "59029": {
+    "commerces": [
+      {
+        "nom": "Verger de l'Obeau",
+        "type": "Primeur"
+      },
+      {
+        "nom": "Aux Délices d'Auchy",
+        "type": "Boulangerie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire privée Sacré-Coeur",
+        "type": "École primaire",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire du Fleuri d'Alcy",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 8
+    }
+  },
   "59034": {
     "commerces": [
       {
+        "nom": "La cueillette gourmande",
+        "type": "Primeur"
+      },
+      {
         "nom": "Be Vrac",
         "type": "Épicerie"
+      },
+      {
+        "nom": "Henri Boucher",
+        "type": "Boucherie"
       },
       {
         "nom": "Boulangerie Louise",
@@ -57,6 +128,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       {
         "nom": "Total",
         "type": "Épicerie"
+      },
+      {
+        "nom": "Otera",
+        "type": "Primeur"
       }
     ],
     "ecoles": [
@@ -78,6 +153,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   },
   "59042": {
     "commerces": [
+      {
+        "nom": "Marché Couvert de Bachy",
+        "type": "Marché"
+      },
       {
         "nom": "Boulangerie de Bachy",
         "type": "Boulangerie"
@@ -102,8 +181,20 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   "59044": {
     "commerces": [
       {
+        "nom": "Pharmacie d'Ogimont",
+        "type": "Pharmacie"
+      },
+      {
         "nom": "Boulangerie Umamie",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Henri Boucher",
+        "type": "Boucherie"
+      },
+      {
+        "nom": "Boucherie de la Gare",
+        "type": "Boucherie"
       },
       {
         "nom": "Aldi",
@@ -112,6 +203,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       {
         "nom": "Carrefour Market",
         "type": "Supermarché"
+      },
+      {
+        "nom": "Pharmacie Nigault",
+        "type": "Pharmacie"
       }
     ],
     "ecoles": [
@@ -164,6 +259,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Boulangerie"
       },
       {
+        "nom": "Pharmacie Martin",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Ferme Dupont",
+        "type": "Primeur"
+      },
+      {
         "nom": "Carrefour Contact",
         "type": "Supermarché"
       }
@@ -186,7 +289,12 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     }
   },
   "59096": {
-    "commerces": [],
+    "commerces": [
+      {
+        "nom": "Pharmacie de Bourghelles",
+        "type": "Pharmacie"
+      }
+    ],
     "ecoles": [
       {
         "nom": "Ecole primaire des Valettes",
@@ -212,13 +320,13 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Lycée Général et Technologique privé hors contrat LOSC Formation de CAMPHIN-EN-PEVELE",
-        "type": "Lycée",
+        "nom": "Ecole primaire privée Sacré-Coeur",
+        "type": "École primaire",
         "secteur": "Privé"
       },
       {
-        "nom": "Ecole primaire privée Sacré-Coeur",
-        "type": "École primaire",
+        "nom": "Lycée Général et Technologique privé hors contrat LOSC Formation de CAMPHIN-EN-PEVELE",
+        "type": "Lycée",
         "secteur": "Privé"
       },
       {
@@ -233,7 +341,16 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     }
   },
   "59129": {
-    "commerces": [],
+    "commerces": [
+      {
+        "nom": "Pharmacie du Pévèle",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Les Saveurs Fermières",
+        "type": "Primeur"
+      }
+    ],
     "ecoles": [
       {
         "nom": "Ecole primaire Emilie Carles",
@@ -254,12 +371,24 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   "59146": {
     "commerces": [
       {
+        "nom": "Boucherie Lecomte",
+        "type": "Boucherie"
+      },
+      {
         "nom": "Carrefour City",
         "type": "Épicerie"
       },
       {
         "nom": "Hervé Delepierre",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Boucherie Hervé Lecomte",
+        "type": "Boucherie"
+      },
+      {
+        "nom": "Pharmacie du Château",
+        "type": "Pharmacie"
       }
     ],
     "ecoles": [
@@ -296,6 +425,26 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   "59158": {
     "commerces": [
       {
+        "nom": "Grande Pharmacie de Coutiches",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Jardin des Bois",
+        "type": "Primeur"
+      },
+      {
+        "nom": "Marche fruits & légumes et poissonnerie",
+        "type": "Marché"
+      },
+      {
+        "nom": "Ferme de l4Houssoye",
+        "type": "Primeur"
+      },
+      {
+        "nom": "Boucherie Christophe",
+        "type": "Boucherie"
+      },
+      {
         "nom": "Boulangerie Grande Saveur",
         "type": "Boulangerie"
       },
@@ -306,14 +455,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole primaire privée Saint Joseph",
-        "type": "École primaire",
-        "secteur": "Privé"
-      },
-      {
         "nom": "Ecole primaire Léon Lambert",
         "type": "École primaire",
         "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire privée Saint Joseph",
+        "type": "École primaire",
+        "secteur": "Privé"
       }
     ],
     "transports": {
@@ -324,12 +473,32 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   "59168": {
     "commerces": [
       {
+        "nom": "Pharmacie du Centre",
+        "type": "Pharmacie"
+      },
+      {
         "nom": "Boulangerie Alvin",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "Marionvalle",
+        "type": "Boucherie"
+      },
+      {
+        "nom": "Ferme Lefebvre - Maraicher Cysoing",
+        "type": "Primeur"
+      },
+      {
+        "nom": "Les Songes",
         "type": "Boulangerie"
       },
       {
         "nom": "Ethique & Vrac",
         "type": "Épicerie"
+      },
+      {
+        "nom": "Marché de Cysoing",
+        "type": "Marché"
       },
       {
         "nom": "Pains & Gourmandises",
@@ -338,6 +507,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       {
         "nom": "Match",
         "type": "Supermarché"
+      },
+      {
+        "nom": "Pharmacie Dantoing",
+        "type": "Pharmacie"
       },
       {
         "nom": "Intermarché Super",
@@ -356,6 +529,11 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Public"
       },
       {
+        "nom": "Collège Paul Éluard",
+        "type": "Collège",
+        "secteur": "Public"
+      },
+      {
         "nom": "Collège Notre-Dame",
         "type": "Collège",
         "secteur": "Privé"
@@ -364,11 +542,6 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "nom": "Ecole primaire privée Saint Joseph",
         "type": "École primaire",
         "secteur": "Privé"
-      },
-      {
-        "nom": "Collège Paul Éluard",
-        "type": "Collège",
-        "secteur": "Public"
       }
     ],
     "transports": {
@@ -397,6 +570,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Boulangerie"
       },
       {
+        "nom": "Pharmacie du Verger",
+        "type": "Pharmacie"
+      },
+      {
         "nom": "Van Wynsberghe Didier",
         "type": "Boulangerie"
       },
@@ -416,9 +593,9 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Public"
       },
       {
-        "nom": "Ecole primaire Le Petit Prince",
-        "type": "École primaire",
-        "secteur": "Public"
+        "nom": "Institut de Genech",
+        "type": "Lycée",
+        "secteur": "Privé"
       },
       {
         "nom": "Lycée agricole privé de Genech",
@@ -426,9 +603,9 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Privé"
       },
       {
-        "nom": "Institut de Genech",
-        "type": "Lycée",
-        "secteur": "Privé"
+        "nom": "Ecole primaire Le Petit Prince",
+        "type": "École primaire",
+        "secteur": "Public"
       }
     ],
     "transports": {
@@ -440,14 +617,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     "commerces": [],
     "ecoles": [
       {
-        "nom": "Ecole primaire privée Notre-Dame de La Visitation",
-        "type": "École primaire",
-        "secteur": "Privé"
-      },
-      {
         "nom": "Ecole primaire Pasteur",
         "type": "École primaire",
         "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire privée Notre-Dame de La Visitation",
+        "type": "École primaire",
+        "secteur": "Privé"
       }
     ],
     "transports": {
@@ -458,8 +635,20 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   "59330": {
     "commerces": [
       {
+        "nom": "Pharmacie Detavernier",
+        "type": "Pharmacie"
+      },
+      {
         "nom": "Le Pain de nos Ancêtres",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Menu",
+        "type": "Boucherie"
+      },
+      {
+        "nom": "Distributeur de Légumes",
+        "type": "Primeur"
       }
     ],
     "ecoles": [
@@ -482,7 +671,12 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     }
   },
   "59364": {
-    "commerces": [],
+    "commerces": [
+      {
+        "nom": "Boucherie Ghysel",
+        "type": "Boucherie"
+      }
+    ],
     "ecoles": [
       {
         "nom": "Ecole primaire Henri Millez",
@@ -497,6 +691,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   },
   "59398": {
     "commerces": [
+      {
+        "nom": "Maison Lestoquoy",
+        "type": "Boucherie"
+      },
       {
         "nom": "Le relais de Mérignies",
         "type": "Boulangerie"
@@ -516,6 +714,20 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     "transports": {
       "gares": [],
       "arretsBus": 19
+    }
+  },
+  "59408": {
+    "commerces": [],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 16
     }
   },
   "59411": {
@@ -538,7 +750,12 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     }
   },
   "59419": {
-    "commerces": [],
+    "commerces": [
+      {
+        "nom": "Pharmacie Van Welden",
+        "type": "Pharmacie"
+      }
+    ],
     "ecoles": [
       {
         "nom": "Ecole primaire Camille Desmoulins",
@@ -556,11 +773,33 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       "arretsBus": 20
     }
   },
+  "59427": {
+    "commerces": [],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire la Clairière",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 6
+    }
+  },
   "59435": {
     "commerces": [
       {
         "nom": "Le Moulin Saint-Martin",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Pharmacie Perche",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Dernaucourt Guy",
+        "type": "Boucherie"
       }
     ],
     "ecoles": [
@@ -589,6 +828,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Supermarché"
       },
       {
+        "nom": "Grande Pharmacie d'Orchies",
+        "type": "Pharmacie"
+      },
+      {
         "nom": "Boulangerie Soleil du Midi",
         "type": "Boulangerie"
       },
@@ -597,8 +840,20 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Boulangerie"
       },
       {
+        "nom": "Sens du Goût",
+        "type": "Boucherie"
+      },
+      {
+        "nom": "Pharmacie de l'Hôtel de Ville",
+        "type": "Pharmacie"
+      },
+      {
         "nom": "Boulangerie Louise",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Pharmacie du Millenium",
+        "type": "Pharmacie"
       },
       {
         "nom": "Un Autre Monde",
@@ -613,12 +868,28 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Boulangerie"
       },
       {
+        "nom": "La Ferme des Tuileries",
+        "type": "Primeur"
+      },
+      {
+        "nom": "Addiction",
+        "type": "Boulangerie"
+      },
+      {
         "nom": "Lidl",
         "type": "Supermarché"
       },
       {
         "nom": "Coeur de Pévèle",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Mallard",
+        "type": "Boucherie"
+      },
+      {
+        "nom": "Au pré des Fermiers",
+        "type": "Primeur"
       },
       {
         "nom": "E.Leclerc Express",
@@ -631,6 +902,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       {
         "nom": "Intermarché Super",
         "type": "Supermarché"
+      },
+      {
+        "nom": "Henri Boucher",
+        "type": "Boucherie"
       },
       {
         "nom": "Aldi",
@@ -654,18 +929,23 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Public"
       },
       {
-        "nom": "Lycée Notre-Dame de la Providence",
-        "type": "Lycée",
-        "secteur": "Privé"
-      },
-      {
         "nom": "Ecole technologique privée hors contrat de production automobile du Pévèle (EPAP) d'ORCHIES",
         "type": "Lycée",
         "secteur": "Privé"
       },
       {
-        "nom": "Ecole maternelle Roger Salengro",
-        "type": "École maternelle",
+        "nom": "Lycée Notre-Dame de la Providence",
+        "type": "Lycée",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire privée Notre-Dame de La Providence Saint Michel",
+        "type": "École primaire",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole élémentaire Jules Ferry",
+        "type": "École élémentaire",
         "secteur": "Public"
       },
       {
@@ -674,14 +954,9 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Public"
       },
       {
-        "nom": "Ecole élémentaire Jules Ferry",
-        "type": "École élémentaire",
+        "nom": "Ecole maternelle Roger Salengro",
+        "type": "École maternelle",
         "secteur": "Public"
-      },
-      {
-        "nom": "Ecole primaire privée Notre-Dame de La Providence Saint Michel",
-        "type": "École primaire",
-        "secteur": "Privé"
       }
     ],
     "transports": {
@@ -691,8 +966,57 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       "arretsBus": 27
     }
   },
+  "59466": {
+    "commerces": [
+      {
+        "nom": "La parenthèse Gourmande",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "Pharmacie de Pont à Marcq",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Boulangerie Pâtisserie Catrisse",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "Intermarché Super",
+        "type": "Supermarché"
+      },
+      {
+        "nom": "Lidl",
+        "type": "Supermarché"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "CRESDA (Centre Régional d'Education Spécialisée pour Déficients Auditifs)",
+        "type": "École",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Groupe scolaire Philippe-Laurent Roland",
+        "type": "École primaire",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Collège Françoise Dolto",
+        "type": "Collège",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 17
+    }
+  },
   "59523": {
     "commerces": [
+      {
+        "nom": "Pharmacie du Tilleul",
+        "type": "Pharmacie"
+      },
       {
         "nom": "Carrefour Express",
         "type": "Épicerie"
@@ -702,8 +1026,16 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Boulangerie"
       },
       {
+        "nom": "Archas Frédéric",
+        "type": "Boucherie"
+      },
+      {
         "nom": "Ghys",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Le Jardin de Cocagne de la Haute Borne",
+        "type": "Primeur"
       }
     ],
     "ecoles": [
@@ -723,6 +1055,20 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       "arretsBus": 15
     }
   },
+  "59551": {
+    "commerces": [],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 10
+    }
+  },
   "59586": {
     "commerces": [
       {
@@ -730,8 +1076,16 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Boulangerie"
       },
       {
+        "nom": "Nonno Luigi",
+        "type": "Épicerie"
+      },
+      {
         "nom": "Boulangerie Patisserie Oeschel",
         "type": "Boulangerie"
+      },
+      {
+        "nom": "Pistache",
+        "type": "Primeur"
       },
       {
         "nom": "Toucher terre",
@@ -742,20 +1096,28 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "type": "Épicerie"
       },
       {
+        "nom": "Pharmacie du Maresquel",
+        "type": "Pharmacie"
+      },
+      {
         "nom": "E.Leclerc",
         "type": "Supermarché"
+      },
+      {
+        "nom": "Pharmacie de la Pierre aux Sorcières",
+        "type": "Pharmacie"
       }
     ],
     "ecoles": [
       {
-        "nom": "Ecole primaire privée Saint Martin",
-        "type": "École primaire",
-        "secteur": "Privé"
-      },
-      {
         "nom": "Ecole primaire publique Jules Verne",
         "type": "École primaire",
         "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire privée Saint Martin",
+        "type": "École primaire",
+        "secteur": "Privé"
       },
       {
         "nom": "Groupe scolaire Marie Navart",
@@ -769,6 +1131,58 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "Ennevelin"
       ],
       "arretsBus": 29
+    }
+  },
+  "59592": {
+    "commerces": [
+      {
+        "nom": "Pharmacie des 5 Tailles",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Carrefour Market",
+        "type": "Supermarché"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Collège Albert Camus",
+        "type": "Collège",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire Jules Ferry",
+        "type": "École primaire",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole élémentaire Paul Bert",
+        "type": "École élémentaire",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole maternelle Condorcet",
+        "type": "École maternelle",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 19
+    }
+  },
+  "59600": {
+    "commerces": [],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire Jean de La Fontaine",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 3
     }
   },
   "59638": {
@@ -793,6 +1207,10 @@ export const villageAmenities: Record<string, VillageAmenities> = {
   "59660": {
     "commerces": [
       {
+        "nom": "Ferme du Meunier",
+        "type": "Primeur"
+      },
+      {
         "nom": "Le Coin du Vrac",
         "type": "Supermarché"
       },
@@ -803,18 +1221,26 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       {
         "nom": "Lidl",
         "type": "Supermarché"
+      },
+      {
+        "nom": "Marché de Willems",
+        "type": "Marché"
+      },
+      {
+        "nom": "Pharmacie de la Victoire",
+        "type": "Pharmacie"
       }
     ],
     "ecoles": [
       {
-        "nom": "Ecole primaire privée Sainte Marie",
-        "type": "École primaire",
-        "secteur": "Privé"
-      },
-      {
         "nom": "Ecole élémentaire Condorcet",
         "type": "École élémentaire",
         "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire privée Sainte Marie",
+        "type": "École primaire",
+        "secteur": "Privé"
       },
       {
         "nom": "Ecole maternelle Concorde",
