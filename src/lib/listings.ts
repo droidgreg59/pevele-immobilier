@@ -6,7 +6,7 @@ import { saveRemotePhotos, deletePhotoFilesByUrl } from "./photo-upload";
 
 export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
   include: {
-    owner: { select: { nom: true, entreprise: true, type: true, logoUrl: true } },
+    owner: { select: { nom: true, entreprise: true, type: true, logoUrl: true, verifStatut: true } },
     photos: { orderBy: { order: "asc" } },
     priceHistory: {
       orderBy: { changedAt: "asc" },

@@ -93,11 +93,14 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
   const verifEmailRenvoye = sp.verif === "renvoye";
   const currentUser = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { emailVerifiedAt: true },
+    select: { emailVerifiedAt: true, verifStatut: true },
   });
   const emailNonVerifie = currentUser != null && currentUser.emailVerifiedAt == null;
 
   const isAgence = session.type === "AGENCE";
+  const agenceNonVerifiee =
+    isAgence &&
+    (currentUser?.verifStatut === "NON_SOUMISE" || currentUser?.verifStatut === "REFUSEE");
   const isArtisan = session.type === "ARTISAN";
   const stubs = isAgence ? STUBS_AGENCE : isArtisan ? STUBS_ARTISAN : STUBS_PARTICULIER;
   const [
@@ -598,6 +601,26 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
       <Link href="/" className="text-[13px] font-semibold text-blue">
         ← Retour à l&apos;accueil
       </Link>
+
+      {agenceNonVerifiee ? (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E7D9A8] bg-[#FBF3DC] px-5 py-4">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[13px] font-semibold text-ink">
+              Faites vérifier votre agence
+            </span>
+            <span className="text-[13px] text-muted">
+              Ajoutez votre SIRET et votre carte professionnelle pour afficher le badge
+              « Agence vérifiée » sur votre page et vos annonces.
+            </span>
+          </div>
+          <Link
+            href="/compte/agence"
+            className="rounded-full border border-line bg-white px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+          >
+            Compléter →
+          </Link>
+        </div>
+      ) : null}
 
       {emailNonVerifie ? (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E7D9A8] bg-[#FBF3DC] px-5 py-4">

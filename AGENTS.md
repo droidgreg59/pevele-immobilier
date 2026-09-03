@@ -35,6 +35,11 @@ composant `<ACompleter>` (`[À COMPLÉTER : ...]`) plutôt que d'inventer une va
 concernées (`/mentions-legales`, `/confidentialite`, `/cgu`) sont volontairement `noindex` tant que des
 `<ACompleter>` y subsistent.
 
+Le badge « Agence vérifiée » n'est jamais posé automatiquement : l'agence soumet son SIRET et son
+numéro de carte professionnelle (carte T), et un administrateur valide à la main depuis
+`/admin/verifications` (`User.verifStatut`). La raison sociale officielle est récupérée en best-effort
+sur `recherche-entreprises.api.gouv.fr` mais ne fait pas foi.
+
 ### Pièges d'environnement rencontrés
 
 - **`prisma db push` dans un pipe masque les échecs** : `... | tail -20 && npx prisma generate` continue

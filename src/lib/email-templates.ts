@@ -320,6 +320,29 @@ export function reviewReceivedEmail(opts: { authorNom: string; note: number }): 
   };
 }
 
+export function agencyVerificationReviewedEmail(opts: {
+  agencyNom: string;
+  verified: boolean;
+  raison?: string;
+}): { subject: string; html: string } {
+  return {
+    subject: opts.verified
+      ? "Votre agence est vérifiée sur Pévèle Immobilier"
+      : "Vérification de votre agence — informations à revoir",
+    html: layout(
+      opts.verified ? "Agence vérifiée" : "Vérification non validée",
+      opts.verified
+        ? p(
+            `<b>${opts.agencyNom}</b> est désormais une agence vérifiée : le badge apparaît sur votre page publique, dans l'annuaire et sur vos annonces.`
+          )
+        : p(`La vérification de <b>${opts.agencyNom}</b> n'a pas pu être validée.`) +
+            (opts.raison ? p(`Motif : ${opts.raison}`) : "") +
+            p("Corrigez les informations depuis « Coordonnées de mon agence » et resoumettez."),
+      { label: "Ma page agence", href: `${SITE_URL}/compte/agence` }
+    ),
+  };
+}
+
 export function emailVerificationEmail(opts: { verifyUrl: string }): {
   subject: string;
   html: string;

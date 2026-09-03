@@ -50,7 +50,8 @@ const TYPE_MAISON_LABEL_LOWER: Record<string, string> = {
 
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
   if (owner.type === "PARTICULIER") return "Entre voisins — particulier";
-  return `Agence — ${owner.entreprise ?? owner.nom}`;
+  const prefix = owner.verifStatut === "VERIFIEE" ? "Agence vérifiée" : "Agence";
+  return `${prefix} — ${owner.entreprise ?? owner.nom}`;
 }
 
 function marketComparison(
