@@ -1,5 +1,7 @@
 import "server-only";
 import { SITE_URL, SITE_NAME } from "./seo";
+import type { TransactionType } from "@prisma/client";
+import { formatPrix } from "./format";
 
 /**
  * Gabarits HTML des emails transactionnels. CSS entièrement en ligne (les
@@ -56,6 +58,74 @@ function layout(title: string, bodyHtml: string, cta?: { label: string; href: st
 
 function p(text: string): string {
   return `<p style="margin:0 0 10px;">${text}</p>`;
+}
+
+export type AlertListingRow = {
+  titre: string;
+  commune: string;
+  prix: number;
+  transaction: TransactionType;
+  href: string;
+};
+
+function listingRows(rows: AlertListingRow[]): string {
+  return rows
+    .map(
+      (r) => `<tr>
+        <td style="padding:12px 0;border-top:1px solid ${LINE};">
+          <a href="${SITE_URL}${r.href}" style="color:${INK};font-weight:700;font-size:14px;text-decoration:none;">${r.titre}</a>
+          <div style="font-size:12.5px;color:${MUTED};margin-top:2px;">${r.commune} · <b style="color:${BLUE};">${formatPrix(r.prix, r.transaction)}</b></div>
+        </td>
+      </tr>`
+    )
+    .join("");
+}
+
+export function savedSearchAlertEmail(opts: {
+  searchLabel: string;
+  searchUrl: string;
+  totalCount: number;
+  listings: AlertListingRow[];
+}): { subject: string; html: string } {
+  const n = opts.totalCount;
+  const reste = n - opts.listings.length;
+  return {
+    subject:
+      n === 1
+        ? `1 nouveau bien pour votre recherche — ${opts.searchLabel}`
+        : `${n} nouveaux biens pour votre recherche — ${opts.searchLabel}`,
+    html: layout(
+      n === 1 ? "1 nouveau bien correspond à votre recherche" : `${n} nouveaux biens correspondent à votre recherche`,
+      p(`Recherche : <b>${opts.searchLabel}</b>`) +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">${listingRows(opts.listings)}</table>` +
+        (reste > 0 ? p(`<span style="color:${MUTED};">…et ${reste} autre${reste > 1 ? "s" : ""}.</span>`) : ""),
+      { label: "Voir tous les résultats", href: `${SITE_URL}${opts.searchUrl}` }
+    ),
+  };
+}
+
+export function priceDropAlertEmail(opts: {
+  listingTitre: string;
+  listingHref: string;
+  commune: string;
+  ancienPrix: number;
+  nouveauPrix: number;
+  transaction: TransactionType;
+}): { subject: string; html: string } {
+  const baissePct = Math.round(((opts.ancienPrix - opts.nouveauPrix) / opts.ancienPrix) * 100);
+  return {
+    subject: `Baisse de prix — ${opts.listingTitre}`,
+    html: layout(
+      "Un bien que vous surveillez a baissé",
+      p(`<b>${opts.listingTitre}</b> à ${opts.commune}`) +
+        p(
+          `<span style="color:${MUTED};text-decoration:line-through;">${formatPrix(opts.ancienPrix, opts.transaction)}</span>` +
+            ` &nbsp;→&nbsp; <b style="color:${BLUE};">${formatPrix(opts.nouveauPrix, opts.transaction)}</b>` +
+            (baissePct > 0 ? ` <span style="color:#417c3e;font-weight:700;">(-${baissePct}%)</span>` : "")
+        ),
+      { label: "Voir l'annonce", href: `${SITE_URL}${opts.listingHref}` }
+    ),
+  };
 }
 
 export function visitRequestReceivedEmail(opts: {

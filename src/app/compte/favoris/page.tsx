@@ -56,9 +56,9 @@ export default async function CompteFavorisPage() {
       </Link>
 
       <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
-        Cochez « visité » ou « contacté » pour vous organiser, activez la
-        surveillance sur les biens qui vous intéressent pour repérer une
-        baisse de prix en un coup d&apos;œil.
+        Cochez « visité » ou « contacté » pour vous organiser. Activez «&nbsp;surveiller
+        la baisse de prix&nbsp;» sur un bien&nbsp;: vous recevrez un email dès que son
+        prix baisse.
       </p>
 
       <div className="mt-7">

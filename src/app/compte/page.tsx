@@ -242,6 +242,12 @@ export default async function ComptePage() {
         </Link>
       </div>
       {mesRecherches.length > 0 ? (
+        <p className="mt-1.5 text-[12.5px] text-muted">
+          🔔 Vous recevez un email dès qu&apos;un nouveau bien correspond à
+          l&apos;une de ces recherches.
+        </p>
+      ) : null}
+      {mesRecherches.length > 0 ? (
         <div className="mt-3 flex flex-col gap-3">
           {mesRecherches.map((s) => {
             const availableAgencies = agencies.filter(

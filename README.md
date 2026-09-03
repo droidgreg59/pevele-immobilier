@@ -27,8 +27,12 @@ nécessitent une action manuelle :
 
 - `GET /api/cron/dvf-import` — réimporte les prix DVF (équivalent à `npm run dvf:import`).
 - `GET /api/cron/sync-agencies` — resynchronise le flux XML de toutes les agences qui en ont configuré un.
+- `GET /api/cron/alerts` — envoie aux particuliers les emails d'alerte : nouveaux
+  biens correspondant à une recherche sauvegardée, et baisse de prix sur un favori
+  marqué « surveiller le prix ». Idempotent (n'envoie pas deux fois la même alerte) ;
+  à lancer une fois par jour.
 
-Les deux exigent le secret `CRON_SECRET` (défini dans `.env`), soit en
+Toutes exigent le secret `CRON_SECRET` (défini dans `.env`), soit en
 en-tête `Authorization: Bearer <secret>`, soit en paramètre `?secret=<secret>`.
 
 Les **équipements des villages** (commerces / écoles / transports) sont un
@@ -44,7 +48,8 @@ s'il a changé. À lancer aussi à la main après l'ajout d'une commune (sans
 {
   "crons": [
     { "path": "/api/cron/dvf-import", "schedule": "0 4 * * 1" },
-    { "path": "/api/cron/sync-agencies", "schedule": "0 5 * * *" }
+    { "path": "/api/cron/sync-agencies", "schedule": "0 5 * * *" },
+    { "path": "/api/cron/alerts", "schedule": "0 7 * * *" }
   ]
 }
 ```

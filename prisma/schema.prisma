@@ -134,6 +134,10 @@ model Favorite {
   surveillePrix Boolean  @default(false)
   contacte      Boolean  @default(false)
   createdAt     DateTime @default(now())
+  /// Prix de référence pour l'alerte « baisse de prix » : initialisé par le
+  /// cron /api/cron/alerts au prix courant, puis abaissé à chaque notification.
+  /// Le cron notifie quand le prix de l'annonce passe sous cette valeur.
+  lastNotifiedPrix Int?
 
   @@unique([userId, listingId])
   @@index([listingId])
@@ -160,8 +164,8 @@ model Review {
 }
 
 /// Recherche enregistrée par un utilisateur (village + budget + type de
-/// transaction) — consultée depuis /compte, pas de notification email pour
-/// l'instant.
+/// transaction) — consultée depuis /compte, et notifiée par email des
+/// nouveaux biens correspondants via le cron /api/cron/alerts.
 model SavedSearch {
   id           String          @id @default(cuid())
   user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -176,6 +180,9 @@ model SavedSearch {
   budgetMin    Int?
   budgetMax    Int?
   createdAt    DateTime        @default(now())
+  /// Date du dernier email d'alerte envoyé. Null tant qu'aucune alerte n'a été
+  /// émise : la fenêtre des « nouveaux biens » part alors de `createdAt`.
+  lastAlertedAt DateTime?
   mandates     SearchMandate[]
 
   @@index([userId])
