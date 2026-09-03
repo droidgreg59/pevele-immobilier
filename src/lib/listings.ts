@@ -111,6 +111,13 @@ export type ListingFieldsInput = {
   modeChauffage?: string | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
+  /**
+   * Modes de visite. Omis par l'import de flux (les valeurs par défaut Prisma
+   * s'appliquent à la création, l'existant est laissé tel quel en mise à jour) ;
+   * toujours renseignés explicitement depuis le formulaire d'annonce.
+   */
+  visitesIndividuelles?: boolean;
+  visitesGroupees?: boolean;
 };
 
 export type CreateListingInput = ListingFieldsInput & { ownerId: string };

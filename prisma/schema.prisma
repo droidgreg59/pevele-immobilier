@@ -45,6 +45,7 @@ model User {
   visitRequests       VisitRequest[]
   estimationsRecues   EstimationRequest[] @relation("AgencyEstimations")
   estimationsEnvoyees EstimationRequest[] @relation("AuthorEstimations")
+  openHouseRegistrations OpenHouseRegistration[]
 }
 
 enum AccountType {
@@ -78,6 +79,10 @@ model Listing {
   /// balise MODE_CHAUFFAGE) renvoient des valeurs variées non exhaustives.
   modeChauffage      String?
   equipements        String            @default("")
+  /// Modes de visite proposés sur la fiche. Choisis à la création de l'annonce,
+  /// modifiables ensuite. Au moins l'un des deux est vrai.
+  visitesIndividuelles Boolean         @default(true)
+  visitesGroupees      Boolean         @default(false)
   badge              String?
   videoUrl           String?
   visiteVirtuelleUrl String?
@@ -88,6 +93,7 @@ model Listing {
   favorites          Favorite[]
   proposals          ListingProposal[]
   visitRequests      VisitRequest[]
+  openHouse          OpenHouse?
   createdAt          DateTime          @default(now())
 
   @@unique([ownerId, externalRef])
@@ -281,6 +287,57 @@ model EstimationRequest {
 
   @@index([agencyId])
   @@index([authorId])
+}
+
+/// Évènement « portes ouvertes » (visite groupée à l'américaine) créé par le
+/// propriétaire d'une annonce — particulier ou agence. Un seul évènement par
+/// annonce ; il regroupe une ou plusieurs dates (OpenHouseDate). Présenté sur
+/// la fiche du bien avec un bouton « S'inscrire ».
+model OpenHouse {
+  id        String          @id @default(cuid())
+  listing   Listing         @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String          @unique
+  /// Consignes générales affichées aux inscrits (accès, documents à apporter…).
+  note      String?
+  annulee   Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  dates     OpenHouseDate[]
+}
+
+/// Un créneau daté d'un évènement portes ouvertes. `capacity` = nombre maximum
+/// d'inscriptions acceptées ; au-delà le créneau est complet.
+model OpenHouseDate {
+  id            String                  @id @default(cuid())
+  openHouse     OpenHouse               @relation(fields: [openHouseId], references: [id], onDelete: Cascade)
+  openHouseId   String
+  startAt       DateTime
+  endAt         DateTime
+  capacity      Int
+  registrations OpenHouseRegistration[]
+
+  @@index([openHouseId])
+}
+
+/// Inscription d'un visiteur (connecté) à un créneau de portes ouvertes. Le
+/// propriétaire accepte ou refuse (statut EN_ATTENTE → ACCEPTEE / REFUSEE,
+/// même enum que les mandats). Un visiteur ne peut s'inscrire qu'une fois par
+/// créneau.
+model OpenHouseRegistration {
+  id          String        @id @default(cuid())
+  date        OpenHouseDate @relation(fields: [dateId], references: [id], onDelete: Cascade)
+  dateId      String
+  visiteur    User          @relation(fields: [visiteurId], references: [id], onDelete: Cascade)
+  visiteurId  String
+  nom         String
+  prenom      String
+  telephone   String
+  statut      MandateStatus @default(EN_ATTENTE)
+  respondedAt DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@unique([dateId, visiteurId])
+  @@index([dateId])
+  @@index([visiteurId])
 }
 
 enum TransactionType {

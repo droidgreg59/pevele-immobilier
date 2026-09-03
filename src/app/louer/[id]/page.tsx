@@ -4,6 +4,7 @@ import { getListingById, getPriceHistory } from "@/lib/listings";
 import { getSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
+import { getOpenHouseForListing } from "@/lib/open-house";
 import ListingDetail from "@/components/ListingDetail";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
@@ -44,9 +45,10 @@ export default async function LouerListingPage({
     getSession(),
     getArtisansForVillage(listing.villageSlug),
   ]);
-  const isFavorited = session
-    ? await isListingFavorited(session.userId, listing.id)
-    : false;
+  const [isFavorited, openHouse] = await Promise.all([
+    session ? isListingFavorited(session.userId, listing.id) : Promise.resolve(false),
+    getOpenHouseForListing(listing.id, session?.userId),
+  ]);
 
   return (
     <>
@@ -68,6 +70,8 @@ export default async function LouerListingPage({
         isLoggedIn={session !== null}
         isFavorited={isFavorited}
         artisans={artisans}
+        openHouse={openHouse}
+        viewerNom={session?.nom ?? ""}
       />
     </>
   );

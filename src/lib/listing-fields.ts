@@ -45,6 +45,8 @@ export function parseListingFields(
   const modeChauffage = typeBien !== "TERRAIN" && modeChauffageRaw ? modeChauffageRaw : null;
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
   const visiteVirtuelleUrl = String(formData.get("visiteVirtuelleUrl") ?? "").trim();
+  const visitesIndividuelles = formData.get("visitesIndividuelles") === "true";
+  const visitesGroupees = formData.get("visitesGroupees") === "true";
 
   const village = getVillageBySlug(villageSlug);
   if (!village) return { error: "Merci de choisir un village dans la liste." };
@@ -55,6 +57,12 @@ export function parseListingFields(
   }
   if (visiteVirtuelleUrl && !isValidHttpUrl(visiteVirtuelleUrl)) {
     return { error: "Le lien de visite virtuelle doit être une URL valide (https://...)." };
+  }
+  if (!visitesIndividuelles && !visitesGroupees) {
+    return {
+      error:
+        "Choisissez au moins un mode de visite : demandes individuelles ou visites groupées (portes ouvertes).",
+    };
   }
 
   const prix = parsePositiveInt(formData.get("prix"));
@@ -86,6 +94,8 @@ export function parseListingFields(
       modeChauffage,
       videoUrl: videoUrl || undefined,
       visiteVirtuelleUrl: visiteVirtuelleUrl || undefined,
+      visitesIndividuelles,
+      visitesGroupees,
     },
   };
 }

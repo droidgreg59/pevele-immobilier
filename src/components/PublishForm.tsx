@@ -287,6 +287,38 @@ export default function PublishForm({
         </label>
       </div>
 
+      <fieldset className="m-0 flex flex-col gap-2.5 rounded-2xl border border-line bg-white p-4">
+        <legend className="px-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Comment recevoir les visites ?
+        </legend>
+        <label className="flex items-start gap-2.5 text-[13.5px] text-ink">
+          <input
+            type="checkbox"
+            name="visitesIndividuelles"
+            value="true"
+            defaultChecked
+            className="mt-0.5 h-4 w-4 accent-[var(--pvl-blue)]"
+          />
+          <span>
+            <b>Demandes de visite individuelles</b> — les visiteurs vous contactent pour
+            convenir d&apos;un créneau.
+          </span>
+        </label>
+        <label className="flex items-start gap-2.5 text-[13.5px] text-ink">
+          <input
+            type="checkbox"
+            name="visitesGroupees"
+            value="true"
+            className="mt-0.5 h-4 w-4 accent-[var(--pvl-blue)]"
+          />
+          <span>
+            <b>Visites groupées (portes ouvertes)</b> — vous fixez une ou plusieurs dates,
+            les visiteurs s&apos;inscrivent et vous validez chaque inscription. Les dates se
+            programment après la publication, depuis la modification de l&apos;annonce.
+          </span>
+        </label>
+      </fieldset>
+
       {state.error ? (
         <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
           {state.error}

@@ -12,6 +12,10 @@ import { respondToProposalAction } from "@/lib/proposal-actions";
 import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
 import { getVisitRequestsForOwner } from "@/lib/visits";
+import {
+  getPendingOpenHouseRegistrationsForOwner,
+  getOpenHouseRegistrationsByUser,
+} from "@/lib/open-house";
 import { getEstimationRequestsForAgency, getEstimationRequestsByUser } from "@/lib/estimations";
 import { getAgencies } from "@/lib/agencies";
 import { isUserAdmin, getPendingListings } from "@/lib/admin";
@@ -20,7 +24,19 @@ import { formatPrix } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
 import DevisList from "@/components/DevisList";
 import VisitRequestList from "@/components/VisitRequestList";
+import OpenHouseRegistrationList from "@/components/OpenHouseRegistrationList";
 import EstimationList from "@/components/EstimationList";
+
+function formatCreneau(start: Date, end: Date): string {
+  const day = start.toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
+  const time = (d: Date) =>
+    d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return `${day} · ${time(start)} – ${time(end)}`;
+}
 
 const MANDATE_LABEL: Record<string, string> = {
   EN_ATTENTE: "en attente",
@@ -82,6 +98,8 @@ export default async function ComptePage() {
     mesRecherches,
     devisRequests,
     visitRequests,
+    openHouseReceived,
+    myOpenHouseRegistrations,
     estimationRequests,
     myEstimationRequests,
     agencies,
@@ -95,6 +113,10 @@ export default async function ComptePage() {
     getSavedSearchesByUser(session.userId),
     isArtisan ? getDevisRequestsForArtisan(session.userId) : Promise.resolve([]),
     isArtisan ? Promise.resolve([]) : getVisitRequestsForOwner(session.userId),
+    isArtisan
+      ? Promise.resolve([])
+      : getPendingOpenHouseRegistrationsForOwner(session.userId),
+    getOpenHouseRegistrationsByUser(session.userId),
     isAgence ? getEstimationRequestsForAgency(session.userId) : Promise.resolve([]),
     getEstimationRequestsByUser(session.userId),
     getAgencies(),
@@ -159,6 +181,27 @@ export default async function ComptePage() {
     listingTitre: v.listing.titre,
     listingHref: `/${v.listing.transaction === "VENTE" ? "acheter" : "louer"}/${v.listing.id}`,
   }));
+  const openHouseItems = openHouseReceived.map((r) => ({
+    id: r.id,
+    nom: r.nom,
+    prenom: r.prenom,
+    telephone: r.telephone,
+    email: r.email,
+    createdLabel: r.createdAt.toLocaleDateString("fr-FR"),
+    creneauLabel: formatCreneau(r.dateStartAt, r.dateEndAt),
+    listingTitre: r.listingTitre,
+    listingHref: r.listingHref,
+    manageHref: `/compte/annonces/${r.listingId}`,
+  }));
+  const myOpenHouseItems = myOpenHouseRegistrations.map((r) => ({
+    id: r.id,
+    statut: r.statut,
+    annulee: r.annulee,
+    creneauLabel: formatCreneau(r.dateStartAt, r.dateEndAt),
+    listingTitre: r.listingTitre,
+    listingHref: r.listingHref,
+  }));
+
   const totalNewMatches = mesRecherches.reduce((sum, s) => sum + s.newMatches, 0);
   const pendingProposals = mesRecherches.reduce(
     (sum, s) =>
@@ -412,6 +455,75 @@ export default async function ComptePage() {
     </div>
   );
 
+  const openHouseReceivedSection = (
+    <div className="mt-8">
+      <span className="text-[11px] font-semibold text-ink">
+        Inscriptions portes ouvertes ({openHouseItems.length})
+      </span>
+      {openHouseItems.length > 0 ? (
+        <OpenHouseRegistrationList items={openHouseItems} />
+      ) : (
+        <p className="mt-3 text-[14px] text-muted">
+          Les inscriptions aux portes ouvertes de vos annonces apparaîtront ici. Créez un
+          évènement depuis « Modifier cette annonce ».
+        </p>
+      )}
+    </div>
+  );
+
+  const myOpenHouseSection =
+    myOpenHouseItems.length > 0 ? (
+      <div className="mt-8">
+        <span className="text-[11px] font-semibold text-ink">
+          Mes inscriptions portes ouvertes ({myOpenHouseItems.length})
+        </span>
+        <div className="mt-3 flex flex-col gap-2">
+          {myOpenHouseItems.map((e) => (
+            <div
+              key={e.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm"
+            >
+              <div className="flex flex-col gap-0.5">
+                <Link
+                  href={e.listingHref}
+                  className="text-[14px] font-semibold text-ink hover:text-blue"
+                >
+                  {e.listingTitre}
+                </Link>
+                <span className="text-[13px] text-muted">
+                  {e.creneauLabel}
+                  {e.annulee ? " · évènement annulé" : ""}
+                </span>
+              </div>
+              <span
+                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                style={{
+                  background:
+                    e.statut === "ACCEPTEE"
+                      ? "#EAF3E8"
+                      : e.statut === "REFUSEE"
+                        ? "var(--pvl-surface)"
+                        : "#FBF3DC",
+                  color:
+                    e.statut === "ACCEPTEE"
+                      ? "var(--pvl-green)"
+                      : e.statut === "REFUSEE"
+                        ? "var(--pvl-muted)"
+                        : "var(--pvl-gold)",
+                }}
+              >
+                {e.statut === "ACCEPTEE"
+                  ? "Confirmée"
+                  : e.statut === "REFUSEE"
+                    ? "Non retenue"
+                    : "En attente"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
   const myEstimationSection = (
     <div className="mt-8">
       <span className="text-[11px] font-semibold text-ink">
@@ -611,13 +723,17 @@ export default async function ComptePage() {
           {recherchesSection}
           {annoncesSection}
           {visitesSection}
+          {openHouseReceivedSection}
           {myEstimationSection}
+          {myOpenHouseSection}
         </>
       ) : (
         <>
           {!isArtisan ? annoncesSection : null}
           {!isArtisan ? visitesSection : null}
+          {!isArtisan ? openHouseReceivedSection : null}
           {myEstimationSection}
+          {myOpenHouseSection}
           {favorisSection}
           {recherchesSection}
         </>

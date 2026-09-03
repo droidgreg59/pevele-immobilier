@@ -20,6 +20,7 @@ import {
 import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import type { ArtisanSummary } from "@/lib/artisans";
+import type { OpenHouseForListing } from "@/lib/open-house";
 import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2 } from "@/lib/format";
@@ -27,6 +28,7 @@ import { markListingViewed } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
 import PhotoGallery from "./PhotoGallery";
 import VisitRequestForm from "./VisitRequestForm";
+import OpenHouseSignupForm from "./OpenHouseSignupForm";
 import BottomSheet from "./BottomSheet";
 
 const EQUIPEMENT_ICON: Record<string, LucideIcon> = {
@@ -96,6 +98,8 @@ export default function ListingDetail({
   isLoggedIn,
   isFavorited,
   artisans,
+  openHouse,
+  viewerNom = "",
 }: {
   listing: ListingWithOwner;
   dvfStats: DvfVillageStats | null;
@@ -105,6 +109,8 @@ export default function ListingDetail({
   isLoggedIn: boolean;
   isFavorited: boolean;
   artisans: ArtisanSummary[];
+  openHouse: OpenHouseForListing | null;
+  viewerNom?: string;
 }) {
   const [visitSheetOpen, setVisitSheetOpen] = useState(false);
 
@@ -431,21 +437,28 @@ export default function ListingDetail({
               >
                 Modifier l&apos;annonce
               </Link>
-            ) : isLoggedIn ? (
-              <div className="hidden md:block">
-                <VisitRequestForm listingId={listing.id} />
-              </div>
-            ) : (
+            ) : listing.visitesIndividuelles ? (
+              isLoggedIn ? (
+                <div className="hidden md:block">
+                  <VisitRequestForm listingId={listing.id} />
+                </div>
+              ) : (
+                <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
+                  <Link
+                    href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                    className="text-blue"
+                  >
+                    Connectez-vous
+                  </Link>{" "}
+                  pour contacter le propriétaire et demander une visite.
+                </p>
+              )
+            ) : listing.visitesGroupees ? (
               <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
-                <Link
-                  href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
-                  className="text-blue"
-                >
-                  Connectez-vous
-                </Link>{" "}
-                pour contacter le propriétaire et demander une visite.
+                Ce bien se visite uniquement lors des portes ouvertes — voir les dates
+                ci-dessous.
               </p>
-            )}
+            ) : null}
             {enVerification ? (
               <span className="animate-scale-press pointer-events-none absolute right-5 top-5 flex h-[92px] w-[92px] items-center justify-center rounded-full border-2 border-blue text-center text-[9.5px] font-semibold leading-tight text-blue">
                 En cours de
@@ -455,6 +468,43 @@ export default function ListingDetail({
               </span>
             ) : null}
           </div>
+
+          {listing.visitesGroupees ? (
+            <div id="portes-ouvertes">
+              {isOwner ? (
+                <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+                  <span className="text-[11px] font-semibold text-blue">Portes ouvertes</span>
+                  <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
+                    {openHouse
+                      ? `${openHouse.dates.length} date${openHouse.dates.length > 1 ? "s" : ""} à venir.`
+                      : "Aucune date programmée pour le moment."}
+                  </p>
+                  <Link
+                    href={`/compte/annonces/${listing.id}`}
+                    className="mt-3 inline-block text-[12.5px] font-semibold text-blue"
+                  >
+                    {openHouse ? "Gérer les inscriptions →" : "Programmer des dates →"}
+                  </Link>
+                </div>
+              ) : openHouse ? (
+                <OpenHouseSignupForm
+                  dates={openHouse.dates}
+                  note={openHouse.note}
+                  isLoggedIn={isLoggedIn}
+                  loginHref={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                  defaultNom={viewerNom}
+                />
+              ) : (
+                <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+                  <span className="text-[11px] font-semibold text-blue">Portes ouvertes</span>
+                  <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
+                    Des portes ouvertes sont prévues pour ce bien. Les dates seront
+                    publiées ici prochainement.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
 
           {village ? (
             <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
@@ -541,22 +591,31 @@ export default function ListingDetail({
             size={48}
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-white text-[20px] leading-none text-blue"
           />
-          {isLoggedIn ? (
-            <button
-              type="button"
-              onClick={() => setVisitSheetOpen(true)}
+          {listing.visitesIndividuelles ? (
+            isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => setVisitSheetOpen(true)}
+                className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+              >
+                Demander une visite
+              </button>
+            ) : (
+              <Link
+                href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+              >
+                Se connecter pour visiter
+              </Link>
+            )
+          ) : listing.visitesGroupees ? (
+            <a
+              href="#portes-ouvertes"
               className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
             >
-              Demander une visite
-            </button>
-          ) : (
-            <Link
-              href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
-              className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
-            >
-              Se connecter pour visiter
-            </Link>
-          )}
+              Voir les portes ouvertes
+            </a>
+          ) : null}
         </div>
       ) : null}
 

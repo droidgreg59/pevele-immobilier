@@ -107,6 +107,55 @@ export function estimationRequestRespondedEmail(opts: {
   };
 }
 
+export function openHouseRegistrationReceivedEmail(opts: {
+  listingTitre: string;
+  listingId: string;
+  prenom: string;
+  nom: string;
+  telephone: string;
+  dateLabel: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `Nouvelle inscription aux portes ouvertes — ${opts.listingTitre}`,
+    html: layout(
+      "Nouvelle inscription aux portes ouvertes",
+      p(
+        `<b>${opts.prenom} ${opts.nom}</b> souhaite participer aux portes ouvertes de « ${opts.listingTitre} ».`
+      ) +
+        p(`Créneau : ${opts.dateLabel}`) +
+        p(`Téléphone : ${opts.telephone}`) +
+        p("Acceptez ou refusez cette inscription depuis la gestion de votre annonce."),
+      { label: "Voir les inscriptions", href: `${SITE_URL}/compte/annonces/${opts.listingId}` }
+    ),
+  };
+}
+
+export function openHouseRegistrationRespondedEmail(opts: {
+  listingTitre: string;
+  listingId: string;
+  listingTransaction: "VENTE" | "LOCATION";
+  dateLabel: string;
+  accepted: boolean;
+}): { subject: string; html: string } {
+  const href = `${SITE_URL}/${opts.listingTransaction === "VENTE" ? "acheter" : "louer"}/${opts.listingId}`;
+  return {
+    subject: opts.accepted
+      ? `Votre inscription aux portes ouvertes est confirmée — ${opts.listingTitre}`
+      : `Votre inscription aux portes ouvertes n'a pas été retenue — ${opts.listingTitre}`,
+    html: layout(
+      opts.accepted ? "Inscription confirmée" : "Inscription non retenue",
+      opts.accepted
+        ? p(
+            `Votre inscription aux portes ouvertes de « ${opts.listingTitre} » est confirmée pour le créneau suivant :`
+          ) + p(`<b>${opts.dateLabel}</b>`)
+        : p(
+            `Votre inscription aux portes ouvertes de « ${opts.listingTitre} » (${opts.dateLabel}) n'a pas pu être retenue, faute de place ou de disponibilité.`
+          ),
+      { label: "Voir l'annonce", href }
+    ),
+  };
+}
+
 export function mandateReceivedEmail(opts: { clientNom: string }): { subject: string; html: string } {
   return {
     subject: "Un particulier vous confie sa recherche",
