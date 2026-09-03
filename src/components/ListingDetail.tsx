@@ -28,6 +28,7 @@ import FavoriteButton from "./FavoriteButton";
 import PhotoGallery from "./PhotoGallery";
 import VisitRequestForm from "./VisitRequestForm";
 import OpenHouseSignupForm from "./OpenHouseSignupForm";
+import PurchaseCostBlock from "./PurchaseCostBlock";
 import BottomSheet from "./BottomSheet";
 
 const EQUIPEMENT_ICON: Record<string, LucideIcon> = {
@@ -419,6 +420,10 @@ export default function ListingDetail({
                 </div>
               )}
             </section>
+          ) : null}
+
+          {listing.transaction === "VENTE" ? (
+            <PurchaseCostBlock prix={listing.prix} />
           ) : null}
 
           <section className="mt-8">
