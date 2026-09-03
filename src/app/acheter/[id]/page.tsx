@@ -29,7 +29,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description: listing.description,
-      images: listing.photos.length > 0 ? listing.photos.map((p) => ({ url: p.url })) : undefined,
+      // L'image de partage est la carte de marque générée par opengraph-image.tsx.
     },
   };
 }

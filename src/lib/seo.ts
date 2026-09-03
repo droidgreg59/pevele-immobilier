@@ -1,3 +1,6 @@
+import { getVillageBySlug } from "@/data/villages";
+import { villageCoords } from "@/data/village-coords";
+
 export const SITE_URL = "https://pevele-immobilier.fr";
 export const SITE_NAME = "Pévèle Immobilier";
 
@@ -55,12 +58,27 @@ export function listingJsonLd(listing: {
   prix: number;
   transaction: "VENTE" | "LOCATION";
   commune: string;
+  villageSlug: string;
   surface: number;
   pieces: number;
   chambres: number;
+  createdAt: Date;
   photos: { url: string }[];
+  owner: { nom: string; entreprise: string | null; type: "PARTICULIER" | "AGENCE" | "ARTISAN" };
 }) {
   const path = listing.transaction === "VENTE" ? "acheter" : "louer";
+  const village = getVillageBySlug(listing.villageSlug);
+  const coords = villageCoords[village?.insee ?? ""];
+  const broker =
+    listing.owner.type === "AGENCE"
+      ? {
+          broker: {
+            "@type": "RealEstateAgent",
+            name: listing.owner.entreprise ?? listing.owner.nom,
+          },
+        }
+      : {};
+
   return {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
@@ -68,6 +86,7 @@ export function listingJsonLd(listing: {
     url: `${SITE_URL}/${path}/${listing.id}`,
     name: listing.titre,
     description: listing.description,
+    datePosted: listing.createdAt.toISOString(),
     image: listing.photos.map((p) => (p.url.startsWith("http") ? p.url : `${SITE_URL}${p.url}`)),
     numberOfRooms: listing.pieces,
     numberOfBedrooms: listing.chambres,
@@ -82,6 +101,10 @@ export function listingJsonLd(listing: {
       addressRegion: "Hauts-de-France",
       addressCountry: "FR",
     },
+    ...(coords
+      ? { geo: { "@type": "GeoCoordinates", latitude: coords.lat, longitude: coords.lng } }
+      : {}),
+    ...broker,
     offers: {
       "@type": "Offer",
       price: listing.prix,
