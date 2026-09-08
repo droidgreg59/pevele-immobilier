@@ -51,6 +51,25 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       "arretsBus": 16
     }
   },
+  "59013": {
+    "commerces": [
+      {
+        "nom": "Pharmacie du Mélantois",
+        "type": "Pharmacie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire Andrée Chédid",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 8
+    }
+  },
   "59022": {
     "commerces": [
       {
@@ -305,6 +324,33 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     "transports": {
       "gares": [],
       "arretsBus": 12
+    }
+  },
+  "59106": {
+    "commerces": [
+      {
+        "nom": "Epicerie",
+        "type": "Épicerie"
+      },
+      {
+        "nom": "Biocoop",
+        "type": "Supermarché"
+      },
+      {
+        "nom": "Sophie Lebreuilly",
+        "type": "Boulangerie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire Léonard de Vinci",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 2
     }
   },
   "59124": {
@@ -964,6 +1010,20 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "Orchies"
       ],
       "arretsBus": 27
+    }
+  },
+  "59458": {
+    "commerces": [],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire La Fontaine",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 2
     }
   },
   "59466": {

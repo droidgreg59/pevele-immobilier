@@ -6,6 +6,10 @@ export const villageCoords: Record<string, { lat: number; lng: number }> = {
     "lat": 50.4977,
     "lng": 3.306
   },
+  "59013": {
+    "lat": 50.6026,
+    "lng": 3.1876
+  },
   "59022": {
     "lat": 50.5094,
     "lng": 3.0605
@@ -37,6 +41,10 @@ export const villageCoords: Record<string, { lat: number; lng: number }> = {
   "59096": {
     "lat": 50.5632,
     "lng": 3.2479
+  },
+  "59106": {
+    "lat": 50.5829,
+    "lng": 3.1946
   },
   "59124": {
     "lat": 50.5924,
@@ -109,6 +117,10 @@ export const villageCoords: Record<string, { lat: number; lng: number }> = {
   "59449": {
     "lat": 50.4684,
     "lng": 3.2398
+  },
+  "59458": {
+    "lat": 50.5644,
+    "lng": 3.1707
   },
   "59466": {
     "lat": 50.5218,

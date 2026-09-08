@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Louer en Pévèle — Annonces de location",
   description:
-    "Toutes les annonces de maisons et appartements à louer dans les 35 communes de la Pévèle, agences et particuliers.",
+    "Toutes les annonces de maisons et appartements à louer dans les 38 communes de la Pévèle, agences et particuliers.",
   alternates: {
     canonical: "/louer",
   },

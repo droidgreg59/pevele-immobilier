@@ -12,7 +12,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     return listingOgImage({
       titre: "Locations immobilières en Pévèle",
       prix: 0,
-      commune: "35 communes",
+      commune: "38 communes",
       transaction: "LOCATION",
       typeBien: "MAISON",
       ownerType: "AGENCE",

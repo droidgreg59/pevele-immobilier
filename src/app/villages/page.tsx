@@ -4,9 +4,9 @@ import { villages } from "@/data/villages";
 import VillageCard from "@/components/VillageCard";
 
 export const metadata: Metadata = {
-  title: "Les 35 communes de la Pévèle",
+  title: "Les 38 communes de la Pévèle",
   description:
-    "Découvrez les 35 communes de la Pévèle : présentation, annonces immobilières et prix au m² village par village.",
+    "Découvrez les 38 communes de la Pévèle : présentation, annonces immobilières et prix au m² village par village.",
   alternates: {
     canonical: "/villages",
   },
@@ -20,7 +20,7 @@ export default function VillagesPage() {
           Villages
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          Les 35 villages de la Pévèle
+          Les {villages.length} villages de la Pévèle
         </h2>
         <Link href="/carte" className="ml-auto text-[13px] font-semibold text-blue">
           Voir sur la carte →

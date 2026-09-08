@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Prix de l'immobilier en Pévèle par commune",
   description:
-    "Le prix moyen au m² dans chacune des 35 communes de la Pévèle, classé et comparé, à partir des transactions DVF réellement enregistrées (data.gouv.fr).",
+    "Le prix moyen au m² dans chacune des 38 communes de la Pévèle, classé et comparé, à partir des transactions DVF réellement enregistrées (data.gouv.fr).",
   alternates: {
     canonical: "/prix",
   },
