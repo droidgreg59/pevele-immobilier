@@ -6,6 +6,9 @@ import { getSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
 import { getOpenHouseForListing } from "@/lib/open-house";
+import { getCommuneRisques } from "@/lib/georisques";
+import { getVillageBySlug } from "@/data/villages";
+import { villageCoords } from "@/data/village-coords";
 import ListingDetail from "@/components/ListingDetail";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
@@ -41,12 +44,16 @@ export default async function AcheterListingPage({
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "VENTE") notFound();
 
-  const [dvfStats, dvfRecent, priceHistory, session, artisans] = await Promise.all([
+  const village = getVillageBySlug(listing.villageSlug);
+  const [dvfStats, dvfRecent, priceHistory, session, artisans, risques] = await Promise.all([
     getDvfStatsForVillage(listing.villageSlug),
     getRecentDvfTransactions(listing.villageSlug),
     getPriceHistory(listing.id),
     getSession(),
     getArtisansForVillage(listing.villageSlug),
+    village
+      ? getCommuneRisques(village.insee, villageCoords[village.insee] ?? null)
+      : Promise.resolve(null),
   ]);
   const [isFavorited, openHouse] = await Promise.all([
     session ? isListingFavorited(session.userId, listing.id) : Promise.resolve(false),
@@ -74,6 +81,7 @@ export default async function AcheterListingPage({
         isFavorited={isFavorited}
         artisans={artisans}
         openHouse={openHouse}
+        risques={risques}
         viewerNom={session?.nom ?? ""}
       />
     </>

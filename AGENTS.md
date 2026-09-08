@@ -29,8 +29,9 @@ Toute donnée de référence ajoutée (commerces/écoles/transports par village,
 maison, mentions légales…) doit venir d'une source vérifiable — jamais inventée. Sources déjà utilisées :
 flux XML AC3/Immofacile de l'agence (inspecté en direct via un script Node avant d'écrire le moindre
 mapping — ne jamais deviner un nom de balise), OpenStreetMap/Overpass API (commerces, transports),
-annuaire officiel de l'Éducation nationale (écoles, filtré `etat === "OUVERT"`), et les faits fournis
-directement par l'utilisateur (raison sociale, adresse…). Pour un fait légal non confirmé, utiliser le
+annuaire officiel de l'Éducation nationale (écoles, filtré `etat === "OUVERT"`), API publique Géorisques
+(`georisques.gouv.fr/api/v1`, état des risques par commune — endpoints inspectés en direct avant mapping,
+`src/lib/georisques.ts`), et les faits fournis directement par l'utilisateur (raison sociale, adresse…). Pour un fait légal non confirmé, utiliser le
 composant `<ACompleter>` (`[À COMPLÉTER : ...]`) plutôt que d'inventer une valeur plausible — les pages
 concernées (`/mentions-legales`, `/confidentialite`, `/cgu`) sont volontairement `noindex` tant que des
 `<ACompleter>` y subsistent.
