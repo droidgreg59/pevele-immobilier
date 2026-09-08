@@ -9,6 +9,7 @@ import { getOpenHouseForListing } from "@/lib/open-house";
 import { getCommuneRisques } from "@/lib/georisques";
 import { getVillageBySlug } from "@/data/villages";
 import { villageCoords } from "@/data/village-coords";
+import { villageAmenities } from "@/data/village-amenities";
 import ListingDetail from "@/components/ListingDetail";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
@@ -82,6 +83,7 @@ export default async function AcheterListingPage({
         artisans={artisans}
         openHouse={openHouse}
         risques={risques}
+        amenities={village ? villageAmenities[village.insee] ?? null : null}
         viewerNom={session?.nom ?? ""}
       />
     </>

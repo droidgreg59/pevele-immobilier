@@ -21,6 +21,7 @@ import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import type { ArtisanSummary } from "@/lib/artisans";
 import type { OpenHouseForListing } from "@/lib/open-house";
 import type { CommuneRisques } from "@/lib/georisques";
+import type { VillageAmenities } from "@/data/village-amenities";
 import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
@@ -225,6 +226,87 @@ function RisquesBlock({
   );
 }
 
+function EnvironnementBlock({ amenities }: { amenities: VillageAmenities | null }) {
+  if (!amenities) return null;
+  const { commerces, ecoles, transports } = amenities;
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">L&apos;environnement</h2>
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Commerces</span>
+          {commerces.length > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {commerces.map((c, i) => (
+                <li key={i} className="text-[13px] text-ink">
+                  <span className="font-semibold">{c.nom}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">{c.type}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucun supermarché, épicerie ou boulangerie recensé dans la commune.
+            </p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Écoles</span>
+          {ecoles.length > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {ecoles.map((e, i) => (
+                <li key={i} className="text-[13px] text-ink">
+                  <span className="font-semibold">{e.nom}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">
+                    {e.type} · {e.secteur}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucun établissement scolaire recensé dans la commune.
+            </p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Transports</span>
+          {transports.gares.length > 0 || transports.arretsBus > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {transports.gares.map((g, i) => (
+                <li key={`gare-${i}`} className="text-[13px] text-ink">
+                  <span className="font-semibold">{g}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">Gare SNCF</span>
+                </li>
+              ))}
+              {transports.arretsBus > 0 ? (
+                <li className="text-[13px] text-ink">
+                  <span className="font-semibold">
+                    {transports.arretsBus} arrêt
+                    {transports.arretsBus > 1 ? "s" : ""} de bus
+                  </span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">
+                    recensé{transports.arretsBus > 1 ? "s" : ""}
+                  </span>
+                </li>
+              ) : null}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucune gare ni arrêt de bus recensé dans la commune.
+            </p>
+          )}
+        </div>
+      </div>
+      <p className="mt-3 text-[11px] text-muted-2">
+        Source : OpenStreetMap (commerces, transports) et annuaire de l&apos;Éducation
+        nationale (écoles), au niveau de la commune.
+      </p>
+    </section>
+  );
+}
+
 function marketComparison(
   listingPrixM2: number | null,
   dvfStats: DvfVillageStats | null
@@ -272,6 +354,7 @@ export default function ListingDetail({
   artisans,
   openHouse,
   risques,
+  amenities,
   viewerNom = "",
 }: {
   listing: ListingWithOwner;
@@ -284,6 +367,7 @@ export default function ListingDetail({
   artisans: ArtisanSummary[];
   openHouse: OpenHouseForListing | null;
   risques: CommuneRisques | null;
+  amenities: VillageAmenities | null;
   viewerNom?: string;
 }) {
   const [visitSheetOpen, setVisitSheetOpen] = useState(false);
@@ -526,18 +610,7 @@ export default function ListingDetail({
 
           <RisquesBlock risques={risques} communeNom={village?.nom ?? listing.commune} />
 
-          <section className="mt-8">
-            <h2 className="m-0 font-display text-2xl text-ink">L&apos;environnement</h2>
-            <div className="mt-3 rounded-2xl border border-dashed border-line bg-surface p-6">
-              <span className="text-[11px] font-semibold text-muted">
-                Bientôt disponible
-              </span>
-              <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
-                Écoles, commerces, transports et temps de trajet autour du
-                bien.
-              </p>
-            </div>
-          </section>
+          <EnvironnementBlock amenities={amenities} />
         </div>
 
         <aside className="flex flex-col gap-5 lg:sticky lg:top-[88px] lg:self-start">
