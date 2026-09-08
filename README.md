@@ -42,7 +42,8 @@ le workflow GitHub Actions `.github/workflows/refresh-village-amenities.yml`
 s'il a changé. À lancer aussi à la main après l'ajout d'une commune (sans
 `--force`, pour ne récupérer que les nouvelles).
 
-**Avec Vercel Cron** (si déployé sur Vercel), ajouter à `vercel.json` :
+**Avec Vercel Cron** (déploiement sur Vercel) : déjà configuré dans
+[`vercel.json`](vercel.json) —
 
 ```json
 {
@@ -54,8 +55,13 @@ s'il a changé. À lancer aussi à la main après l'ajout d'une commune (sans
 }
 ```
 
-Vercel envoie automatiquement `Authorization: Bearer $CRON_SECRET` — définir
-`CRON_SECRET` dans les variables d'environnement du projet Vercel.
+`dvf-import` tourne chaque lundi 04:00 UTC, `sync-agencies` et `alerts` tous
+les jours (05:00 / 07:00 UTC). Vercel envoie automatiquement
+`Authorization: Bearer $CRON_SECRET` — définir `CRON_SECRET` dans les
+variables d'environnement du projet Vercel. Les crons multiples / la
+granularité hebdomadaire demandent un plan **Vercel Pro** ; sur le plan
+Hobby (2 crons, déclenchés une fois par jour), passer par un ordonnanceur
+externe ci-dessous.
 
 **Avec un ordonnanceur externe** (GitHub Actions, cron-job.org…) :
 
