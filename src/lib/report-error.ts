@@ -16,7 +16,7 @@ const ENV = process.env.NODE_ENV ?? "development";
 
 type ParsedDsn = { envelopeUrl: string; dsn: string };
 
-function parseDsn(dsn: string | undefined): ParsedDsn | null {
+export function parseDsn(dsn: string | undefined): ParsedDsn | null {
   if (!dsn) return null;
   try {
     // Forme : {protocol}://{publicKey}@{host}{path}/{projectId}
@@ -34,7 +34,7 @@ function parseDsn(dsn: string | undefined): ParsedDsn | null {
 }
 
 /** Erreurs de contrôle de flux Next — pas de vraies exceptions à remonter. */
-function isControlFlow(err: unknown): boolean {
+export function isControlFlow(err: unknown): boolean {
   const digest =
     typeof err === "object" && err !== null && "digest" in err
       ? String((err as { digest?: unknown }).digest ?? "")

@@ -55,6 +55,16 @@ Trois briques distinctes, à ne pas confondre :
   `src/app/global-error.tsx` (client). No-op tant que `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` sont
   vides. Pas de symbolication des stacks minifiées — c'est le compromis assumé du « sans SDK ».
 
+### Tests
+
+`npm test` (Vitest, `vitest.config.ts`) — tests co-localisés `src/**/*.test.ts`, ciblés sur les
+fonctions pures / la logique (validation, barèmes coût d'achat, slugify, format, parsing des
+`searchParams`, `where` Prisma des recherches, JSON-LD, invariants du jeu de communes). **Pas de
+tests qui touchent la base ou le réseau.** `import "server-only"` est neutralisé dans les tests via
+un alias vers `test/stubs/server-only.ts`. La CI (`.github/workflows/ci.yml`, sur chaque PR + master)
+enchaîne `lint` → `tsc --noEmit` → `test` → `build`, avec une SQLite vide créée par `prisma db push`
+(le build exécute `sitemap.ts` qui interroge la base).
+
 ### Pièges d'environnement rencontrés
 
 - **`prisma db push` dans un pipe masque les échecs** : `... | tail -20 && npx prisma generate` continue

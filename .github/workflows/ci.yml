@@ -1,0 +1,45 @@
+name: CI
+
+# Lint + typecheck + tests + build sur chaque PR et sur master.
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # Valeurs factices : la CI ne se connecte à aucun service réel. `next build`
+      # exécute `sitemap.ts` qui interroge la base — d'où une SQLite vide créée
+      # par `prisma db push`. `AUTH_SECRET` doit juste être non vide.
+      DATABASE_URL: "file:./ci.db"
+      AUTH_SECRET: "ci-placeholder-secret-ci-placeholder-secret"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Générer le client Prisma
+        run: npx prisma generate
+
+      - name: Créer une base SQLite vide
+        run: npx prisma db push --skip-generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
