@@ -7,6 +7,7 @@ import { prisma } from "./prisma";
 import { updateAgencyProfile, getAgencyById } from "./agencies";
 import { lookupSiretDenomination } from "./agency-verification";
 import { isValidSiret, normalizeSiret } from "./validation";
+import { logEvent } from "./events";
 import { pickLogoFile, validateLogoFile, saveLogoFile, deleteLogoFile } from "./photo-upload";
 
 export type AgencyProfileFormState = { error?: string };
@@ -117,6 +118,11 @@ export async function submitAgencyVerificationAction(
       verifTraiteeLe: null,
       verifRaison: null,
     },
+  });
+
+  await logEvent("agency_verification_submitted", {
+    userId: session.userId,
+    path: "/compte/agence",
   });
 
   revalidatePath("/compte/agence");

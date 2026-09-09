@@ -12,6 +12,7 @@ import {
   getListingForEdit,
 } from "./listings";
 import { parseListingFields } from "./listing-fields";
+import { logEvent } from "./events";
 import {
   pickPhotoFiles,
   validatePhotoFiles,
@@ -55,6 +56,17 @@ export async function createListingAction(
     const urls = await savePhotoFiles(listing.id, photoFiles);
     await addListingPhotos(listing.id, urls);
   }
+
+  await logEvent("listing_submitted", {
+    userId: session.userId,
+    path: "/vendre/deposer",
+    meta: {
+      transaction: parsed.fields.transaction,
+      typeBien: parsed.fields.typeBien,
+      commune: parsed.fields.villageSlug,
+      photos: photoFiles.length,
+    },
+  });
 
   redirect(`/${parsed.fields.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`);
 }

@@ -8,6 +8,7 @@ import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
 import { listingDetailPath } from "./open-house";
+import { logEvent } from "./events";
 import {
   openHouseRegistrationReceivedEmail,
   openHouseRegistrationRespondedEmail,
@@ -228,6 +229,10 @@ export async function registerToOpenHouseAction(
     dateLabel: formatDateLabel(date.startAt, date.endAt),
   });
   await sendEmail({ to: listing.owner.email, subject, html });
+  await logEvent("open_house_registered", {
+    userId: session.userId,
+    path: detailPath,
+  });
 
   revalidatePath(detailPath);
   return { success: true };

@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
 import { estimationRequestReceivedEmail, estimationRequestRespondedEmail } from "./email-templates";
+import { logEvent } from "./events";
 
 export type EstimationFormState = { error?: string; success?: boolean };
 
@@ -62,6 +63,10 @@ export async function createEstimationRequestAction(
 
   const { subject, html } = estimationRequestReceivedEmail({ adresse, authorNom: session.nom });
   await sendEmail({ to: agency.email, subject, html });
+  await logEvent("estimation_requested", {
+    userId: session.userId,
+    path: `/professionnels/${agencyId}`,
+  });
 
   return { success: true };
 }

@@ -5,6 +5,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { devisRequestReceivedEmail } from "./email-templates";
+import { logEvent } from "./events";
 
 export type DevisFormState = { error?: string; success?: boolean };
 
@@ -44,6 +45,10 @@ export async function createDevisRequestAction(
 
   const { subject, html } = devisRequestReceivedEmail({ authorNom: session.nom, message });
   await sendEmail({ to: artisan.email, subject, html });
+  await logEvent("devis_requested", {
+    userId: session.userId,
+    path: `/artisans/${artisanId}`,
+  });
 
   return { success: true };
 }

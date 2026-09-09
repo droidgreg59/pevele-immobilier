@@ -10,6 +10,7 @@ import { sendEmail } from "./email";
 import { emailVerificationEmail, passwordResetEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
 import { verifyTurnstileToken } from "./turnstile";
+import { logEvent } from "./events";
 import type { AccountType } from "@prisma/client";
 
 export type AuthState = { error?: string };
@@ -101,6 +102,7 @@ export async function registerAction(
   });
 
   await sendEmailVerification(user.id, user.email);
+  await logEvent("signup_completed", { userId: user.id, meta: { type } });
 
   if (type === "AGENCE" || type === "ARTISAN") {
     redirect("/bienvenue");

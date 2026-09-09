@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
 import { visitRequestReceivedEmail } from "./email-templates";
+import { logEvent } from "./events";
 
 export type VisitFormState = { error?: string; success?: boolean };
 
@@ -68,6 +69,11 @@ export async function createVisitRequestAction(
     message,
   });
   await sendEmail({ to: listing.owner.email, subject, html });
+  await logEvent("visit_requested", {
+    userId: session.userId,
+    path: detailPath,
+    meta: { transaction: listing.transaction },
+  });
 
   return { success: true };
 }

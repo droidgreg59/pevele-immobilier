@@ -5,6 +5,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { reviewReceivedEmail } from "./email-templates";
+import { logEvent } from "./events";
 
 export type ReviewFormState = { error?: string };
 
@@ -49,6 +50,11 @@ export async function upsertReviewAction(
   if (!existing) {
     const { subject, html } = reviewReceivedEmail({ authorNom: session.nom, note });
     await sendEmail({ to: agency.email, subject, html });
+    await logEvent("review_submitted", {
+      userId: session.userId,
+      path: `/professionnels/${agencyId}`,
+      meta: { note },
+    });
   }
 
   redirect(`/professionnels/${agencyId}`);

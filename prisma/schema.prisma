@@ -414,6 +414,23 @@ enum TypeMaison {
   MITOYENNE
 }
 
+/// Évènement produit (entonnoir) — écrit en « fire and forget » depuis les
+/// Server Actions (et quelques pages serveur) via `src/lib/events.ts`. Sert
+/// au tableau de bord `/admin/stats`. Volontairement minimal et sans PII :
+/// `userId` est libre (pas de FK — on garde l'historique même après
+/// suppression du compte), `meta` = petit JSON optionnel (< 2 ko).
+model Event {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String?
+  path      String?
+  meta      String?
+  createdAt DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([createdAt])
+}
+
 /// Transactions immobilières issues des DVF (Demandes de Valeurs Foncières,
 /// data.gouv.fr / Etalab), filtrées aux communes de la Pévèle. Réimporté
 /// périodiquement via `npm run dvf:import` — pas de saisie manuelle.

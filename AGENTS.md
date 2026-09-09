@@ -41,6 +41,20 @@ numéro de carte professionnelle (carte T), et un administrateur valide à la ma
 `/admin/verifications` (`User.verifStatut`). La raison sociale officielle est récupérée en best-effort
 sur `recherche-entreprises.api.gouv.fr` mais ne fait pas foi.
 
+### Observabilité
+
+Trois briques distinctes, à ne pas confondre :
+- **Audience** — Cloudflare Web Analytics (`src/app/layout.tsx`, sur `CF_BEACON_TOKEN`) : pages vues,
+  référents, Web Vitals. Pas d'API d'évènement.
+- **Entonnoir produit** — modèle `Event` + `logEvent(name, …)` (`src/lib/events.ts`), appelé en
+  « fire and forget » (jamais `throw`, toujours `await` avant un `return`/`redirect`) dans les Server
+  Actions aux étapes clés. Lu par `/admin/stats`. Ajouter un `EventName` à l'union **et** à
+  `EVENT_LABELS` (`src/lib/admin-stats.ts`) quand on instrumente une nouvelle étape.
+- **Erreurs** — `src/lib/report-error.ts` poste une enveloppe Sentry **sans SDK** (dépendances = 0),
+  branché via `src/instrumentation.ts` (serveur) et `src/instrumentation-client.ts` +
+  `src/app/global-error.tsx` (client). No-op tant que `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` sont
+  vides. Pas de symbolication des stacks minifiées — c'est le compromis assumé du « sans SDK ».
+
 ### Pièges d'environnement rencontrés
 
 - **`prisma db push` dans un pipe masque les échecs** : `... | tail -20 && npx prisma generate` continue
