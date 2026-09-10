@@ -7,6 +7,7 @@ import { EQUIPEMENTS } from "@/data/equipements";
 import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
 import PhotoDropzone from "./PhotoDropzone";
 import DpeFields from "./DpeFields";
+import FraisFields from "./FraisFields";
 
 const initialState: ListingFormState = {};
 
@@ -188,6 +189,7 @@ export default function PublishForm({
 
       <DpeFields />
 
+      {typeBien !== "TERRAIN" ? <FraisFields transaction={transaction} /> : null}
 
       {typeBien !== "TERRAIN" ? (
         <label className="flex flex-col gap-1.5">

@@ -13,6 +13,7 @@ import { MAX_PHOTOS } from "@/lib/photo-constants";
 import type { ListingWithOwner } from "@/lib/listings";
 import PhotoDropzone from "./PhotoDropzone";
 import DpeFields from "./DpeFields";
+import FraisFields from "./FraisFields";
 
 const initialState: ListingFormState = {};
 
@@ -228,6 +229,21 @@ export default function EditListingForm({
             dpeEmissions: listing.dpeEmissions,
           }}
         />
+
+        {typeBien !== "TERRAIN" ? (
+          <FraisFields
+            transaction={transaction}
+            defaults={{
+              honoraires: listing.honoraires,
+              honorairesCharge: listing.honorairesCharge,
+              chargesCopro: listing.chargesCopro,
+              taxeFonciere: listing.taxeFonciere,
+              chargesLoc: listing.chargesLoc,
+              depotGarantie: listing.depotGarantie,
+              meuble: listing.meuble,
+            }}
+          />
+        ) : null}
 
         {typeBien !== "TERRAIN" ? (
           <label className="flex flex-col gap-1.5">

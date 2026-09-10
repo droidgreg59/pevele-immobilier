@@ -148,6 +148,59 @@ function RiskLine({ label, value }: { label: string; value: string }) {
   );
 }
 
+const eur = (n: number) => `${n.toLocaleString("fr-FR")} €`;
+
+function FraisBlock({ listing }: { listing: ListingWithOwner }) {
+  const vente = listing.transaction === "VENTE";
+  const {
+    honoraires,
+    honorairesCharge,
+    chargesCopro,
+    taxeFonciere,
+    chargesLoc,
+    depotGarantie,
+    meuble,
+  } = listing;
+
+  const lines: { label: string; value: string }[] = [];
+  if (vente) {
+    if (honoraires) {
+      const chargeLabel =
+        honorairesCharge === "acquereur"
+          ? " · à la charge de l'acquéreur"
+          : honorairesCharge === "vendeur"
+            ? " · à la charge du vendeur"
+            : "";
+      lines.push({ label: "Honoraires d'agence", value: `${eur(honoraires)} TTC${chargeLabel}` });
+      if (honorairesCharge === "acquereur") {
+        lines.push({
+          label: "Prix hors honoraires",
+          value: eur(Math.max(listing.prix - honoraires, 0)),
+        });
+      }
+    }
+    if (chargesCopro) lines.push({ label: "Charges de copropriété", value: `${eur(chargesCopro)} / mois` });
+    if (taxeFonciere) lines.push({ label: "Taxe foncière", value: `${eur(taxeFonciere)} / an` });
+  } else {
+    if (chargesLoc) lines.push({ label: "Provisions sur charges", value: `${eur(chargesLoc)} / mois` });
+    if (depotGarantie) lines.push({ label: "Dépôt de garantie", value: eur(depotGarantie) });
+    if (meuble != null) lines.push({ label: "Ameublement", value: meuble ? "Meublé" : "Non meublé" });
+  }
+
+  if (lines.length === 0) return null;
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">Frais &amp; charges</h2>
+      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm sm:grid-cols-2">
+        {lines.map((l) => (
+          <RiskLine key={l.label} label={l.label} value={l.value} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RisquesBlock({
   risques,
   communeNom,
@@ -544,6 +597,8 @@ export default function ListingDetail({
           ) : null}
 
           <DpeBlock listing={listing} />
+
+          <FraisBlock listing={listing} />
 
           {listing.transaction === "VENTE" ? (
             <section className="mt-8">

@@ -160,6 +160,18 @@ export type ListingFieldsInput = {
   dpeCoutAnneeRef?: number | null;
   dpeDate?: Date | null;
   modeChauffage?: string | null;
+  /**
+   * Frais & charges (voir schema.prisma). Renseignés par le formulaire
+   * d'annonce ; omis par l'import de flux tant que les balises AC3
+   * correspondantes n'ont pas été inspectées.
+   */
+  honoraires?: number | null;
+  honorairesCharge?: string | null;
+  chargesCopro?: number | null;
+  taxeFonciere?: number | null;
+  chargesLoc?: number | null;
+  depotGarantie?: number | null;
+  meuble?: boolean | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
   /**
@@ -179,12 +191,32 @@ export async function createListing(input: CreateListingInput) {
     data: {
       ...fields,
       ...dpeData(fields),
+      ...fraisData(fields),
       videoUrl: fields.videoUrl || null,
       visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
       owner: { connect: { id: ownerId } },
       priceHistory: { create: [{ prix: fields.prix }] },
     },
   });
+}
+
+/**
+ * Normalise le bloc « frais & charges » : `undefined` → `null` (efface en
+ * mise à jour), et remet à `null` les champs hors périmètre de la transaction
+ * (pas d'honoraires ni de taxe foncière sur une location, pas de dépôt de
+ * garantie sur une vente).
+ */
+function fraisData(f: ListingFieldsInput) {
+  const vente = f.transaction === "VENTE";
+  return {
+    honoraires: vente ? f.honoraires ?? null : null,
+    honorairesCharge: vente ? f.honorairesCharge ?? null : null,
+    chargesCopro: f.chargesCopro ?? null,
+    taxeFonciere: vente ? f.taxeFonciere ?? null : null,
+    chargesLoc: vente ? null : f.chargesLoc ?? null,
+    depotGarantie: vente ? null : f.depotGarantie ?? null,
+    meuble: vente ? null : f.meuble ?? null,
+  };
 }
 
 /** Normalise le bloc DPE : chaîne vide → null, nombre absent → null. */
@@ -212,6 +244,7 @@ async function applyListingUpdate(
       data: {
         ...input,
         ...dpeData(input),
+        ...fraisData(input),
         videoUrl: input.videoUrl || null,
         visiteVirtuelleUrl: input.visiteVirtuelleUrl || null,
         // Une annonce refusée repasse en vérification après correction.

@@ -47,6 +47,21 @@ export function parseListingFields(
   // `null` explicite (pas `undefined`) : voir la même remarque pour typeMaison
   // ci-dessus — sinon une mise à jour laisserait une ancienne valeur en place.
   const modeChauffage = typeBien !== "TERRAIN" && modeChauffageRaw ? modeChauffageRaw : null;
+  // Frais & charges. `fraisData` (listings.ts) remet à null ce qui est hors
+  // périmètre de la transaction ; on parse ici tout ce qui est fourni.
+  const honoraires = parsePositiveInt(formData.get("honoraires"));
+  const honorairesChargeRaw = String(formData.get("honorairesCharge") ?? "");
+  const honorairesCharge =
+    honorairesChargeRaw === "acquereur" || honorairesChargeRaw === "vendeur"
+      ? honorairesChargeRaw
+      : null;
+  const chargesCopro = parsePositiveInt(formData.get("chargesCopro"));
+  const taxeFonciere = parsePositiveInt(formData.get("taxeFonciere"));
+  const chargesLoc = parsePositiveInt(formData.get("chargesLoc"));
+  const depotGarantie = parsePositiveInt(formData.get("depotGarantie"));
+  const meubleRaw = String(formData.get("meuble") ?? "");
+  const meuble = meubleRaw === "true" ? true : meubleRaw === "false" ? false : null;
+
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
   const visiteVirtuelleUrl = String(formData.get("visiteVirtuelleUrl") ?? "").trim();
   const visitesIndividuelles = formData.get("visitesIndividuelles") === "true";
@@ -99,6 +114,13 @@ export function parseListingFields(
       dpeConsommation,
       dpeEmissions,
       modeChauffage,
+      honoraires,
+      honorairesCharge,
+      chargesCopro,
+      taxeFonciere,
+      chargesLoc,
+      depotGarantie,
+      meuble,
       videoUrl: videoUrl || undefined,
       visiteVirtuelleUrl: visiteVirtuelleUrl || undefined,
       visitesIndividuelles,

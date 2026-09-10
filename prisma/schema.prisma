@@ -121,6 +121,19 @@ model Listing {
   /// balise MODE_CHAUFFAGE) renvoient des valeurs variées non exhaustives.
   modeChauffage      String?
   equipements        String            @default("")
+  /// Frais & charges affichés sur la fiche.
+  /// VENTE : `honoraires` (montant TTC, €) + `honorairesCharge`
+  /// ("acquereur" | "vendeur") — l'affichage est obligatoire quand ils sont à
+  /// la charge de l'acquéreur ; `chargesCopro` (€/mois pour un lot en
+  /// copropriété) ; `taxeFonciere` (€/an).
+  /// LOCATION : `chargesLoc` (provisions €/mois), `depotGarantie` (€), `meuble`.
+  honoraires         Int?
+  honorairesCharge   String?
+  chargesCopro       Int?
+  taxeFonciere       Int?
+  chargesLoc         Int?
+  depotGarantie      Int?
+  meuble             Boolean?
   /// Modes de visite proposés sur la fiche. Choisis à la création de l'annonce,
   /// modifiables ensuite. Au moins l'un des deux est vrai.
   visitesIndividuelles Boolean         @default(true)
