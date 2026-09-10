@@ -65,6 +65,15 @@ communes). `/villages/[slug]`, `/carte` et `/immobilier/[commune]/[intent]` rest
 pour les favoris, `searchParams`) mais ne tapent plus la base pour les DVF. Rendre ces trois-là
 statiques demanderait d'hydrater l'état « favori » côté client — chantier à part.
 
+### PWA
+
+`public/manifest.webmanifest` + `public/sw.js` (enregistré depuis
+`src/instrumentation-client.ts`). Le service worker est **volontairement minimal** :
+aucune mise en cache d'assets ou de pages (zéro risque de contenu périmé), juste une
+page de repli hors ligne pour les navigations. Les icônes PNG sont générées depuis
+`public/icon.svg` par `npx tsx scripts/gen-pwa-icons.ts` (rejouer si le visuel de
+marque change). Notifications push : pas encore faites (nécessitent des clés VAPID).
+
 ### Tests
 
 `npm test` (Vitest, `vitest.config.ts`) — tests co-localisés `src/**/*.test.ts`, ciblés sur les

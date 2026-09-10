@@ -13,4 +13,13 @@ if (typeof window !== "undefined") {
   window.addEventListener("unhandledrejection", (event) => {
     void reportClientError(event.reason, { kind: "unhandledrejection" });
   });
+
+  // Enregistrement du service worker (PWA installable + repli hors ligne).
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        // pas bloquant : l'appli fonctionne sans.
+      });
+    });
+  }
 }
