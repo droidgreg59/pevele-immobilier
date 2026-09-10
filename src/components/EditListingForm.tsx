@@ -14,6 +14,7 @@ import type { ListingWithOwner } from "@/lib/listings";
 import PhotoDropzone from "./PhotoDropzone";
 import DpeFields from "./DpeFields";
 import FraisFields from "./FraisFields";
+import CaracFields from "./CaracFields";
 
 const initialState: ListingFormState = {};
 
@@ -241,6 +242,25 @@ export default function EditListingForm({
               chargesLoc: listing.chargesLoc,
               depotGarantie: listing.depotGarantie,
               meuble: listing.meuble,
+            }}
+          />
+        ) : null}
+
+        {typeBien !== "TERRAIN" ? (
+          <CaracFields
+            typeBien={typeBien}
+            defaults={{
+              anneeConstruction: listing.anneeConstruction,
+              etat: listing.etat,
+              exposition: listing.exposition,
+              surfaceTerrain: listing.surfaceTerrain,
+              etage: listing.etage,
+              ascenseur: listing.ascenseur,
+              nbSallesDeBain: listing.nbSallesDeBain,
+              stationnement: listing.stationnement,
+              chauffageType: listing.chauffageType,
+              fibre: listing.fibre,
+              assainissement: listing.assainissement,
             }}
           />
         ) : null}

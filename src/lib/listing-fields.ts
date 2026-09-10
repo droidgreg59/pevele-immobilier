@@ -1,10 +1,38 @@
 import { getVillageBySlug } from "@/data/villages";
 import type { ListingFieldsInput } from "./listings";
+import { ETATS, EXPOSITIONS, CHAUFFAGE_TYPES, ASSAINISSEMENTS } from "./listing-carac";
 
 function parsePositiveInt(value: FormDataEntryValue | null): number | null {
   const n = Number(value);
   return Number.isInteger(n) && n > 0 ? n : null;
 }
+
+/** Entier ≥ 0 (ex. étage : 0 = rez-de-chaussée). Chaîne vide → null. */
+function parseNonNegInt(value: FormDataEntryValue | null): number | null {
+  if (value === null || String(value).trim() === "") return null;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 0 && n <= 200 ? n : null;
+}
+
+/** Année de construction plausible, sinon null. */
+function parseYear(value: FormDataEntryValue | null): number | null {
+  const n = Number(value);
+  const max = new Date().getFullYear() + 3;
+  return Number.isInteger(n) && n >= 1700 && n <= max ? n : null;
+}
+
+/** Renvoie la valeur si elle est dans `allowed`, sinon null. */
+function oneOf<T extends string>(value: FormDataEntryValue | null, allowed: readonly T[]): T | null {
+  const s = String(value ?? "").trim();
+  return (allowed as readonly string[]).includes(s) ? (s as T) : null;
+}
+
+/** Sélecteur tri-état "true" / "false" / "" → boolean | null. */
+function triBool(value: FormDataEntryValue | null): boolean | null {
+  const s = String(value ?? "");
+  return s === "true" ? true : s === "false" ? false : null;
+}
+
 
 function isValidHttpUrl(value: string): boolean {
   try {
@@ -61,6 +89,22 @@ export function parseListingFields(
   const depotGarantie = parsePositiveInt(formData.get("depotGarantie"));
   const meubleRaw = String(formData.get("meuble") ?? "");
   const meuble = meubleRaw === "true" ? true : meubleRaw === "false" ? false : null;
+
+  // Caractéristiques détaillées — toutes facultatives, `caracData` (listings.ts)
+  // met à null ce qui n'est pas fourni.
+  const anneeConstruction = parseYear(formData.get("anneeConstruction"));
+  const etat = oneOf(formData.get("etat"), ETATS);
+  const exposition = oneOf(formData.get("exposition"), EXPOSITIONS);
+  const surfaceTerrain = parsePositiveInt(formData.get("surfaceTerrain"));
+  const etage = typeBien === "APPARTEMENT" ? parseNonNegInt(formData.get("etage")) : null;
+  const ascenseur = typeBien === "APPARTEMENT" ? triBool(formData.get("ascenseur")) : null;
+  const nbSallesDeBain = parsePositiveInt(formData.get("nbSallesDeBain"));
+  const stationnement = String(formData.get("stationnement") ?? "").trim().slice(0, 120) || null;
+  const chauffageType =
+    typeBien === "TERRAIN" ? null : oneOf(formData.get("chauffageType"), CHAUFFAGE_TYPES);
+  const fibre = triBool(formData.get("fibre"));
+  const assainissement =
+    typeBien === "APPARTEMENT" ? null : oneOf(formData.get("assainissement"), ASSAINISSEMENTS);
 
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
   const visiteVirtuelleUrl = String(formData.get("visiteVirtuelleUrl") ?? "").trim();
@@ -121,6 +165,17 @@ export function parseListingFields(
       chargesLoc,
       depotGarantie,
       meuble,
+      anneeConstruction,
+      etat,
+      exposition,
+      surfaceTerrain,
+      etage,
+      ascenseur,
+      nbSallesDeBain,
+      stationnement,
+      chauffageType,
+      fibre,
+      assainissement,
       videoUrl: videoUrl || undefined,
       visiteVirtuelleUrl: visiteVirtuelleUrl || undefined,
       visitesIndividuelles,

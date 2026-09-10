@@ -22,6 +22,13 @@ import type { ArtisanSummary } from "@/lib/artisans";
 import type { OpenHouseForListing } from "@/lib/open-house";
 import type { CommuneRisques } from "@/lib/georisques";
 import type { VillageAmenities } from "@/data/village-amenities";
+import {
+  ETAT_LABEL,
+  EXPOSITION_LABEL,
+  CHAUFFAGE_TYPE_LABEL,
+  ASSAINISSEMENT_LABEL,
+  etageLabel,
+} from "@/lib/listing-carac";
 import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
@@ -149,6 +156,60 @@ function RiskLine({ label, value }: { label: string; value: string }) {
 }
 
 const eur = (n: number) => `${n.toLocaleString("fr-FR")} €`;
+
+function CaracBlock({ listing }: { listing: ListingWithOwner }) {
+  const lines: { label: string; value: string }[] = [];
+  if (listing.anneeConstruction)
+    lines.push({ label: "Année de construction", value: String(listing.anneeConstruction) });
+  if (listing.etat)
+    lines.push({ label: "État général", value: ETAT_LABEL[listing.etat] ?? listing.etat });
+  if (listing.exposition)
+    lines.push({
+      label: "Exposition",
+      value: EXPOSITION_LABEL[listing.exposition] ?? listing.exposition,
+    });
+  if (listing.etage != null)
+    lines.push({ label: "Étage", value: etageLabel(listing.etage) });
+  if (listing.ascenseur != null)
+    lines.push({ label: "Ascenseur", value: listing.ascenseur ? "Oui" : "Non" });
+  if (listing.nbSallesDeBain)
+    lines.push({
+      label: "Salles de bain / d'eau",
+      value: String(listing.nbSallesDeBain),
+    });
+  if (listing.surfaceTerrain)
+    lines.push({
+      label: "Surface du terrain",
+      value: `${listing.surfaceTerrain.toLocaleString("fr-FR")} m²`,
+    });
+  if (listing.stationnement)
+    lines.push({ label: "Stationnement", value: listing.stationnement });
+  if (listing.chauffageType)
+    lines.push({
+      label: "Chauffage",
+      value: CHAUFFAGE_TYPE_LABEL[listing.chauffageType] ?? listing.chauffageType,
+    });
+  if (listing.assainissement)
+    lines.push({
+      label: "Assainissement",
+      value: ASSAINISSEMENT_LABEL[listing.assainissement] ?? listing.assainissement,
+    });
+  if (listing.fibre != null)
+    lines.push({ label: "Fibre optique", value: listing.fibre ? "Oui" : "Non" });
+
+  if (lines.length === 0) return null;
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">Caractéristiques</h2>
+      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm sm:grid-cols-2">
+        {lines.map((l) => (
+          <RiskLine key={l.label} label={l.label} value={l.value} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function FraisBlock({ listing }: { listing: ListingWithOwner }) {
   const vente = listing.transaction === "VENTE";
@@ -569,6 +630,8 @@ export default function ListingDetail({
               {listing.description}
             </p>
           </section>
+
+          <CaracBlock listing={listing} />
 
           {features.length > 0 ? (
             <section className="mt-8">

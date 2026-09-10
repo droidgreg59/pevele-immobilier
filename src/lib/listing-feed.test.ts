@@ -35,6 +35,17 @@ function make(overrides: Partial<ListingWithOwner> = {}): ListingWithOwner {
     chargesLoc: null,
     depotGarantie: null,
     meuble: null,
+    anneeConstruction: null,
+    etat: null,
+    exposition: null,
+    surfaceTerrain: null,
+    etage: null,
+    ascenseur: null,
+    nbSallesDeBain: null,
+    stationnement: null,
+    chauffageType: null,
+    fibre: null,
+    assainissement: null,
     equipements: "",
     visitesIndividuelles: true,
     visitesGroupees: false,
@@ -129,5 +140,33 @@ describe("feedNodeForListing", () => {
     expect(n).not.toHaveProperty("dpe");
     expect(n).not.toHaveProperty("chargesCopro");
     expect(n).not.toHaveProperty("honoraires");
+    expect(n).not.toHaveProperty("etat");
+    expect(n).not.toHaveProperty("etage");
+    expect(n).not.toHaveProperty("fibre");
+  });
+
+  it("expose les caractéristiques renseignées (état, étage RDC, ascenseur, fibre)", () => {
+    const n = feedNodeForListing(
+      make({
+        typeBien: "APPARTEMENT",
+        typeMaison: null,
+        anneeConstruction: 1997,
+        etat: "bon",
+        exposition: "sud-ouest",
+        etage: 0,
+        ascenseur: true,
+        nbSallesDeBain: 2,
+        fibre: false,
+        chauffageType: "collectif",
+      })
+    );
+    expect(n.anneeConstruction).toBe(1997);
+    expect(n.etat).toBe("bon");
+    expect(n.exposition).toBe("sud-ouest");
+    expect(n.etage).toBe(0); // RDC : 0 doit être émis, pas omis
+    expect(n.ascenseur).toBe("oui");
+    expect(n.sallesDeBain).toBe(2);
+    expect(n.fibre).toBe("non"); // false doit être émis
+    expect(n.chauffageType).toBe("collectif");
   });
 });

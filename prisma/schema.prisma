@@ -138,6 +138,24 @@ model Listing {
   chargesLoc         Int?
   depotGarantie      Int?
   meuble             Boolean?
+  /// Caractéristiques détaillées du bien — toutes facultatives. Un champ non
+  /// renseigné n'apparaît pas sur la fiche (la ligne est retirée, pas laissée
+  /// vide). Champs à valeurs contraintes stockés en texte : `etat`
+  /// (neuf|refait|bon|rafraichir|renover), `exposition`
+  /// (nord|sud|est|ouest|nord-est|nord-ouest|sud-est|sud-ouest|traversant),
+  /// `chauffageType` (individuel|collectif), `assainissement`
+  /// (tout-a-l-egout|individuel). `etage` : 0 = rez-de-chaussée.
+  anneeConstruction  Int?
+  etat               String?
+  exposition         String?
+  surfaceTerrain     Int?
+  etage              Int?
+  ascenseur          Boolean?
+  nbSallesDeBain     Int?
+  stationnement      String?
+  chauffageType      String?
+  fibre              Boolean?
+  assainissement     String?
   /// Modes de visite proposés sur la fiche. Choisis à la création de l'annonce,
   /// modifiables ensuite. Au moins l'un des deux est vrai.
   visitesIndividuelles Boolean         @default(true)

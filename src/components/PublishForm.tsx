@@ -8,6 +8,7 @@ import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
 import PhotoDropzone from "./PhotoDropzone";
 import DpeFields from "./DpeFields";
 import FraisFields from "./FraisFields";
+import CaracFields from "./CaracFields";
 
 const initialState: ListingFormState = {};
 
@@ -190,6 +191,8 @@ export default function PublishForm({
       <DpeFields />
 
       {typeBien !== "TERRAIN" ? <FraisFields transaction={transaction} /> : null}
+
+      {typeBien !== "TERRAIN" ? <CaracFields typeBien={typeBien} /> : null}
 
       {typeBien !== "TERRAIN" ? (
         <label className="flex flex-col gap-1.5">

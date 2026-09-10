@@ -172,6 +172,18 @@ export type ListingFieldsInput = {
   chargesLoc?: number | null;
   depotGarantie?: number | null;
   meuble?: boolean | null;
+  /** Caractéristiques détaillées (voir schema.prisma). Formulaire d'annonce uniquement. */
+  anneeConstruction?: number | null;
+  etat?: string | null;
+  exposition?: string | null;
+  surfaceTerrain?: number | null;
+  etage?: number | null;
+  ascenseur?: boolean | null;
+  nbSallesDeBain?: number | null;
+  stationnement?: string | null;
+  chauffageType?: string | null;
+  fibre?: boolean | null;
+  assainissement?: string | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
   /**
@@ -192,6 +204,7 @@ export async function createListing(input: CreateListingInput) {
       ...fields,
       ...dpeData(fields),
       ...fraisData(fields),
+      ...caracData(fields),
       videoUrl: fields.videoUrl || null,
       visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
       owner: { connect: { id: ownerId } },
@@ -216,6 +229,23 @@ function fraisData(f: ListingFieldsInput) {
     chargesLoc: vente ? null : f.chargesLoc ?? null,
     depotGarantie: vente ? null : f.depotGarantie ?? null,
     meuble: vente ? null : f.meuble ?? null,
+  };
+}
+
+/** Normalise le bloc « caractéristiques » : `undefined` → `null` (efface en MàJ). */
+function caracData(f: ListingFieldsInput) {
+  return {
+    anneeConstruction: f.anneeConstruction ?? null,
+    etat: f.etat ?? null,
+    exposition: f.exposition ?? null,
+    surfaceTerrain: f.surfaceTerrain ?? null,
+    etage: f.etage ?? null,
+    ascenseur: f.ascenseur ?? null,
+    nbSallesDeBain: f.nbSallesDeBain ?? null,
+    stationnement: f.stationnement ?? null,
+    chauffageType: f.chauffageType ?? null,
+    fibre: f.fibre ?? null,
+    assainissement: f.assainissement ?? null,
   };
 }
 
@@ -245,6 +275,7 @@ async function applyListingUpdate(
         ...input,
         ...dpeData(input),
         ...fraisData(input),
+        ...caracData(input),
         videoUrl: input.videoUrl || null,
         visiteVirtuelleUrl: input.visiteVirtuelleUrl || null,
         // Une annonce refusée repasse en vérification après correction.
