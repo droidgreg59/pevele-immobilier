@@ -48,6 +48,7 @@ export type EventStatRow = { name: EventName; total: number; last7: number; last
 export const EVENT_LABELS: { name: EventName; label: string }[] = [
   { name: "signup_completed", label: "Inscriptions" },
   { name: "saved_search_created", label: "Recherches sauvegardées" },
+  { name: "estimate_lead", label: "Leads estimation en ligne" },
   { name: "favorite_added", label: "Favoris ajoutés" },
   { name: "visit_requested", label: "Demandes de visite" },
   { name: "open_house_registered", label: "Inscriptions portes ouvertes" },

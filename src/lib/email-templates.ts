@@ -369,3 +369,30 @@ export function passwordResetEmail(opts: { resetUrl: string }): { subject: strin
     ),
   };
 }
+
+export function estimateLeadEmail(opts: {
+  nom: string;
+  commune: string;
+  surface: number;
+  type: string;
+  dpe: string | null;
+  low: number;
+  high: number;
+}): { subject: string; html: string } {
+  const eur = (n: number) => n.toLocaleString("fr-FR") + " €";
+  return {
+    subject: `Votre estimation à ${opts.commune} : ${eur(opts.low)} – ${eur(opts.high)}`,
+    html: layout(
+      "Votre estimation indicative",
+      p(`Bonjour ${opts.nom},`) +
+        p(
+          `Pour un bien de <b>${opts.surface} m²</b> (${opts.type}${opts.dpe ? `, DPE ${opts.dpe}` : ""}) à <b>${opts.commune}</b>, la fourchette indicative est :`
+        ) +
+        p(`<b style="font-size:20px">${eur(opts.low)} – ${eur(opts.high)}</b>`) +
+        p(
+          "Elle est calculée à partir des ventes DVF réellement enregistrées dans la commune. Une estimation ne remplace pas une visite : l'état du bien, son exposition ou d'éventuels travaux peuvent la faire varier nettement."
+        ),
+      { label: "Voir les prix de la commune", href: `${SITE_URL}/prix` }
+    ),
+  };
+}

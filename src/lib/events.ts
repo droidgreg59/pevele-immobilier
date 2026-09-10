@@ -24,6 +24,7 @@ export type EventName =
   | "devis_requested"
   | "open_house_registered"
   | "saved_search_created"
+  | "estimate_lead"
   | "favorite_added"
   | "review_submitted"
   | "mandate_created"

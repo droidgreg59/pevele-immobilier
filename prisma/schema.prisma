@@ -402,6 +402,29 @@ model OpenHouseRegistration {
   @@index([visiteurId])
 }
 
+/// Lead capté sur l'estimation en ligne (`/estimer`) : le visiteur a demandé
+/// à recevoir sa fourchette + un suivi du marché. Pas de compte requis. À
+/// traiter à la main / router vers une agence (`traite`). L'estimation
+/// (`estimLow`/`estimHigh`) est figée telle qu'affichée au moment de la
+/// capture.
+model EstimationLead {
+  id          String   @id @default(cuid())
+  villageSlug String
+  commune     String
+  surface     Int
+  typeBien    String
+  dpe         String?
+  estimLow    Int
+  estimHigh   Int
+  nom         String
+  email       String
+  telephone   String?
+  traite      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 enum TransactionType {
   VENTE
   LOCATION
