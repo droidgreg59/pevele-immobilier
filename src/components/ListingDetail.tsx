@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import {
   Heart,
   Thermometer,
-  Gauge,
   TreePine,
   Warehouse,
   SquareParking,
@@ -20,13 +19,27 @@ import {
 import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import type { ArtisanSummary } from "@/lib/artisans";
+import type { OpenHouseForListing } from "@/lib/open-house";
+import type { CommuneRisques } from "@/lib/georisques";
+import type { VillageAmenities } from "@/data/village-amenities";
+import {
+  ETAT_LABEL,
+  EXPOSITION_LABEL,
+  CHAUFFAGE_TYPE_LABEL,
+  ASSAINISSEMENT_LABEL,
+  etageLabel,
+} from "@/lib/listing-carac";
 import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
-import { formatPrix, formatPrixM2 } from "@/lib/format";
+import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
 import { markListingViewed } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
+import ListingCard from "./ListingCard";
+import CommuneMiniMap from "./CommuneMiniMap";
 import PhotoGallery from "./PhotoGallery";
 import VisitRequestForm from "./VisitRequestForm";
+import OpenHouseSignupForm from "./OpenHouseSignupForm";
+import PurchaseCostBlock from "./PurchaseCostBlock";
 import BottomSheet from "./BottomSheet";
 
 const EQUIPEMENT_ICON: Record<string, LucideIcon> = {
@@ -48,7 +61,366 @@ const TYPE_MAISON_LABEL_LOWER: Record<string, string> = {
 
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
   if (owner.type === "PARTICULIER") return "Entre voisins — particulier";
-  return `Agence — ${owner.entreprise ?? owner.nom}`;
+  const prefix = owner.verifStatut === "VERIFIEE" ? "Agence vérifiée" : "Agence";
+  return `${prefix} — ${owner.entreprise ?? owner.nom}`;
+}
+
+function DpeClassBadge({ letter }: { letter: string }) {
+  const bg = dpeClassColor(letter);
+  const dark = "DEF".includes(letter);
+  return (
+    <span
+      className="flex h-9 w-9 items-center justify-center rounded-lg font-display text-[18px] font-bold"
+      style={{ background: bg, color: dark || letter === "" ? "var(--pvl-ink)" : "#fff" }}
+    >
+      {letter}
+    </span>
+  );
+}
+
+function DpeBlock({ listing }: { listing: ListingWithOwner }) {
+  const { dpe, ges, dpeConsommation, dpeEmissions, dpeCoutMin, dpeCoutMax, dpeCoutAnneeRef, dpeDate } =
+    listing;
+  if (!dpe && !ges) return null;
+
+  const passoire = dpe === "F" || dpe === "G" || ges === "F" || ges === "G";
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">Diagnostic énergétique</h2>
+      <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {dpe ? (
+            <div className="flex items-center gap-3">
+              <DpeClassBadge letter={dpe} />
+              <div className="flex flex-col">
+                <span className="text-[12px] font-semibold text-muted">Consommation d&apos;énergie</span>
+                <span className="text-[13.5px] text-ink">
+                  Classe {dpe}
+                  {dpeConsommation ? ` · ${dpeConsommation} kWh/m²/an` : ""}
+                </span>
+              </div>
+            </div>
+          ) : null}
+          {ges ? (
+            <div className="flex items-center gap-3">
+              <DpeClassBadge letter={ges} />
+              <div className="flex flex-col">
+                <span className="text-[12px] font-semibold text-muted">Émissions de gaz à effet de serre</span>
+                <span className="text-[13.5px] text-ink">
+                  Classe {ges}
+                  {dpeEmissions ? ` · ${dpeEmissions} kgCO₂/m²/an` : ""}
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {passoire ? (
+          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] font-semibold text-[#b3261e]">
+            Logement à consommation énergétique excessive (classe F ou G).
+          </p>
+        ) : null}
+
+        {dpeCoutMin && dpeCoutMax ? (
+          <p className="m-0 text-[12.5px] text-muted">
+            Dépenses annuelles d&apos;énergie estimées : {dpeCoutMin.toLocaleString("fr-FR")} –{" "}
+            {dpeCoutMax.toLocaleString("fr-FR")} €
+            {dpeCoutAnneeRef ? ` (prix de l'énergie ${dpeCoutAnneeRef})` : ""}.
+          </p>
+        ) : null}
+
+        {dpeDate ? (
+          <p className="m-0 text-[11.5px] text-muted-2">
+            DPE réalisé le {new Date(dpeDate).toLocaleDateString("fr-FR")}.
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+const RADON_RISK_LABEL: Record<string, string> = {
+  "1": "faible",
+  "2": "faible, sur des formations géologiques particulières",
+  "3": "significatif",
+};
+
+function RiskLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-[12px] font-semibold text-muted">{label}</span>
+      <span className="text-[13.5px] text-ink">{value}</span>
+    </div>
+  );
+}
+
+const eur = (n: number) => `${n.toLocaleString("fr-FR")} €`;
+
+function CaracBlock({ listing }: { listing: ListingWithOwner }) {
+  const lines: { label: string; value: string }[] = [];
+  if (listing.anneeConstruction)
+    lines.push({ label: "Année de construction", value: String(listing.anneeConstruction) });
+  if (listing.etat)
+    lines.push({ label: "État général", value: ETAT_LABEL[listing.etat] ?? listing.etat });
+  if (listing.exposition)
+    lines.push({
+      label: "Exposition",
+      value: EXPOSITION_LABEL[listing.exposition] ?? listing.exposition,
+    });
+  if (listing.etage != null)
+    lines.push({ label: "Étage", value: etageLabel(listing.etage) });
+  if (listing.ascenseur != null)
+    lines.push({ label: "Ascenseur", value: listing.ascenseur ? "Oui" : "Non" });
+  if (listing.nbSallesDeBain)
+    lines.push({
+      label: "Salles de bain / d'eau",
+      value: String(listing.nbSallesDeBain),
+    });
+  if (listing.surfaceTerrain)
+    lines.push({
+      label: "Surface du terrain",
+      value: `${listing.surfaceTerrain.toLocaleString("fr-FR")} m²`,
+    });
+  if (listing.stationnement)
+    lines.push({ label: "Stationnement", value: listing.stationnement });
+  if (listing.chauffageType)
+    lines.push({
+      label: "Chauffage",
+      value: CHAUFFAGE_TYPE_LABEL[listing.chauffageType] ?? listing.chauffageType,
+    });
+  if (listing.assainissement)
+    lines.push({
+      label: "Assainissement",
+      value: ASSAINISSEMENT_LABEL[listing.assainissement] ?? listing.assainissement,
+    });
+  if (listing.fibre != null)
+    lines.push({ label: "Fibre optique", value: listing.fibre ? "Oui" : "Non" });
+
+  if (lines.length === 0) return null;
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">Caractéristiques</h2>
+      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm sm:grid-cols-2">
+        {lines.map((l) => (
+          <RiskLine key={l.label} label={l.label} value={l.value} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FraisBlock({ listing }: { listing: ListingWithOwner }) {
+  const vente = listing.transaction === "VENTE";
+  const {
+    honoraires,
+    honorairesCharge,
+    chargesCopro,
+    taxeFonciere,
+    chargesLoc,
+    depotGarantie,
+    meuble,
+  } = listing;
+
+  const lines: { label: string; value: string }[] = [];
+  if (vente) {
+    if (honoraires) {
+      const chargeLabel =
+        honorairesCharge === "acquereur"
+          ? " · à la charge de l'acquéreur"
+          : honorairesCharge === "vendeur"
+            ? " · à la charge du vendeur"
+            : "";
+      lines.push({ label: "Honoraires d'agence", value: `${eur(honoraires)} TTC${chargeLabel}` });
+      if (honorairesCharge === "acquereur") {
+        lines.push({
+          label: "Prix hors honoraires",
+          value: eur(Math.max(listing.prix - honoraires, 0)),
+        });
+      }
+    }
+    if (chargesCopro) lines.push({ label: "Charges de copropriété", value: `${eur(chargesCopro)} / mois` });
+    if (taxeFonciere) lines.push({ label: "Taxe foncière", value: `${eur(taxeFonciere)} / an` });
+  } else {
+    if (chargesLoc) lines.push({ label: "Provisions sur charges", value: `${eur(chargesLoc)} / mois` });
+    if (depotGarantie) lines.push({ label: "Dépôt de garantie", value: eur(depotGarantie) });
+    if (meuble != null) lines.push({ label: "Ameublement", value: meuble ? "Meublé" : "Non meublé" });
+  }
+
+  if (lines.length === 0) return null;
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">Frais &amp; charges</h2>
+      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm sm:grid-cols-2">
+        {lines.map((l) => (
+          <RiskLine key={l.label} label={l.label} value={l.value} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RisquesBlock({
+  risques,
+  communeNom,
+}: {
+  risques: CommuneRisques | null;
+  communeNom: string;
+}) {
+  if (!risques || !risques.hasData) return null;
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">État des risques</h2>
+      <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm">
+        {risques.categories.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <span className="text-[12px] font-semibold text-muted">
+              Risques recensés sur la commune
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {risques.categories.map((c) => (
+                <span
+                  key={c}
+                  className="rounded-full bg-surface px-3 py-1 text-[12.5px] font-medium text-ink"
+                >
+                  {c}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {risques.sismicite || risques.argile || risques.radonClasse || risques.catnat ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {risques.sismicite ? (
+              <RiskLine label="Sismicité" value={`Zone ${risques.sismicite}`} />
+            ) : null}
+            {risques.argile ? (
+              <RiskLine label="Retrait-gonflement des argiles" value={risques.argile} />
+            ) : null}
+            {risques.radonClasse ? (
+              <RiskLine
+                label="Potentiel radon"
+                value={`Potentiel ${
+                  RADON_RISK_LABEL[risques.radonClasse] ?? `classe ${risques.radonClasse}`
+                }`}
+              />
+            ) : null}
+            {risques.catnat ? (
+              <RiskLine
+                label="Catastrophes naturelles"
+                value={`${risques.catnat.total} arrêté${
+                  risques.catnat.total > 1 ? "s" : ""
+                }${
+                  risques.catnat.libelles.length > 0
+                    ? ` — ${risques.catnat.libelles.slice(0, 3).join(", ").toLowerCase()}`
+                    : ""
+                }`}
+              />
+            ) : null}
+          </div>
+        ) : null}
+
+        <p className="m-0 text-[11.5px] text-muted-2">
+          Source : Géorisques (georisques.gouv.fr), au niveau de la commune de{" "}
+          {communeNom}. N&apos;a pas valeur d&apos;état des risques et pollutions
+          (ERP), qui reste annexé au bail ou à l&apos;acte.{" "}
+          <a
+            href="https://www.georisques.gouv.fr/mes-risques/connaitre-les-risques-pres-de-chez-moi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue"
+          >
+            Consulter Géorisques →
+          </a>
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function EnvironnementBlock({ amenities }: { amenities: VillageAmenities | null }) {
+  if (!amenities) return null;
+  const { commerces, ecoles, transports } = amenities;
+
+  return (
+    <section className="mt-8">
+      <h2 className="m-0 font-display text-2xl text-ink">L&apos;environnement</h2>
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Commerces</span>
+          {commerces.length > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {commerces.map((c, i) => (
+                <li key={i} className="text-[13px] text-ink">
+                  <span className="font-semibold">{c.nom}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">{c.type}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucun supermarché, épicerie ou boulangerie recensé dans la commune.
+            </p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Écoles</span>
+          {ecoles.length > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {ecoles.map((e, i) => (
+                <li key={i} className="text-[13px] text-ink">
+                  <span className="font-semibold">{e.nom}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">
+                    {e.type} · {e.secteur}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucun établissement scolaire recensé dans la commune.
+            </p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <span className="text-[11px] font-semibold text-muted">Transports</span>
+          {transports.gares.length > 0 || transports.arretsBus > 0 ? (
+            <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+              {transports.gares.map((g, i) => (
+                <li key={`gare-${i}`} className="text-[13px] text-ink">
+                  <span className="font-semibold">{g}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">Gare SNCF</span>
+                </li>
+              ))}
+              {transports.arretsBus > 0 ? (
+                <li className="text-[13px] text-ink">
+                  <span className="font-semibold">
+                    {transports.arretsBus} arrêt
+                    {transports.arretsBus > 1 ? "s" : ""} de bus
+                  </span>
+                  <span className="ml-1.5 text-[11.5px] text-muted-2">
+                    recensé{transports.arretsBus > 1 ? "s" : ""}
+                  </span>
+                </li>
+              ) : null}
+            </ul>
+          ) : (
+            <p className="m-0 mt-2 text-[13px] text-muted-2">
+              Aucune gare ni arrêt de bus recensé dans la commune.
+            </p>
+          )}
+        </div>
+      </div>
+      <p className="mt-3 text-[11px] text-muted-2">
+        Source : OpenStreetMap (commerces, transports) et annuaire de l&apos;Éducation
+        nationale (écoles), au niveau de la commune.
+      </p>
+    </section>
+  );
 }
 
 function marketComparison(
@@ -96,6 +468,11 @@ export default function ListingDetail({
   isLoggedIn,
   isFavorited,
   artisans,
+  openHouse,
+  risques,
+  amenities,
+  similar = [],
+  viewerNom = "",
 }: {
   listing: ListingWithOwner;
   dvfStats: DvfVillageStats | null;
@@ -105,6 +482,11 @@ export default function ListingDetail({
   isLoggedIn: boolean;
   isFavorited: boolean;
   artisans: ArtisanSummary[];
+  openHouse: OpenHouseForListing | null;
+  risques: CommuneRisques | null;
+  amenities: VillageAmenities | null;
+  similar?: ListingWithOwner[];
+  viewerNom?: string;
 }) {
   const [visitSheetOpen, setVisitSheetOpen] = useState(false);
 
@@ -131,7 +513,6 @@ export default function ListingDetail({
     ...(listing.modeChauffage
       ? [{ label: "Chauffage", value: listing.modeChauffage, Icon: Thermometer }]
       : []),
-    ...(listing.dpe ? [{ label: `DPE ${listing.dpe}`, Icon: Gauge }] : []),
     ...equipements.map((eq) => ({ label: eq, Icon: EQUIPEMENT_ICON[eq] ?? Sparkles })),
   ];
   const prixInitial = priceHistory[0]?.prix ?? listing.prix;
@@ -250,6 +631,8 @@ export default function ListingDetail({
             </p>
           </section>
 
+          <CaracBlock listing={listing} />
+
           {features.length > 0 ? (
             <section className="mt-8">
               <h2 className="m-0 font-display text-2xl text-ink">Les équipements</h2>
@@ -275,6 +658,10 @@ export default function ListingDetail({
               </div>
             </section>
           ) : null}
+
+          <DpeBlock listing={listing} />
+
+          <FraisBlock listing={listing} />
 
           {listing.transaction === "VENTE" ? (
             <section className="mt-8">
@@ -339,18 +726,13 @@ export default function ListingDetail({
             </section>
           ) : null}
 
-          <section className="mt-8">
-            <h2 className="m-0 font-display text-2xl text-ink">L&apos;environnement</h2>
-            <div className="mt-3 rounded-2xl border border-dashed border-line bg-surface p-6">
-              <span className="text-[11px] font-semibold text-muted">
-                Bientôt disponible
-              </span>
-              <p className="m-0 mt-2 max-w-[60ch] font-sans text-[14px] leading-[1.6] text-muted">
-                Écoles, commerces, transports et temps de trajet autour du
-                bien.
-              </p>
-            </div>
-          </section>
+          {listing.transaction === "VENTE" ? (
+            <PurchaseCostBlock prix={listing.prix} />
+          ) : null}
+
+          <RisquesBlock risques={risques} communeNom={village?.nom ?? listing.commune} />
+
+          <EnvironnementBlock amenities={amenities} />
         </div>
 
         <aside className="flex flex-col gap-5 lg:sticky lg:top-[88px] lg:self-start">
@@ -431,21 +813,28 @@ export default function ListingDetail({
               >
                 Modifier l&apos;annonce
               </Link>
-            ) : isLoggedIn ? (
-              <div className="hidden md:block">
-                <VisitRequestForm listingId={listing.id} />
-              </div>
-            ) : (
+            ) : listing.visitesIndividuelles ? (
+              isLoggedIn ? (
+                <div className="hidden md:block">
+                  <VisitRequestForm listingId={listing.id} />
+                </div>
+              ) : (
+                <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
+                  <Link
+                    href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                    className="text-blue"
+                  >
+                    Connectez-vous
+                  </Link>{" "}
+                  pour contacter le propriétaire et demander une visite.
+                </p>
+              )
+            ) : listing.visitesGroupees ? (
               <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
-                <Link
-                  href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
-                  className="text-blue"
-                >
-                  Connectez-vous
-                </Link>{" "}
-                pour contacter le propriétaire et demander une visite.
+                Ce bien se visite uniquement lors des portes ouvertes — voir les dates
+                ci-dessous.
               </p>
-            )}
+            ) : null}
             {enVerification ? (
               <span className="animate-scale-press pointer-events-none absolute right-5 top-5 flex h-[92px] w-[92px] items-center justify-center rounded-full border-2 border-blue text-center text-[9.5px] font-semibold leading-tight text-blue">
                 En cours de
@@ -456,11 +845,49 @@ export default function ListingDetail({
             ) : null}
           </div>
 
+          {listing.visitesGroupees ? (
+            <div id="portes-ouvertes">
+              {isOwner ? (
+                <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+                  <span className="text-[11px] font-semibold text-blue">Portes ouvertes</span>
+                  <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
+                    {openHouse
+                      ? `${openHouse.dates.length} date${openHouse.dates.length > 1 ? "s" : ""} à venir.`
+                      : "Aucune date programmée pour le moment."}
+                  </p>
+                  <Link
+                    href={`/compte/annonces/${listing.id}`}
+                    className="mt-3 inline-block text-[12.5px] font-semibold text-blue"
+                  >
+                    {openHouse ? "Gérer les inscriptions →" : "Programmer des dates →"}
+                  </Link>
+                </div>
+              ) : openHouse ? (
+                <OpenHouseSignupForm
+                  dates={openHouse.dates}
+                  note={openHouse.note}
+                  isLoggedIn={isLoggedIn}
+                  loginHref={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                  defaultNom={viewerNom}
+                />
+              ) : (
+                <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+                  <span className="text-[11px] font-semibold text-blue">Portes ouvertes</span>
+                  <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
+                    Des portes ouvertes sont prévues pour ce bien. Les dates seront
+                    publiées ici prochainement.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
+
           {village ? (
             <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
               <span className="text-[11px] font-semibold text-green">Le village</span>
               <h3 className="m-0 mt-1 font-display text-xl text-ink">{village.nom}</h3>
-              <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
+              <CommuneMiniMap insee={village.insee} nom={village.nom} />
+              <p className="m-0 mt-3 font-sans text-[13px] leading-[1.55] text-muted">
                 {village.description}
               </p>
               <Link
@@ -530,6 +957,22 @@ export default function ListingDetail({
         </aside>
       </div>
 
+      {similar.length > 0 ? (
+        <section className="mt-12">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="m-0 font-display text-2xl text-ink">Biens similaires</h2>
+            <Link href={listHref} className="text-[13px] font-semibold text-blue">
+              Toutes les annonces →
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {similar.map((s) => (
+              <ListingCard key={s.id} listing={s} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {!isOwner ? (
         <div
           className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-white/97 px-4 py-3 backdrop-blur md:hidden"
@@ -541,22 +984,31 @@ export default function ListingDetail({
             size={48}
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-white text-[20px] leading-none text-blue"
           />
-          {isLoggedIn ? (
-            <button
-              type="button"
-              onClick={() => setVisitSheetOpen(true)}
+          {listing.visitesIndividuelles ? (
+            isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => setVisitSheetOpen(true)}
+                className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+              >
+                Demander une visite
+              </button>
+            ) : (
+              <Link
+                href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+              >
+                Se connecter pour visiter
+              </Link>
+            )
+          ) : listing.visitesGroupees ? (
+            <a
+              href="#portes-ouvertes"
               className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
             >
-              Demander une visite
-            </button>
-          ) : (
-            <Link
-              href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
-              className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
-            >
-              Se connecter pour visiter
-            </Link>
-          )}
+              Voir les portes ouvertes
+            </a>
+          ) : null}
         </div>
       ) : null}
 

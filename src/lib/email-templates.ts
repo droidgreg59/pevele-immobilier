@@ -1,5 +1,7 @@
 import "server-only";
 import { SITE_URL, SITE_NAME } from "./seo";
+import type { TransactionType } from "@prisma/client";
+import { formatPrix } from "./format";
 
 /**
  * Gabarits HTML des emails transactionnels. CSS entièrement en ligne (les
@@ -58,6 +60,74 @@ function p(text: string): string {
   return `<p style="margin:0 0 10px;">${text}</p>`;
 }
 
+export type AlertListingRow = {
+  titre: string;
+  commune: string;
+  prix: number;
+  transaction: TransactionType;
+  href: string;
+};
+
+function listingRows(rows: AlertListingRow[]): string {
+  return rows
+    .map(
+      (r) => `<tr>
+        <td style="padding:12px 0;border-top:1px solid ${LINE};">
+          <a href="${SITE_URL}${r.href}" style="color:${INK};font-weight:700;font-size:14px;text-decoration:none;">${r.titre}</a>
+          <div style="font-size:12.5px;color:${MUTED};margin-top:2px;">${r.commune} · <b style="color:${BLUE};">${formatPrix(r.prix, r.transaction)}</b></div>
+        </td>
+      </tr>`
+    )
+    .join("");
+}
+
+export function savedSearchAlertEmail(opts: {
+  searchLabel: string;
+  searchUrl: string;
+  totalCount: number;
+  listings: AlertListingRow[];
+}): { subject: string; html: string } {
+  const n = opts.totalCount;
+  const reste = n - opts.listings.length;
+  return {
+    subject:
+      n === 1
+        ? `1 nouveau bien pour votre recherche — ${opts.searchLabel}`
+        : `${n} nouveaux biens pour votre recherche — ${opts.searchLabel}`,
+    html: layout(
+      n === 1 ? "1 nouveau bien correspond à votre recherche" : `${n} nouveaux biens correspondent à votre recherche`,
+      p(`Recherche : <b>${opts.searchLabel}</b>`) +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">${listingRows(opts.listings)}</table>` +
+        (reste > 0 ? p(`<span style="color:${MUTED};">…et ${reste} autre${reste > 1 ? "s" : ""}.</span>`) : ""),
+      { label: "Voir tous les résultats", href: `${SITE_URL}${opts.searchUrl}` }
+    ),
+  };
+}
+
+export function priceDropAlertEmail(opts: {
+  listingTitre: string;
+  listingHref: string;
+  commune: string;
+  ancienPrix: number;
+  nouveauPrix: number;
+  transaction: TransactionType;
+}): { subject: string; html: string } {
+  const baissePct = Math.round(((opts.ancienPrix - opts.nouveauPrix) / opts.ancienPrix) * 100);
+  return {
+    subject: `Baisse de prix — ${opts.listingTitre}`,
+    html: layout(
+      "Un bien que vous surveillez a baissé",
+      p(`<b>${opts.listingTitre}</b> à ${opts.commune}`) +
+        p(
+          `<span style="color:${MUTED};text-decoration:line-through;">${formatPrix(opts.ancienPrix, opts.transaction)}</span>` +
+            ` &nbsp;→&nbsp; <b style="color:${BLUE};">${formatPrix(opts.nouveauPrix, opts.transaction)}</b>` +
+            (baissePct > 0 ? ` <span style="color:#417c3e;font-weight:700;">(-${baissePct}%)</span>` : "")
+        ),
+      { label: "Voir l'annonce", href: `${SITE_URL}${opts.listingHref}` }
+    ),
+  };
+}
+
 export function visitRequestReceivedEmail(opts: {
   listingTitre: string;
   listingHref: string;
@@ -103,6 +173,55 @@ export function estimationRequestRespondedEmail(opts: {
         ? p(`<b>${opts.agencyNom}</b> a accepté votre demande de rendez-vous d'estimation et va vous recontacter.`)
         : p(`<b>${opts.agencyNom}</b> a décliné votre demande de rendez-vous d'estimation.`),
       { label: "Voir mes demandes", href: `${SITE_URL}/compte` }
+    ),
+  };
+}
+
+export function openHouseRegistrationReceivedEmail(opts: {
+  listingTitre: string;
+  listingId: string;
+  prenom: string;
+  nom: string;
+  telephone: string;
+  dateLabel: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `Nouvelle inscription aux portes ouvertes — ${opts.listingTitre}`,
+    html: layout(
+      "Nouvelle inscription aux portes ouvertes",
+      p(
+        `<b>${opts.prenom} ${opts.nom}</b> souhaite participer aux portes ouvertes de « ${opts.listingTitre} ».`
+      ) +
+        p(`Créneau : ${opts.dateLabel}`) +
+        p(`Téléphone : ${opts.telephone}`) +
+        p("Acceptez ou refusez cette inscription depuis la gestion de votre annonce."),
+      { label: "Voir les inscriptions", href: `${SITE_URL}/compte/annonces/${opts.listingId}` }
+    ),
+  };
+}
+
+export function openHouseRegistrationRespondedEmail(opts: {
+  listingTitre: string;
+  listingId: string;
+  listingTransaction: "VENTE" | "LOCATION";
+  dateLabel: string;
+  accepted: boolean;
+}): { subject: string; html: string } {
+  const href = `${SITE_URL}/${opts.listingTransaction === "VENTE" ? "acheter" : "louer"}/${opts.listingId}`;
+  return {
+    subject: opts.accepted
+      ? `Votre inscription aux portes ouvertes est confirmée — ${opts.listingTitre}`
+      : `Votre inscription aux portes ouvertes n'a pas été retenue — ${opts.listingTitre}`,
+    html: layout(
+      opts.accepted ? "Inscription confirmée" : "Inscription non retenue",
+      opts.accepted
+        ? p(
+            `Votre inscription aux portes ouvertes de « ${opts.listingTitre} » est confirmée pour le créneau suivant :`
+          ) + p(`<b>${opts.dateLabel}</b>`)
+        : p(
+            `Votre inscription aux portes ouvertes de « ${opts.listingTitre} » (${opts.dateLabel}) n'a pas pu être retenue, faute de place ou de disponibilité.`
+          ),
+      { label: "Voir l'annonce", href }
     ),
   };
 }
@@ -201,6 +320,44 @@ export function reviewReceivedEmail(opts: { authorNom: string; note: number }): 
   };
 }
 
+export function agencyVerificationReviewedEmail(opts: {
+  agencyNom: string;
+  verified: boolean;
+  raison?: string;
+}): { subject: string; html: string } {
+  return {
+    subject: opts.verified
+      ? "Votre agence est vérifiée sur Pévèle Immobilier"
+      : "Vérification de votre agence — informations à revoir",
+    html: layout(
+      opts.verified ? "Agence vérifiée" : "Vérification non validée",
+      opts.verified
+        ? p(
+            `<b>${opts.agencyNom}</b> est désormais une agence vérifiée : le badge apparaît sur votre page publique, dans l'annuaire et sur vos annonces.`
+          )
+        : p(`La vérification de <b>${opts.agencyNom}</b> n'a pas pu être validée.`) +
+            (opts.raison ? p(`Motif : ${opts.raison}`) : "") +
+            p("Corrigez les informations depuis « Coordonnées de mon agence » et resoumettez."),
+      { label: "Ma page agence", href: `${SITE_URL}/compte/agence` }
+    ),
+  };
+}
+
+export function emailVerificationEmail(opts: { verifyUrl: string }): {
+  subject: string;
+  html: string;
+} {
+  return {
+    subject: "Confirmez votre adresse email",
+    html: layout(
+      "Confirmez votre adresse email",
+      p("Bienvenue sur Pévèle Immobilier. Confirmez votre adresse pour finaliser votre inscription.") +
+        p("Ce lien est valable 7 jours."),
+      { label: "Confirmer mon adresse", href: opts.verifyUrl }
+    ),
+  };
+}
+
 export function passwordResetEmail(opts: { resetUrl: string }): { subject: string; html: string } {
   return {
     subject: "Réinitialisez votre mot de passe",
@@ -210,5 +367,87 @@ export function passwordResetEmail(opts: { resetUrl: string }): { subject: strin
         p("Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email."),
       { label: "Choisir un nouveau mot de passe", href: opts.resetUrl }
     ),
+  };
+}
+
+export function estimateLeadEmail(opts: {
+  nom: string;
+  commune: string;
+  surface: number;
+  type: string;
+  dpe: string | null;
+  low: number;
+  high: number;
+}): { subject: string; html: string } {
+  const eur = (n: number) => n.toLocaleString("fr-FR") + " €";
+  return {
+    subject: `Votre estimation à ${opts.commune} : ${eur(opts.low)} – ${eur(opts.high)}`,
+    html: layout(
+      "Votre estimation indicative",
+      p(`Bonjour ${opts.nom},`) +
+        p(
+          `Pour un bien de <b>${opts.surface} m²</b> (${opts.type}${opts.dpe ? `, DPE ${opts.dpe}` : ""}) à <b>${opts.commune}</b>, la fourchette indicative est :`
+        ) +
+        p(`<b style="font-size:20px">${eur(opts.low)} – ${eur(opts.high)}</b>`) +
+        p(
+          "Elle est calculée à partir des ventes DVF réellement enregistrées dans la commune. Une estimation ne remplace pas une visite : l'état du bien, son exposition ou d'éventuels travaux peuvent la faire varier nettement."
+        ),
+      { label: "Voir les prix de la commune", href: `${SITE_URL}/prix` }
+    ),
+  };
+}
+
+export type DigestListingRow = AlertListingRow;
+
+export function weeklyDigestEmail(opts: {
+  activeListings: number;
+  newListings: { total: number; rows: DigestListingRow[] };
+  priceDrops: { total: number; rows: (DigestListingRow & { ancienPrix: number })[] };
+  avgPrixM2Pevele: number | null;
+}): { subject: string; html: string } {
+  const { newListings, priceDrops } = opts;
+
+  const dropRows = priceDrops.rows
+    .map((r) => {
+      const pct = Math.round(((r.ancienPrix - r.prix) / r.ancienPrix) * 100);
+      return `<tr><td style="padding:12px 0;border-top:1px solid ${LINE};">
+        <a href="${SITE_URL}${r.href}" style="color:${INK};font-weight:700;font-size:14px;text-decoration:none;">${r.titre}</a>
+        <div style="font-size:12.5px;color:${MUTED};margin-top:2px;">${r.commune} · <span style="text-decoration:line-through;">${formatPrix(r.ancienPrix, r.transaction)}</span> → <b style="color:${BLUE};">${formatPrix(r.prix, r.transaction)}</b>${pct > 0 ? ` <span style="color:#417c3e;font-weight:700;">(-${pct}%)</span>` : ""}</div>
+      </td></tr>`;
+    })
+    .join("");
+
+  const restNew = newListings.total - newListings.rows.length;
+  const restDrop = priceDrops.total - priceDrops.rows.length;
+
+  const body =
+    p(
+      `Cette semaine en Pévèle : <b>${newListings.total}</b> nouveau${newListings.total > 1 ? "x" : ""} bien${newListings.total > 1 ? "s" : ""}, ` +
+        `<b>${priceDrops.total}</b> baisse${priceDrops.total > 1 ? "s" : ""} de prix. ` +
+        `<b>${opts.activeListings}</b> annonce${opts.activeListings > 1 ? "s" : ""} en ligne` +
+        (opts.avgPrixM2Pevele
+          ? `, prix moyen ${opts.avgPrixM2Pevele.toLocaleString("fr-FR")} € / m² (DVF).`
+          : ".")
+    ) +
+    (newListings.rows.length > 0
+      ? `<h3 style="margin:18px 0 0;font-size:14px;color:${INK};">Nouveaux biens</h3>` +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${listingRows(newListings.rows)}</table>` +
+        (restNew > 0 ? p(`<span style="color:${MUTED};">…et ${restNew} autre${restNew > 1 ? "s" : ""}.</span>`) : "")
+      : "") +
+    (dropRows
+      ? `<h3 style="margin:18px 0 0;font-size:14px;color:${INK};">Baisses de prix</h3>` +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${dropRows}</table>` +
+        (restDrop > 0 ? p(`<span style="color:${MUTED};">…et ${restDrop} autre${restDrop > 1 ? "s" : ""}.</span>`) : "")
+      : "") +
+    p(
+      `<span style="color:${MUTED};font-size:12px;">Vous recevez ce résumé car vous l'avez activé dans « Mon compte ». Vous pouvez le désactiver à tout moment.</span>`
+    );
+
+  return {
+    subject: `Le marché de la Pévèle cette semaine — ${newListings.total} nouveauté${newListings.total > 1 ? "s" : ""}, ${priceDrops.total} baisse${priceDrops.total > 1 ? "s" : ""}`,
+    html: layout("Le marché de la Pévèle cette semaine", body, {
+      label: "Parcourir les annonces",
+      href: `${SITE_URL}/acheter`,
+    }),
   };
 }

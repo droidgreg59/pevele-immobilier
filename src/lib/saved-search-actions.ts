@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { logEvent } from "./events";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 
 export async function createSavedSearchAction(input: {
@@ -35,6 +36,11 @@ export async function createSavedSearchAction(input: {
       budgetMin: input.budgetMin ?? null,
       budgetMax: input.budgetMax ?? null,
     },
+  });
+  await logEvent("saved_search_created", {
+    userId: session.userId,
+    path: input.next ?? null,
+    meta: { transaction: input.transaction, communes: input.villageSlugs?.length ?? 0 },
   });
 }
 

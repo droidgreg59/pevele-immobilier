@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { villages, getVillageBySlug } from "@/data/villages";
-import { getDvfStatsForVillage } from "@/lib/dvf";
+import { getDvfStatsForVillage, getDvfBreakdownByType } from "@/lib/dvf";
+import { estimateBien } from "@/lib/estimate";
+import EstimateLeadForm from "@/components/EstimateLeadForm";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,7 @@ export const metadata: Metadata = {
 };
 
 const TYPES = ["Peu importe", "Maison", "Appartement"] as const;
+const DPE_CLASSES = ["A", "B", "C", "D", "E", "F", "G"] as const;
 
 export default async function EstimerPage({
   searchParams,
@@ -23,17 +26,31 @@ export default async function EstimerPage({
   const villageSlug = typeof params.village === "string" ? params.village : "";
   const surfaceRaw = typeof params.surface === "string" ? params.surface : "";
   const type = typeof params.type === "string" ? params.type : "Peu importe";
+  const dpeRaw = typeof params.dpe === "string" ? params.dpe.toUpperCase() : "";
+  const dpe = (DPE_CLASSES as readonly string[]).includes(dpeRaw) ? dpeRaw : "";
 
   const village = getVillageBySlug(villageSlug);
   const surface = Number(surfaceRaw);
   const hasQuery = Boolean(village && surface > 0);
 
-  const dvfStats = hasQuery
-    ? await getDvfStatsForVillage(village!.slug, type === "Peu importe" ? undefined : type)
-    : null;
+  const [dvfStats, dvfByType] = hasQuery
+    ? await Promise.all([
+        getDvfStatsForVillage(village!.slug),
+        type === "Peu importe" ? Promise.resolve([]) : getDvfBreakdownByType(village!.slug),
+      ])
+    : [null, []];
 
-  const estimateBasse = dvfStats ? Math.round((dvfStats.avgPrixM2 * surface * 0.9) / 1000) * 1000 : null;
-  const estimateHaute = dvfStats ? Math.round((dvfStats.avgPrixM2 * surface * 1.1) / 1000) * 1000 : null;
+  const typeRow = dvfByType.find((r) => r.typeLocal === type);
+  const estimate =
+    dvfStats && surface > 0
+      ? estimateBien({
+          avgPrixM2: dvfStats.avgPrixM2,
+          sampleCount: dvfStats.count,
+          typeAvgPrixM2: typeRow && typeRow.count >= 3 ? typeRow.avgPrixM2 : null,
+          surface,
+          dpe: dpe || null,
+        })
+      : null;
 
   return (
     <div
@@ -65,24 +82,49 @@ export default async function EstimerPage({
 
             {hasQuery ? (
               <div className="mt-8 max-w-[540px] rounded-2xl bg-cream p-6 shadow-sm">
-                {dvfStats && estimateBasse !== null && estimateHaute !== null ? (
+                {dvfStats && estimate ? (
                   <>
                     <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-                      Estimation indicative — {village!.nom},{" "}
-                      {surface} m², {type}
+                      Estimation indicative — {village!.nom}, {surface} m², {type}
+                      {dpe ? ` · DPE ${dpe}` : ""}
                     </span>
                     <div className="mt-2 font-display text-[32px] text-ink sm:text-[38px]">
-                      {estimateBasse.toLocaleString("fr-FR")} € — {estimateHaute.toLocaleString("fr-FR")} €
+                      {estimate.low.toLocaleString("fr-FR")} € —{" "}
+                      {estimate.high.toLocaleString("fr-FR")} €
                     </div>
-                    <p className="m-0 mt-3 text-[13.5px] leading-[1.6] text-muted">
-                      Calculée à partir du prix moyen constaté à {village!.nom}{" "}
-                      ({dvfStats.avgPrixM2.toLocaleString("fr-FR")} € / m², sur{" "}
-                      {dvfStats.count} vente{dvfStats.count > 1 ? "s" : ""},{" "}
-                      {dvfStats.minAnnee}–{dvfStats.maxAnnee}) × la surface indiquée.
-                      Une estimation ne remplace pas une visite : l&apos;état du
-                      bien, son exposition ou ses travaux peuvent la faire varier
-                      nettement.
+                    <p className="m-0 mt-1 text-[12.5px] font-medium text-muted">
+                      Valeur médiane ≈ {estimate.mid.toLocaleString("fr-FR")} € (
+                      {estimate.prixM2.toLocaleString("fr-FR")} € / m²)
                     </p>
+                    <p className="m-0 mt-3 text-[13.5px] leading-[1.6] text-muted">
+                      Base : prix constaté à {village!.nom}
+                      {typeRow && typeRow.count >= 3
+                        ? ` pour un bien de type « ${type} »`
+                        : ""}{" "}
+                      ({(typeRow && typeRow.count >= 3
+                        ? typeRow.avgPrixM2
+                        : dvfStats.avgPrixM2
+                      ).toLocaleString("fr-FR")}{" "}
+                      € / m², {dvfStats.count} vente{dvfStats.count > 1 ? "s" : ""} DVF,{" "}
+                      {dvfStats.minAnnee}–{dvfStats.maxAnnee}) × surface
+                      {estimate.dpeAdjustPct !== 0
+                        ? `, ${estimate.dpeAdjustPct > 0 ? "+" : ""}${estimate.dpeAdjustPct} % pour la classe énergie ${dpe}`
+                        : ""}
+                      . Fourchette ±{estimate.bandPct} %. Une estimation ne
+                      remplace pas une visite : état, exposition, travaux peuvent
+                      la faire varier nettement.
+                    </p>
+
+                    <EstimateLeadForm
+                      villageSlug={village!.slug}
+                      communeNom={village!.nom}
+                      surface={surface}
+                      type={type}
+                      dpe={dpe || null}
+                      low={estimate.low}
+                      high={estimate.high}
+                    />
+
                     <div className="mt-4 flex flex-wrap gap-2.5">
                       <Link
                         href="/vendre/deposer"
@@ -95,17 +137,6 @@ export default async function EstimerPage({
                         className="rounded-full border border-line px-4 py-3 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
                       >
                         Voir {village!.nom} →
-                      </Link>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-blue-soft px-4 py-3">
-                      <span className="text-[13px] text-ink">
-                        Vous préférez un avis professionnel ?
-                      </span>
-                      <Link
-                        href="/professionnels"
-                        className="ml-auto whitespace-nowrap text-[12.5px] font-semibold text-blue"
-                      >
-                        Prendre RDV estimation avec une agence →
                       </Link>
                     </div>
                   </>
@@ -179,6 +210,23 @@ export default async function EstimerPage({
                 {TYPES.map((t) => (
                   <option key={t} value={t}>
                     {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-[#B9C2E2]">
+                Classe énergie (DPE) — facultatif
+              </span>
+              <select
+                name="dpe"
+                defaultValue={dpe}
+                className="box-border w-full rounded-xl border border-line bg-cream px-4.5 py-3.5 text-[15px] text-ink outline-none transition focus:border-yellow focus:ring-2 focus:ring-yellow/30"
+              >
+                <option value="">Non renseignée</option>
+                {DPE_CLASSES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
                   </option>
                 ))}
               </select>

@@ -3,7 +3,10 @@ import { requireAdmin } from "@/lib/admin";
 
 const NAV = [
   { href: "/admin", label: "Vue d'ensemble" },
+  { href: "/admin/stats", label: "Statistiques" },
   { href: "/admin/annonces", label: "Modération" },
+  { href: "/admin/verifications", label: "Vérif. agences" },
+  { href: "/admin/leads-estimation", label: "Leads estimation" },
   { href: "/admin/annonces/toutes", label: "Toutes les annonces" },
   { href: "/admin/comptes", label: "Comptes" },
   { href: "/admin/avis", label: "Avis Pévèle" },

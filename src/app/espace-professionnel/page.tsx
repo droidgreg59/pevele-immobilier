@@ -104,6 +104,20 @@ export default function EspaceProfessionnelPage() {
           Se connecter →
         </Link>
       </p>
+
+      <div className="mt-12 rounded-2xl border border-line bg-surface p-6">
+        <span className="font-display text-[15px] font-extrabold text-ink">
+          Flux de syndication
+        </span>
+        <p className="m-0 mt-2 font-sans text-[13.5px] leading-[1.6] text-muted">
+          Toutes les annonces publiées sont exposées dans un flux XML public,
+          réutilisable par un portail ou un agrégateur tiers :{" "}
+          <a href="/annonces.xml" className="text-blue">
+            /annonces.xml
+          </a>{" "}
+          (mise à jour horaire). Format documenté dans le dépôt.
+        </p>
+      </div>
     </div>
   );
 }

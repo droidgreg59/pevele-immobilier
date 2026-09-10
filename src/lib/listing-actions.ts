@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
+import { prisma } from "./prisma";
 import {
   createListing,
   updateListing,
@@ -11,6 +12,7 @@ import {
   getListingForEdit,
 } from "./listings";
 import { parseListingFields } from "./listing-fields";
+import { logEvent } from "./events";
 import {
   pickPhotoFiles,
   validatePhotoFiles,
@@ -30,6 +32,17 @@ export async function createListingAction(
     redirect("/connexion?next=/vendre/deposer");
   }
 
+  const author = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { emailVerifiedAt: true },
+  });
+  if (!author?.emailVerifiedAt) {
+    return {
+      error:
+        "Vérifiez votre adresse email avant de publier une annonce. Un lien de confirmation vous a été envoyé — regardez aussi vos spams, ou renvoyez-le depuis « Mon compte ».",
+    };
+  }
+
   const photoFiles = pickPhotoFiles(formData);
   const photoError = validatePhotoFiles(photoFiles);
   if (photoError) return { error: photoError };
@@ -43,6 +56,17 @@ export async function createListingAction(
     const urls = await savePhotoFiles(listing.id, photoFiles);
     await addListingPhotos(listing.id, urls);
   }
+
+  await logEvent("listing_submitted", {
+    userId: session.userId,
+    path: "/vendre/deposer",
+    meta: {
+      transaction: parsed.fields.transaction,
+      typeBien: parsed.fields.typeBien,
+      commune: parsed.fields.villageSlug,
+      photos: photoFiles.length,
+    },
+  });
 
   redirect(`/${parsed.fields.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`);
 }

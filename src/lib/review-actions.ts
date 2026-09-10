@@ -5,6 +5,8 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { reviewReceivedEmail } from "./email-templates";
+import { logEvent } from "./events";
+import { verifyTurnstile } from "./turnstile";
 
 export type ReviewFormState = { error?: string };
 
@@ -19,6 +21,9 @@ export async function upsertReviewAction(
   }
   if (session.userId === agencyId) {
     return { error: "Vous ne pouvez pas noter votre propre agence." };
+  }
+  if (!(await verifyTurnstile(formData, "review"))) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
   const note = Number(formData.get("note"));
@@ -49,6 +54,11 @@ export async function upsertReviewAction(
   if (!existing) {
     const { subject, html } = reviewReceivedEmail({ authorNom: session.nom, note });
     await sendEmail({ to: agency.email, subject, html });
+    await logEvent("review_submitted", {
+      userId: session.userId,
+      path: `/professionnels/${agencyId}`,
+      meta: { note },
+    });
   }
 
   redirect(`/professionnels/${agencyId}`);

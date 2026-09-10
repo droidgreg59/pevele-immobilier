@@ -3,6 +3,7 @@ import { villages } from "@/data/villages";
 import { getPublicListings } from "@/lib/listings";
 import { getAgencies } from "@/lib/agencies";
 import { getArtisans } from "@/lib/artisans";
+import { getDvfStatsForAllVillages } from "@/lib/dvf";
 import { SITE_URL } from "@/lib/seo";
 
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
@@ -20,11 +21,12 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [ventes, locations, agencies, artisans] = await Promise.all([
+  const [ventes, locations, agencies, artisans, dvfStats] = await Promise.all([
     getPublicListings("VENTE"),
     getPublicListings("LOCATION"),
     getAgencies(),
     getArtisans(),
+    getDvfStatsForAllVillages(),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
@@ -37,6 +39,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${SITE_URL}/villages/${v.slug}`,
     changeFrequency: "weekly",
     priority: 0.85,
+  }));
+
+  // Page prix approfondie par commune : seulement celles qui ont des données DVF.
+  const dvfSlugs = new Set(dvfStats.map((s) => s.villageSlug));
+  const prixEntries: MetadataRoute.Sitemap = villages
+    .filter((v) => dvfSlugs.has(v.slug))
+    .map((v) => ({
+      url: `${SITE_URL}/prix/${v.slug}`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    }));
+
+  // Pages d'atterrissage par intention : uniquement les combinaisons
+  // commune × type × transaction qui ont au moins une annonce en ligne (les
+  // pages sans annonce sont en noindex, inutile de les soumettre).
+  const INTENT_SLUG: Record<string, Record<string, string>> = {
+    MAISON: { VENTE: "maisons-a-vendre", LOCATION: "maisons-a-louer" },
+    APPARTEMENT: { VENTE: "appartements-a-vendre", LOCATION: "appartements-a-louer" },
+    TERRAIN: { VENTE: "terrains-a-vendre", LOCATION: "terrains-a-louer" },
+  };
+  const intentKeys = new Set<string>();
+  for (const l of [...ventes, ...locations]) {
+    const intent = INTENT_SLUG[l.typeBien]?.[l.transaction];
+    if (intent) intentKeys.add(`${l.villageSlug}/${intent}`);
+  }
+  const intentEntries: MetadataRoute.Sitemap = [...intentKeys].map((key) => ({
+    url: `${SITE_URL}/immobilier/${key}`,
+    changeFrequency: "weekly",
+    priority: 0.8,
   }));
 
   const ventesEntries: MetadataRoute.Sitemap = ventes.map((l) => ({
@@ -68,6 +99,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...villageEntries,
+    ...prixEntries,
+    ...intentEntries,
     ...ventesEntries,
     ...locationEntries,
     ...agencyEntries,

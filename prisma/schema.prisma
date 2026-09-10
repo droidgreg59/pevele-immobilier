@@ -25,9 +25,33 @@ model User {
   xmlLastSyncCount    Int?
   xmlLastSyncError    String?
   isAdmin             Boolean             @default(false)
+  /// Vérification de l'agence (loi Hoguet) : SIRET + numéro de carte
+  /// professionnelle (carte T) + CCI émettrice, validés à la main depuis le
+  /// back-office. `siretDenomination` = raison sociale officielle récupérée en
+  /// best-effort sur recherche-entreprises.api.gouv.fr à la soumission.
+  siret               String?
+  carteProfessionnelle String?
+  carteProCci         String?
+  zoneCouverte        String?
+  siretDenomination   String?
+  verifStatut         AgencyVerificationStatus @default(NON_SOUMISE)
+  verifSoumiseLe      DateTime?
+  verifTraiteeLe      DateTime?
+  verifRaison         String?
   /// Jeton de réinitialisation de mot de passe (à usage unique, expire après 1h) — null hors demande en cours.
   resetToken          String?             @unique
   resetTokenExpiresAt DateTime?
+  /// Date de vérification de l'adresse email (clic sur le lien reçu à l'inscription).
+  /// Null tant que non vérifiée : certaines actions (déposer une annonce) l'exigent.
+  /// `emailVerifyToken` : jeton à usage unique (32 octets aléatoires, non contraint
+  /// `@unique` pour éviter une migration destructive sur SQLite — lookup par findFirst).
+  emailVerifiedAt            DateTime?
+  emailVerifyToken          String?
+  emailVerifyTokenExpiresAt DateTime?
+  /// Digest hebdomadaire du marché de la Pévèle : opt-in explicite depuis
+  /// /compte. `lastDigestAt` = anti-doublon (un envoi au plus tous les 6 jours).
+  digestOptIn        Boolean             @default(false)
+  lastDigestAt       DateTime?
   description         String?
   categories          String?
   communesDesservies  String?
@@ -45,12 +69,22 @@ model User {
   visitRequests       VisitRequest[]
   estimationsRecues   EstimationRequest[] @relation("AgencyEstimations")
   estimationsEnvoyees EstimationRequest[] @relation("AuthorEstimations")
+  openHouseRegistrations OpenHouseRegistration[]
+
+  @@index([emailVerifyToken])
 }
 
 enum AccountType {
   PARTICULIER
   AGENCE
   ARTISAN
+}
+
+enum AgencyVerificationStatus {
+  NON_SOUMISE
+  EN_ATTENTE
+  VERIFIEE
+  REFUSEE
 }
 
 model Listing {
@@ -72,12 +106,60 @@ model Listing {
   chambres           Int
   surface            Int
   exterieur          String
+  /// Diagnostic de performance énergétique. `dpe` = classe énergie (A–G),
+  /// `ges` = classe climat (A–G). `dpeConsommation` en kWh/m²/an (énergie
+  /// primaire), `dpeEmissions` en kgCO₂/m²/an. `dpeCoutMin`/`dpeCoutMax` =
+  /// fourchette du coût annuel d'énergie estimé (€), obligatoire sur une
+  /// annonce depuis 2022 (loi Climat). Un logement F ou G est une « passoire
+  /// thermique » à mentionner explicitement.
   dpe                String?
+  ges                String?
+  dpeConsommation    Int?
+  dpeEmissions       Int?
+  dpeCoutMin         Int?
+  dpeCoutMax         Int?
+  dpeCoutAnneeRef    Int?
+  dpeDate            DateTime?
   /// Source d'énergie du chauffage (Gaz, Électrique, Fioul, Bois…) — champ
   /// texte libre plutôt qu'un enum fermé : les flux agence (AC3/Immofacile,
   /// balise MODE_CHAUFFAGE) renvoient des valeurs variées non exhaustives.
   modeChauffage      String?
   equipements        String            @default("")
+  /// Frais & charges affichés sur la fiche.
+  /// VENTE : `honoraires` (montant TTC, €) + `honorairesCharge`
+  /// ("acquereur" | "vendeur") — l'affichage est obligatoire quand ils sont à
+  /// la charge de l'acquéreur ; `chargesCopro` (€/mois pour un lot en
+  /// copropriété) ; `taxeFonciere` (€/an).
+  /// LOCATION : `chargesLoc` (provisions €/mois), `depotGarantie` (€), `meuble`.
+  honoraires         Int?
+  honorairesCharge   String?
+  chargesCopro       Int?
+  taxeFonciere       Int?
+  chargesLoc         Int?
+  depotGarantie      Int?
+  meuble             Boolean?
+  /// Caractéristiques détaillées du bien — toutes facultatives. Un champ non
+  /// renseigné n'apparaît pas sur la fiche (la ligne est retirée, pas laissée
+  /// vide). Champs à valeurs contraintes stockés en texte : `etat`
+  /// (neuf|refait|bon|rafraichir|renover), `exposition`
+  /// (nord|sud|est|ouest|nord-est|nord-ouest|sud-est|sud-ouest|traversant),
+  /// `chauffageType` (individuel|collectif), `assainissement`
+  /// (tout-a-l-egout|individuel). `etage` : 0 = rez-de-chaussée.
+  anneeConstruction  Int?
+  etat               String?
+  exposition         String?
+  surfaceTerrain     Int?
+  etage              Int?
+  ascenseur          Boolean?
+  nbSallesDeBain     Int?
+  stationnement      String?
+  chauffageType      String?
+  fibre              Boolean?
+  assainissement     String?
+  /// Modes de visite proposés sur la fiche. Choisis à la création de l'annonce,
+  /// modifiables ensuite. Au moins l'un des deux est vrai.
+  visitesIndividuelles Boolean         @default(true)
+  visitesGroupees      Boolean         @default(false)
   badge              String?
   videoUrl           String?
   visiteVirtuelleUrl String?
@@ -88,6 +170,7 @@ model Listing {
   favorites          Favorite[]
   proposals          ListingProposal[]
   visitRequests      VisitRequest[]
+  openHouse          OpenHouse?
   createdAt          DateTime          @default(now())
 
   @@unique([ownerId, externalRef])
@@ -128,6 +211,10 @@ model Favorite {
   surveillePrix Boolean  @default(false)
   contacte      Boolean  @default(false)
   createdAt     DateTime @default(now())
+  /// Prix de référence pour l'alerte « baisse de prix » : initialisé par le
+  /// cron /api/cron/alerts au prix courant, puis abaissé à chaque notification.
+  /// Le cron notifie quand le prix de l'annonce passe sous cette valeur.
+  lastNotifiedPrix Int?
 
   @@unique([userId, listingId])
   @@index([listingId])
@@ -154,8 +241,8 @@ model Review {
 }
 
 /// Recherche enregistrée par un utilisateur (village + budget + type de
-/// transaction) — consultée depuis /compte, pas de notification email pour
-/// l'instant.
+/// transaction) — consultée depuis /compte, et notifiée par email des
+/// nouveaux biens correspondants via le cron /api/cron/alerts.
 model SavedSearch {
   id           String          @id @default(cuid())
   user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -170,6 +257,9 @@ model SavedSearch {
   budgetMin    Int?
   budgetMax    Int?
   createdAt    DateTime        @default(now())
+  /// Date du dernier email d'alerte envoyé. Null tant qu'aucune alerte n'a été
+  /// émise : la fenêtre des « nouveaux biens » part alors de `createdAt`.
+  lastAlertedAt DateTime?
   mandates     SearchMandate[]
 
   @@index([userId])
@@ -283,6 +373,80 @@ model EstimationRequest {
   @@index([authorId])
 }
 
+/// Évènement « portes ouvertes » (visite groupée à l'américaine) créé par le
+/// propriétaire d'une annonce — particulier ou agence. Un seul évènement par
+/// annonce ; il regroupe une ou plusieurs dates (OpenHouseDate). Présenté sur
+/// la fiche du bien avec un bouton « S'inscrire ».
+model OpenHouse {
+  id        String          @id @default(cuid())
+  listing   Listing         @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String          @unique
+  /// Consignes générales affichées aux inscrits (accès, documents à apporter…).
+  note      String?
+  annulee   Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  dates     OpenHouseDate[]
+}
+
+/// Un créneau daté d'un évènement portes ouvertes. `capacity` = nombre maximum
+/// d'inscriptions acceptées ; au-delà le créneau est complet.
+model OpenHouseDate {
+  id            String                  @id @default(cuid())
+  openHouse     OpenHouse               @relation(fields: [openHouseId], references: [id], onDelete: Cascade)
+  openHouseId   String
+  startAt       DateTime
+  endAt         DateTime
+  capacity      Int
+  registrations OpenHouseRegistration[]
+
+  @@index([openHouseId])
+}
+
+/// Inscription d'un visiteur (connecté) à un créneau de portes ouvertes. Le
+/// propriétaire accepte ou refuse (statut EN_ATTENTE → ACCEPTEE / REFUSEE,
+/// même enum que les mandats). Un visiteur ne peut s'inscrire qu'une fois par
+/// créneau.
+model OpenHouseRegistration {
+  id          String        @id @default(cuid())
+  date        OpenHouseDate @relation(fields: [dateId], references: [id], onDelete: Cascade)
+  dateId      String
+  visiteur    User          @relation(fields: [visiteurId], references: [id], onDelete: Cascade)
+  visiteurId  String
+  nom         String
+  prenom      String
+  telephone   String
+  statut      MandateStatus @default(EN_ATTENTE)
+  respondedAt DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@unique([dateId, visiteurId])
+  @@index([dateId])
+  @@index([visiteurId])
+}
+
+/// Lead capté sur l'estimation en ligne (`/estimer`) : le visiteur a demandé
+/// à recevoir sa fourchette + un suivi du marché. Pas de compte requis. À
+/// traiter à la main / router vers une agence (`traite`). L'estimation
+/// (`estimLow`/`estimHigh`) est figée telle qu'affichée au moment de la
+/// capture.
+model EstimationLead {
+  id          String   @id @default(cuid())
+  villageSlug String
+  commune     String
+  surface     Int
+  typeBien    String
+  dpe         String?
+  estimLow    Int
+  estimHigh   Int
+  nom         String
+  email       String
+  telephone   String?
+  traite      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 enum TransactionType {
   VENTE
   LOCATION
@@ -306,6 +470,23 @@ enum TypeMaison {
   INDIVIDUELLE
   SEMI_INDIVIDUELLE
   MITOYENNE
+}
+
+/// Évènement produit (entonnoir) — écrit en « fire and forget » depuis les
+/// Server Actions (et quelques pages serveur) via `src/lib/events.ts`. Sert
+/// au tableau de bord `/admin/stats`. Volontairement minimal et sans PII :
+/// `userId` est libre (pas de FK — on garde l'historique même après
+/// suppression du compte), `meta` = petit JSON optionnel (< 2 ko).
+model Event {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String?
+  path      String?
+  meta      String?
+  createdAt DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([createdAt])
 }
 
 /// Transactions immobilières issues des DVF (Demandes de Valeurs Foncières,

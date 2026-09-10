@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
+import { logEvent } from "./events";
 
 export async function toggleFavoriteAction(listingId: string, next?: string) {
   const session = await getSession();
@@ -20,6 +21,7 @@ export async function toggleFavoriteAction(listingId: string, next?: string) {
     await prisma.favorite.create({
       data: { userId: session.userId, listingId },
     });
+    await logEvent("favorite_added", { userId: session.userId, path: next ?? null });
   }
 }
 

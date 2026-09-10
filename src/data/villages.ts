@@ -47,6 +47,36 @@ const RAW: [string, string, string, number, number, number, number, string][] = 
     "Village-rue animé sur l’axe Lille–Tournai, commerces de proximité et écoles.",
   ],
   [
+    "ANSTAING",
+    "Anstaing",
+    "59013",
+    209,
+    168,
+    209,
+    168,
+    "Petit village du Mélantois sur la Marque, entre Chéreng, Tressin et Villeneuve-d’Ascq — la campagne à la lisière immédiate de la métropole.",
+  ],
+  [
+    "BOUVINES",
+    "Bouvines",
+    "59106",
+    215,
+    211,
+    215,
+    211,
+    "Théâtre de la célèbre bataille de 1214 remportée par Philippe Auguste ; l’église Saint-Pierre en retrace les épisodes sur 21 vitraux. Village de la vallée de la Marque, entre Gruson et Cysoing.",
+  ],
+  [
+    "PÉRONNE-EN-MÉL.",
+    "Péronne-en-Mélantois",
+    "59458",
+    186,
+    244,
+    186,
+    244,
+    "Village agricole du plateau du Mélantois, entre Sainghin-en-Mélantois et Fretin — grandes cultures et fermes en brique aux portes de Lille.",
+  ],
+  [
     "BAISIEUX",
     "Baisieux",
     "59044",
@@ -388,4 +418,20 @@ export function getVillageByInsee(insee: string): Village | undefined {
 
 export function getVillageBySlug(slug: string): Village | undefined {
   return villages.find((v) => v.slug === slug);
+}
+
+/**
+ * Communes les plus proches d'une commune donnée, par distance sur la carte
+ * (repère SVG 440x600 partagé). Sert au maillage interne des pages
+ * d'atterrissage SEO. Approximatif mais suffisant pour « communes proches ».
+ */
+export function nearestVillages(slug: string, count = 4): Village[] {
+  const origin = getVillageBySlug(slug);
+  if (!origin) return [];
+  return villages
+    .filter((v) => v.slug !== slug)
+    .map((v) => ({ v, d: (v.mapX - origin.mapX) ** 2 + (v.mapY - origin.mapY) ** 2 }))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, count)
+    .map((x) => x.v);
 }

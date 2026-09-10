@@ -29,11 +29,60 @@ Toute donnée de référence ajoutée (commerces/écoles/transports par village,
 maison, mentions légales…) doit venir d'une source vérifiable — jamais inventée. Sources déjà utilisées :
 flux XML AC3/Immofacile de l'agence (inspecté en direct via un script Node avant d'écrire le moindre
 mapping — ne jamais deviner un nom de balise), OpenStreetMap/Overpass API (commerces, transports),
-annuaire officiel de l'Éducation nationale (écoles, filtré `etat === "OUVERT"`), et les faits fournis
-directement par l'utilisateur (raison sociale, adresse…). Pour un fait légal non confirmé, utiliser le
+annuaire officiel de l'Éducation nationale (écoles, filtré `etat === "OUVERT"`), API publique Géorisques
+(`georisques.gouv.fr/api/v1`, état des risques par commune — endpoints inspectés en direct avant mapping,
+`src/lib/georisques.ts`), et les faits fournis directement par l'utilisateur (raison sociale, adresse…). Pour un fait légal non confirmé, utiliser le
 composant `<ACompleter>` (`[À COMPLÉTER : ...]`) plutôt que d'inventer une valeur plausible — les pages
 concernées (`/mentions-legales`, `/confidentialite`, `/cgu`) sont volontairement `noindex` tant que des
 `<ACompleter>` y subsistent.
+
+Le badge « Agence vérifiée » n'est jamais posé automatiquement : l'agence soumet son SIRET et son
+numéro de carte professionnelle (carte T), et un administrateur valide à la main depuis
+`/admin/verifications` (`User.verifStatut`). La raison sociale officielle est récupérée en best-effort
+sur `recherche-entreprises.api.gouv.fr` mais ne fait pas foi.
+
+### Observabilité
+
+Trois briques distinctes, à ne pas confondre :
+- **Audience** — Cloudflare Web Analytics (`src/app/layout.tsx`, sur `CF_BEACON_TOKEN`) : pages vues,
+  référents, Web Vitals. Pas d'API d'évènement.
+- **Entonnoir produit** — modèle `Event` + `logEvent(name, …)` (`src/lib/events.ts`), appelé en
+  « fire and forget » (jamais `throw`, toujours `await` avant un `return`/`redirect`) dans les Server
+  Actions aux étapes clés. Lu par `/admin/stats`. Ajouter un `EventName` à l'union **et** à
+  `EVENT_LABELS` (`src/lib/admin-stats.ts`) quand on instrumente une nouvelle étape.
+- **Erreurs** — `src/lib/report-error.ts` poste une enveloppe Sentry **sans SDK** (dépendances = 0),
+  branché via `src/instrumentation.ts` (serveur) et `src/instrumentation-client.ts` +
+  `src/app/global-error.tsx` (client). No-op tant que `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` sont
+  vides. Pas de symbolication des stacks minifiées — c'est le compromis assumé du « sans SDK ».
+
+### Cache / ISR
+
+Les lectures DVF (`src/lib/dvf.ts`, sauf `getRecentDvfTransactions` qui renvoie des `Date`) sont
+enveloppées dans `unstable_cache` avec le tag `dvf` et une revalidation d'une semaine — la route cron
+`/api/cron/dvf-import` appelle `revalidateTag("dvf", "max")` après réécriture. Les pages `/prix` et
+`/prix/[commune]` sont en ISR (`export const revalidate`, + `generateStaticParams` pour les 38
+communes). `/villages/[slug]`, `/carte` et `/immobilier/[commune]/[intent]` restent dynamiques (session
+pour les favoris, `searchParams`) mais ne tapent plus la base pour les DVF. Rendre ces trois-là
+statiques demanderait d'hydrater l'état « favori » côté client — chantier à part.
+
+### PWA
+
+`public/manifest.webmanifest` + `public/sw.js` (enregistré depuis
+`src/instrumentation-client.ts`). Le service worker est **volontairement minimal** :
+aucune mise en cache d'assets ou de pages (zéro risque de contenu périmé), juste une
+page de repli hors ligne pour les navigations. Les icônes PNG sont générées depuis
+`public/icon.svg` par `npx tsx scripts/gen-pwa-icons.ts` (rejouer si le visuel de
+marque change). Notifications push : pas encore faites (nécessitent des clés VAPID).
+
+### Tests
+
+`npm test` (Vitest, `vitest.config.ts`) — tests co-localisés `src/**/*.test.ts`, ciblés sur les
+fonctions pures / la logique (validation, barèmes coût d'achat, slugify, format, parsing des
+`searchParams`, `where` Prisma des recherches, JSON-LD, invariants du jeu de communes). **Pas de
+tests qui touchent la base ou le réseau.** `import "server-only"` est neutralisé dans les tests via
+un alias vers `test/stubs/server-only.ts`. La CI (`.github/workflows/ci.yml`, sur chaque PR + master)
+enchaîne `lint` → `tsc --noEmit` → `test` → `build`, avec une SQLite vide créée par `prisma db push`
+(le build exécute `sitemap.ts` qui interroge la base).
 
 ### Pièges d'environnement rencontrés
 

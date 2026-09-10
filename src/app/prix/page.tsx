@@ -3,12 +3,14 @@ import Link from "next/link";
 import { villages } from "@/data/villages";
 import { getDvfStatsForAllVillages } from "@/lib/dvf";
 
-export const dynamic = "force-dynamic";
+// Page de contenu (DVF, données quasi statiques) : rendu ISR. Le cache des
+// lectures DVF est invalidé par le cron d'import (`revalidateTag("dvf")`).
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Prix de l'immobilier en Pévèle par commune",
   description:
-    "Le prix moyen au m² dans chacune des 35 communes de la Pévèle, classé et comparé, à partir des transactions DVF réellement enregistrées (data.gouv.fr).",
+    "Le prix moyen au m² dans chacune des 38 communes de la Pévèle, classé et comparé, à partir des transactions DVF réellement enregistrées (data.gouv.fr).",
   alternates: {
     canonical: "/prix",
   },
@@ -58,9 +60,15 @@ export default async function PrixPage() {
             {rows.map(({ village, stats: s }) => (
               <tr key={village.slug} className="border-b border-line last:border-b-0">
                 <td className="px-4 py-3">
-                  <Link href={`/villages/${village.slug}`} className="font-semibold text-blue">
-                    {village.nom}
-                  </Link>
+                  {s ? (
+                    <Link href={`/prix/${village.slug}`} className="font-semibold text-blue">
+                      {village.nom}
+                    </Link>
+                  ) : (
+                    <Link href={`/villages/${village.slug}`} className="font-semibold text-muted">
+                      {village.nom}
+                    </Link>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-ink">
                   {s ? `${s.avgPrixM2.toLocaleString("fr-FR")} €` : "—"}

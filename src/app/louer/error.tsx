@@ -1,6 +1,19 @@
 "use client";
 
-export default function Error({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+import { useEffect } from "react";
+import { reportClientError } from "@/lib/report-error";
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    void reportClientError(error, { kind: "route-error" });
+  }, [error]);
+
   return (
     <div className="mx-auto flex max-w-[440px] flex-col items-center gap-4 px-6 py-24 text-center">
       <h1 className="m-0 font-display text-[24px] text-ink">Un souci de notre côté.</h1>

@@ -72,23 +72,24 @@ function largestRing(geom: CommuneGeo["contour"]): LonLat[] {
   return rings.reduce((a, b) => (b.length > a.length ? b : a));
 }
 
-// Les 29 communes réellement adjacentes à notre territoire suivi, trouvées
+// Les communes réellement adjacentes à notre territoire suivi, trouvées
 // par test de proximité de contour réel (pas juste une bbox élargie) —
-// cf. session de debug des zones non cliquables.
+// cf. session de debug des zones non cliquables. Anstaing, Bouvines et
+// Péronne-en-Mélantois sont passées en communes suivies (villages.ts) et
+// sont donc sorties de cette liste ; Forest-sur-Marque, nouvellement
+// exposée au nord d'Anstaing, l'a rejointe.
 const CONTEXT_COMMUNES: { insee: string; nom: string }[] = [
   { insee: "59009", nom: "Villeneuve-d'Ascq" },
-  { insee: "59013", nom: "Anstaing" },
   { insee: "59105", nom: "Bouvignies" },
-  { insee: "59106", nom: "Bouvines" },
   { insee: "59222", nom: "Faumont" },
   { insee: "59239", nom: "Flines-lez-Raches" },
+  { insee: "59247", nom: "Forest-sur-Marque" },
   { insee: "59256", nom: "Fretin" },
   { insee: "59299", nom: "Hem" },
   { insee: "59335", nom: "Lecelles" },
   { insee: "59343", nom: "Lesquin" },
   { insee: "59346", nom: "Lezennes" },
   { insee: "59375", nom: "Marchiennes" },
-  { insee: "59458", nom: "Péronne-en-Mélantois" },
   { insee: "59511", nom: "Rosult" },
   { insee: "59519", nom: "Rumegies" },
   { insee: "59522", nom: "Sailly-lez-Lannoy" },
@@ -153,7 +154,7 @@ async function main() {
   }
 
   const fileContent = `// Généré par scripts/fetch-context-boundaries.ts — communes réellement
-// adjacentes à notre territoire suivi (28 communes de villages.ts), utilisées
+// adjacentes à notre territoire suivi (communes de villages.ts), utilisées
 // UNIQUEMENT pour combler visuellement la carte (pas de fiche, pas de DVF,
 // pas d'interaction). Même projection 440x600 que village-boundaries.ts.
 // Ne pas éditer à la main : relancer le script si le territoire suivi change.

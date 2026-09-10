@@ -12,9 +12,11 @@ import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
 import { MAX_PHOTOS } from "@/lib/photo-constants";
 import type { ListingWithOwner } from "@/lib/listings";
 import PhotoDropzone from "./PhotoDropzone";
+import DpeFields from "./DpeFields";
+import FraisFields from "./FraisFields";
+import CaracFields from "./CaracFields";
 
 const initialState: ListingFormState = {};
-const DPE_OPTIONS = ["A", "B", "C", "D", "E", "F", "G"];
 
 export default function EditListingForm({
   listing,
@@ -208,36 +210,60 @@ export default function EditListingForm({
           </label>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-              Extérieur
-            </span>
-            <input
-              name="exterieur"
-              defaultValue={listing.exterieur === "—" ? "" : listing.exterieur}
-              placeholder="ex. 500 m² jardin, balcon…"
-              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-              DPE (si connu)
-            </span>
-            <select
-              name="dpe"
-              defaultValue={listing.dpe ?? ""}
-              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-            >
-              <option value="">Non renseigné</option>
-              {DPE_OPTIONS.map((letter) => (
-                <option key={letter} value={letter}>
-                  {letter}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Extérieur
+          </span>
+          <input
+            name="exterieur"
+            defaultValue={listing.exterieur === "—" ? "" : listing.exterieur}
+            placeholder="ex. 500 m² jardin, balcon…"
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          />
+        </label>
+
+        <DpeFields
+          defaults={{
+            dpe: listing.dpe,
+            ges: listing.ges,
+            dpeConsommation: listing.dpeConsommation,
+            dpeEmissions: listing.dpeEmissions,
+          }}
+        />
+
+        {typeBien !== "TERRAIN" ? (
+          <FraisFields
+            transaction={transaction}
+            defaults={{
+              honoraires: listing.honoraires,
+              honorairesCharge: listing.honorairesCharge,
+              chargesCopro: listing.chargesCopro,
+              taxeFonciere: listing.taxeFonciere,
+              chargesLoc: listing.chargesLoc,
+              depotGarantie: listing.depotGarantie,
+              meuble: listing.meuble,
+            }}
+          />
+        ) : null}
+
+        {typeBien !== "TERRAIN" ? (
+          <CaracFields
+            typeBien={typeBien}
+            defaults={{
+              anneeConstruction: listing.anneeConstruction,
+              etat: listing.etat,
+              exposition: listing.exposition,
+              surfaceTerrain: listing.surfaceTerrain,
+              etage: listing.etage,
+              ascenseur: listing.ascenseur,
+              nbSallesDeBain: listing.nbSallesDeBain,
+              stationnement: listing.stationnement,
+              chauffageType: listing.chauffageType,
+              fibre: listing.fibre,
+              assainissement: listing.assainissement,
+            }}
+          />
+        ) : null}
 
         {typeBien !== "TERRAIN" ? (
           <label className="flex flex-col gap-1.5">
@@ -356,6 +382,39 @@ export default function EditListingForm({
             />
           </label>
         </div>
+
+        <fieldset className="m-0 flex flex-col gap-2.5 rounded-2xl border border-line bg-white p-4">
+          <legend className="px-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Comment recevoir les visites ?
+          </legend>
+          <label className="flex items-start gap-2.5 text-[13.5px] text-ink">
+            <input
+              type="checkbox"
+              name="visitesIndividuelles"
+              value="true"
+              defaultChecked={listing.visitesIndividuelles}
+              className="mt-0.5 h-4 w-4 accent-[var(--pvl-blue)]"
+            />
+            <span>
+              <b>Demandes de visite individuelles</b> — les visiteurs vous contactent pour
+              convenir d&apos;un créneau.
+            </span>
+          </label>
+          <label className="flex items-start gap-2.5 text-[13.5px] text-ink">
+            <input
+              type="checkbox"
+              name="visitesGroupees"
+              value="true"
+              defaultChecked={listing.visitesGroupees}
+              className="mt-0.5 h-4 w-4 accent-[var(--pvl-blue)]"
+            />
+            <span>
+              <b>Visites groupées (portes ouvertes)</b> — vous fixez une ou plusieurs dates,
+              les visiteurs s&apos;inscrivent et vous validez chaque inscription. Programmez
+              les dates dans la section « Portes ouvertes » plus bas.
+            </span>
+          </label>
+        </fieldset>
 
         {state.error ? (
           <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">

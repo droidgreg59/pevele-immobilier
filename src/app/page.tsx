@@ -55,7 +55,7 @@ export default async function Home() {
               Quel est votre projet ?
             </h1>
             <p className="mt-2 text-[15px] text-muted">
-              Toutes les annonces de la Pévèle — agences et particuliers, 35 communes.
+              Toutes les annonces de la Pévèle — agences et particuliers, 38 communes.
             </p>
           </div>
 
@@ -187,7 +187,7 @@ export default async function Home() {
             <div>
               <span className="block text-[15px] font-bold">Vivre en Pévèle</span>
               <span className="mt-0.5 block text-[13px] text-white/80">
-                35 communes · prix au m² réels (DVF) · guides villages
+                38 communes · prix au m² réels (DVF) · guides villages
               </span>
             </div>
             <span className="ml-auto shrink-0 whitespace-nowrap rounded-xl bg-white px-4 py-2.5 text-[13px] font-bold text-blue">
