@@ -31,6 +31,9 @@ nécessitent une action manuelle :
   biens correspondant à une recherche sauvegardée, et baisse de prix sur un favori
   marqué « surveiller le prix ». Idempotent (n'envoie pas deux fois la même alerte) ;
   à lancer une fois par jour.
+- `GET /api/cron/digest` — digest hebdomadaire du marché (nouveaux biens, baisses
+  de prix, prix moyen Pévèle) aux comptes qui l'ont activé dans `/compte`.
+  Anti-doublon (un envoi au plus tous les 6 jours) ; à lancer une fois par semaine.
 
 Toutes exigent le secret `CRON_SECRET` (défini dans `.env`), soit en
 en-tête `Authorization: Bearer <secret>`, soit en paramètre `?secret=<secret>`.
@@ -50,7 +53,8 @@ s'il a changé. À lancer aussi à la main après l'ajout d'une commune (sans
   "crons": [
     { "path": "/api/cron/dvf-import", "schedule": "0 4 * * 1" },
     { "path": "/api/cron/sync-agencies", "schedule": "0 5 * * *" },
-    { "path": "/api/cron/alerts", "schedule": "0 7 * * *" }
+    { "path": "/api/cron/alerts", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/digest", "schedule": "0 8 * * 1" }
   ]
 }
 ```

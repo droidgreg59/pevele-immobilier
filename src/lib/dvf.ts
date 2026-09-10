@@ -167,6 +167,20 @@ export const getDvfBreakdownByType = unstable_cache(
   { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
 );
 
+/** Prix /m² moyen sur toute la Pévèle (toutes ventes DVF confondues). */
+export const getDvfAvgPrixM2Pevele = unstable_cache(
+  async (): Promise<{ avgPrixM2: number; count: number } | null> => {
+    const agg = await prisma.dvfTransaction.aggregate({
+      _avg: { prixM2: true },
+      _count: { _all: true },
+    });
+    if (!agg._avg.prixM2 || agg._count._all === 0) return null;
+    return { avgPrixM2: Math.round(agg._avg.prixM2), count: agg._count._all };
+  },
+  ["dvf-avg-pevele"],
+  { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
+);
+
 export const getDvfStatsForAllVillages = unstable_cache(
   async (): Promise<DvfVillageStats[]> => {
     const rows = await prisma.dvfTransaction.groupBy({

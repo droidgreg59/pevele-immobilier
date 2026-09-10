@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { logoutAction, resendEmailVerificationAction } from "@/lib/auth-actions";
+import {
+  logoutAction,
+  resendEmailVerificationAction,
+  toggleDigestOptInAction,
+} from "@/lib/auth-actions";
 import { prisma } from "@/lib/prisma";
 import { getListingsByUser } from "@/lib/listings";
 import { getFavoriteListingIds, getFavoriteCount } from "@/lib/favorites";
@@ -93,7 +97,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
   const verifEmailRenvoye = sp.verif === "renvoye";
   const currentUser = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { emailVerifiedAt: true, verifStatut: true },
+    select: { emailVerifiedAt: true, verifStatut: true, digestOptIn: true },
   });
   const emailNonVerifie = currentUser != null && currentUser.emailVerifiedAt == null;
 
@@ -658,6 +662,29 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
             className="rounded-full border border-line px-4 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-surface"
           >
             Se déconnecter
+          </button>
+        </form>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-white px-6 py-4 shadow-sm">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[13px] font-semibold text-ink">Digest hebdomadaire du marché</span>
+          <span className="text-[12.5px] text-muted">
+            Un email chaque lundi : nouveaux biens, baisses de prix, prix moyen en Pévèle.
+          </span>
+        </div>
+        <form action={toggleDigestOptInAction}>
+          <input type="hidden" name="optIn" value={currentUser?.digestOptIn ? "false" : "true"} />
+          <button
+            type="submit"
+            className="rounded-full px-4 py-2 text-[12.5px] font-semibold transition"
+            style={{
+              background: currentUser?.digestOptIn ? "var(--pvl-blue-soft)" : "#fff",
+              color: currentUser?.digestOptIn ? "var(--pvl-blue)" : "var(--pvl-ink)",
+              border: `1.5px solid ${currentUser?.digestOptIn ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
+            }}
+          >
+            {currentUser?.digestOptIn ? "Activé — désactiver" : "Activer"}
           </button>
         </form>
       </div>

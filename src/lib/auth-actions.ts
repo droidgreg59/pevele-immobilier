@@ -142,6 +142,17 @@ export async function resendEmailVerificationAction(): Promise<void> {
   redirect("/compte?verif=renvoye");
 }
 
+/** Active / désactive le digest hebdomadaire du marché pour l'utilisateur connecté. */
+export async function toggleDigestOptInAction(formData: FormData): Promise<void> {
+  const session = await getSession();
+  if (!session) redirect("/connexion");
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { digestOptIn: formData.get("optIn") === "true" },
+  });
+  redirect("/compte");
+}
+
 export async function loginAction(
   _prevState: AuthState,
   formData: FormData

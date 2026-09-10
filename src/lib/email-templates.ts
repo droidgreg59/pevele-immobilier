@@ -396,3 +396,58 @@ export function estimateLeadEmail(opts: {
     ),
   };
 }
+
+export type DigestListingRow = AlertListingRow;
+
+export function weeklyDigestEmail(opts: {
+  activeListings: number;
+  newListings: { total: number; rows: DigestListingRow[] };
+  priceDrops: { total: number; rows: (DigestListingRow & { ancienPrix: number })[] };
+  avgPrixM2Pevele: number | null;
+}): { subject: string; html: string } {
+  const { newListings, priceDrops } = opts;
+
+  const dropRows = priceDrops.rows
+    .map((r) => {
+      const pct = Math.round(((r.ancienPrix - r.prix) / r.ancienPrix) * 100);
+      return `<tr><td style="padding:12px 0;border-top:1px solid ${LINE};">
+        <a href="${SITE_URL}${r.href}" style="color:${INK};font-weight:700;font-size:14px;text-decoration:none;">${r.titre}</a>
+        <div style="font-size:12.5px;color:${MUTED};margin-top:2px;">${r.commune} · <span style="text-decoration:line-through;">${formatPrix(r.ancienPrix, r.transaction)}</span> → <b style="color:${BLUE};">${formatPrix(r.prix, r.transaction)}</b>${pct > 0 ? ` <span style="color:#417c3e;font-weight:700;">(-${pct}%)</span>` : ""}</div>
+      </td></tr>`;
+    })
+    .join("");
+
+  const restNew = newListings.total - newListings.rows.length;
+  const restDrop = priceDrops.total - priceDrops.rows.length;
+
+  const body =
+    p(
+      `Cette semaine en Pévèle : <b>${newListings.total}</b> nouveau${newListings.total > 1 ? "x" : ""} bien${newListings.total > 1 ? "s" : ""}, ` +
+        `<b>${priceDrops.total}</b> baisse${priceDrops.total > 1 ? "s" : ""} de prix. ` +
+        `<b>${opts.activeListings}</b> annonce${opts.activeListings > 1 ? "s" : ""} en ligne` +
+        (opts.avgPrixM2Pevele
+          ? `, prix moyen ${opts.avgPrixM2Pevele.toLocaleString("fr-FR")} € / m² (DVF).`
+          : ".")
+    ) +
+    (newListings.rows.length > 0
+      ? `<h3 style="margin:18px 0 0;font-size:14px;color:${INK};">Nouveaux biens</h3>` +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${listingRows(newListings.rows)}</table>` +
+        (restNew > 0 ? p(`<span style="color:${MUTED};">…et ${restNew} autre${restNew > 1 ? "s" : ""}.</span>`) : "")
+      : "") +
+    (dropRows
+      ? `<h3 style="margin:18px 0 0;font-size:14px;color:${INK};">Baisses de prix</h3>` +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${dropRows}</table>` +
+        (restDrop > 0 ? p(`<span style="color:${MUTED};">…et ${restDrop} autre${restDrop > 1 ? "s" : ""}.</span>`) : "")
+      : "") +
+    p(
+      `<span style="color:${MUTED};font-size:12px;">Vous recevez ce résumé car vous l'avez activé dans « Mon compte ». Vous pouvez le désactiver à tout moment.</span>`
+    );
+
+  return {
+    subject: `Le marché de la Pévèle cette semaine — ${newListings.total} nouveauté${newListings.total > 1 ? "s" : ""}, ${priceDrops.total} baisse${priceDrops.total > 1 ? "s" : ""}`,
+    html: layout("Le marché de la Pévèle cette semaine", body, {
+      label: "Parcourir les annonces",
+      href: `${SITE_URL}/acheter`,
+    }),
+  };
+}

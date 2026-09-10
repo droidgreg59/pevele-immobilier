@@ -48,6 +48,10 @@ model User {
   emailVerifiedAt            DateTime?
   emailVerifyToken          String?
   emailVerifyTokenExpiresAt DateTime?
+  /// Digest hebdomadaire du marché de la Pévèle : opt-in explicite depuis
+  /// /compte. `lastDigestAt` = anti-doublon (un envoi au plus tous les 6 jours).
+  digestOptIn        Boolean             @default(false)
+  lastDigestAt       DateTime?
   description         String?
   categories          String?
   communesDesservies  String?
