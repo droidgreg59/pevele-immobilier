@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getListingById, getPriceHistory } from "@/lib/listings";
+import { getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
 import { getSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
 import { getOpenHouseForListing } from "@/lib/open-house";
 import { getCommuneRisques } from "@/lib/georisques";
-import { getVillageBySlug } from "@/data/villages";
+import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageCoords } from "@/data/village-coords";
 import { villageAmenities } from "@/data/village-amenities";
 import ListingDetail from "@/components/ListingDetail";
@@ -53,9 +53,13 @@ export default async function LouerListingPage({
       ? getCommuneRisques(village.insee, villageCoords[village.insee] ?? null)
       : Promise.resolve(null),
   ]);
-  const [isFavorited, openHouse] = await Promise.all([
+  const [isFavorited, openHouse, similar] = await Promise.all([
     session ? isListingFavorited(session.userId, listing.id) : Promise.resolve(false),
     getOpenHouseForListing(listing.id, session?.userId),
+    getSimilarListings(
+      listing,
+      nearestVillages(listing.villageSlug, 4).map((v) => v.slug)
+    ),
   ]);
 
   return (
@@ -81,6 +85,7 @@ export default async function LouerListingPage({
         openHouse={openHouse}
         risques={risques}
         amenities={village ? villageAmenities[village.insee] ?? null : null}
+        similar={similar}
         viewerNom={session?.nom ?? ""}
       />
     </>

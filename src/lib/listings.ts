@@ -57,6 +57,37 @@ export async function getListingById(
   return prisma.listing.findUnique({ where: { id }, ...listingWithOwner });
 }
 
+/**
+ * Biens comparables à afficher en bas de fiche : même transaction, même type,
+ * budget proche (±35 %), dans la commune ou les communes voisines fournies,
+ * en excluant l'annonce courante. Sert l'engagement et le maillage interne.
+ */
+export async function getSimilarListings(
+  listing: Pick<
+    ListingWithOwner,
+    "id" | "transaction" | "typeBien" | "prix" | "villageSlug"
+  >,
+  nearbySlugs: string[],
+  take = 4
+): Promise<ListingWithOwner[]> {
+  return prisma.listing.findMany({
+    where: {
+      id: { not: listing.id },
+      statut: "PUBLIEE",
+      transaction: listing.transaction,
+      typeBien: listing.typeBien,
+      villageSlug: { in: [listing.villageSlug, ...nearbySlugs] },
+      prix: {
+        gte: Math.round(listing.prix * 0.65),
+        lte: Math.round(listing.prix * 1.35),
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+    ...listingWithOwner,
+  });
+}
+
 export async function getListingsByUser(
   userId: string
 ): Promise<ListingWithOwner[]> {

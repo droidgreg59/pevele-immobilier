@@ -27,6 +27,8 @@ import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
 import { markListingViewed } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
+import ListingCard from "./ListingCard";
+import CommuneMiniMap from "./CommuneMiniMap";
 import PhotoGallery from "./PhotoGallery";
 import VisitRequestForm from "./VisitRequestForm";
 import OpenHouseSignupForm from "./OpenHouseSignupForm";
@@ -355,6 +357,7 @@ export default function ListingDetail({
   openHouse,
   risques,
   amenities,
+  similar = [],
   viewerNom = "",
 }: {
   listing: ListingWithOwner;
@@ -368,6 +371,7 @@ export default function ListingDetail({
   openHouse: OpenHouseForListing | null;
   risques: CommuneRisques | null;
   amenities: VillageAmenities | null;
+  similar?: ListingWithOwner[];
   viewerNom?: string;
 }) {
   const [visitSheetOpen, setVisitSheetOpen] = useState(false);
@@ -764,7 +768,8 @@ export default function ListingDetail({
             <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
               <span className="text-[11px] font-semibold text-green">Le village</span>
               <h3 className="m-0 mt-1 font-display text-xl text-ink">{village.nom}</h3>
-              <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
+              <CommuneMiniMap insee={village.insee} nom={village.nom} />
+              <p className="m-0 mt-3 font-sans text-[13px] leading-[1.55] text-muted">
                 {village.description}
               </p>
               <Link
@@ -833,6 +838,22 @@ export default function ListingDetail({
           </div>
         </aside>
       </div>
+
+      {similar.length > 0 ? (
+        <section className="mt-12">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="m-0 font-display text-2xl text-ink">Biens similaires</h2>
+            <Link href={listHref} className="text-[13px] font-semibold text-blue">
+              Toutes les annonces →
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {similar.map((s) => (
+              <ListingCard key={s.id} listing={s} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {!isOwner ? (
         <div
