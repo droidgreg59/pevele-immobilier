@@ -55,6 +55,16 @@ Trois briques distinctes, à ne pas confondre :
   `src/app/global-error.tsx` (client). No-op tant que `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` sont
   vides. Pas de symbolication des stacks minifiées — c'est le compromis assumé du « sans SDK ».
 
+### Cache / ISR
+
+Les lectures DVF (`src/lib/dvf.ts`, sauf `getRecentDvfTransactions` qui renvoie des `Date`) sont
+enveloppées dans `unstable_cache` avec le tag `dvf` et une revalidation d'une semaine — la route cron
+`/api/cron/dvf-import` appelle `revalidateTag("dvf", "max")` après réécriture. Les pages `/prix` et
+`/prix/[commune]` sont en ISR (`export const revalidate`, + `generateStaticParams` pour les 38
+communes). `/villages/[slug]`, `/carte` et `/immobilier/[commune]/[intent]` restent dynamiques (session
+pour les favoris, `searchParams`) mais ne tapent plus la base pour les DVF. Rendre ces trois-là
+statiques demanderait d'hydrater l'état « favori » côté client — chantier à part.
+
 ### Tests
 
 `npm test` (Vitest, `vitest.config.ts`) — tests co-localisés `src/**/*.test.ts`, ciblés sur les

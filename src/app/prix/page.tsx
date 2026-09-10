@@ -3,7 +3,9 @@ import Link from "next/link";
 import { villages } from "@/data/villages";
 import { getDvfStatsForAllVillages } from "@/lib/dvf";
 
-export const dynamic = "force-dynamic";
+// Page de contenu (DVF, données quasi statiques) : rendu ISR. Le cache des
+// lectures DVF est invalidé par le cron d'import (`revalidateTag("dvf")`).
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Prix de l'immobilier en Pévèle par commune",

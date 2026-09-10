@@ -9,10 +9,17 @@ import {
   getRecentDvfTransactions,
   getDvfStatsForAllVillages,
 } from "@/lib/dvf";
+import { villages } from "@/data/villages";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// Page de contenu (DVF) : rendu ISR, pré-générée pour les 38 communes. Le
+// cache des lectures DVF est invalidé par le cron d'import.
+export const revalidate = 3600;
+
+export function generateStaticParams() {
+  return villages.map((v) => ({ commune: v.slug }));
+}
 
 const eurM2 = (n: number) => `${n.toLocaleString("fr-FR")} € / m²`;
 

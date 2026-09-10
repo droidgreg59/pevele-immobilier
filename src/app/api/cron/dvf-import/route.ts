@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidateTag } from "next/cache";
 import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 import { runDvfImport } from "@/lib/dvf-import";
 
@@ -16,6 +17,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const results = await runDvfImport();
+    // Marque le cache des lectures DVF (`unstable_cache`, tag « dvf ») comme
+    // périmé pour que les pages prix reflètent l'import (stale-while-revalidate).
+    revalidateTag("dvf", "max");
     return NextResponse.json({ success: true, results });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Échec de l'import DVF.";

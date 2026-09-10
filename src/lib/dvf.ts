@@ -1,5 +1,17 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
+
+/**
+ * Les DVF ne changent qu'au rythme de l'import (`/api/cron/dvf-import`, ~1×/
+ * semaine). Les lectures ci-dessous sont donc mises en cache d'un rendu à
+ * l'autre via `unstable_cache`, tag `dvf` — l'import appelle
+ * `revalidateTag("dvf")` pour rafraîchir immédiatement après réécriture.
+ * `getRecentDvfTransactions` n'est PAS caché : il renvoie des `Date` (que le
+ * cache sérialiserait) et reste une requête légère.
+ */
+const DVF_TAG = "dvf";
+export const DVF_REVALIDATE = 60 * 60 * 24 * 7;
 
 export type DvfVillageStats = {
   villageSlug: string;
@@ -28,16 +40,17 @@ const MIN_SAMPLE_FOR_TYPE_FILTER = 3;
  * Sinon, on retombe sur la moyenne toutes catégories confondues plutôt que
  * d'afficher « données insuffisantes » alors qu'on a des données utilisables.
  */
-export async function getDvfStatsForVillage(
-  villageSlug: string,
-  typeLocal?: string
-): Promise<DvfVillageStats | null> {
-  if (typeLocal) {
-    const filtered = await aggregateVillageStats(villageSlug, typeLocal);
-    if (filtered && filtered.count >= MIN_SAMPLE_FOR_TYPE_FILTER) return filtered;
-  }
-  return aggregateVillageStats(villageSlug);
-}
+export const getDvfStatsForVillage = unstable_cache(
+  async (villageSlug: string, typeLocal?: string): Promise<DvfVillageStats | null> => {
+    if (typeLocal) {
+      const filtered = await aggregateVillageStats(villageSlug, typeLocal);
+      if (filtered && filtered.count >= MIN_SAMPLE_FOR_TYPE_FILTER) return filtered;
+    }
+    return aggregateVillageStats(villageSlug);
+  },
+  ["dvf-stats-village"],
+  { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
+);
 
 async function aggregateVillageStats(
   villageSlug: string,
@@ -86,25 +99,26 @@ export async function getRecentDvfTransactions(
 export type DvfYearPoint = { year: number; count: number; avgPrixM2: number };
 
 /** Prix moyen /m² par millésime DVF pour une commune (ordre chronologique). */
-export async function getDvfPriceByYear(
-  villageSlug: string,
-  typeLocal?: string
-): Promise<DvfYearPoint[]> {
-  const rows = await prisma.dvfTransaction.groupBy({
-    by: ["sourceAnnee"],
-    where: { villageSlug, ...(typeLocal ? { typeLocal } : {}) },
-    _count: { _all: true },
-    _avg: { prixM2: true },
-    orderBy: { sourceAnnee: "asc" },
-  });
-  return rows
-    .filter((r) => r._avg.prixM2 !== null)
-    .map((r) => ({
-      year: r.sourceAnnee,
-      count: r._count._all,
-      avgPrixM2: Math.round(r._avg.prixM2 as number),
-    }));
-}
+export const getDvfPriceByYear = unstable_cache(
+  async (villageSlug: string, typeLocal?: string): Promise<DvfYearPoint[]> => {
+    const rows = await prisma.dvfTransaction.groupBy({
+      by: ["sourceAnnee"],
+      where: { villageSlug, ...(typeLocal ? { typeLocal } : {}) },
+      _count: { _all: true },
+      _avg: { prixM2: true },
+      orderBy: { sourceAnnee: "asc" },
+    });
+    return rows
+      .filter((r) => r._avg.prixM2 !== null)
+      .map((r) => ({
+        year: r.sourceAnnee,
+        count: r._count._all,
+        avgPrixM2: Math.round(r._avg.prixM2 as number),
+      }));
+  },
+  ["dvf-price-by-year"],
+  { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
+);
 
 export type DvfTypeBreakdown = {
   typeLocal: string;
@@ -116,9 +130,8 @@ export type DvfTypeBreakdown = {
 };
 
 /** Détail par type de bien (Maison / Appartement) : moyenne, médiane, fourchette du prix/m². */
-export async function getDvfBreakdownByType(
-  villageSlug: string
-): Promise<DvfTypeBreakdown[]> {
+export const getDvfBreakdownByType = unstable_cache(
+  async (villageSlug: string): Promise<DvfTypeBreakdown[]> => {
   const rows = await prisma.dvfTransaction.findMany({
     where: { villageSlug },
     select: { typeLocal: true, prixM2: true },
@@ -149,24 +162,31 @@ export async function getDvfBreakdownByType(
       };
     })
     .sort((a, b) => b.count - a.count);
-}
+  },
+  ["dvf-breakdown-by-type"],
+  { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
+);
 
-export async function getDvfStatsForAllVillages(): Promise<DvfVillageStats[]> {
-  const rows = await prisma.dvfTransaction.groupBy({
-    by: ["villageSlug"],
-    _count: { _all: true },
-    _avg: { prixM2: true },
-    _min: { sourceAnnee: true },
-    _max: { sourceAnnee: true },
-  });
+export const getDvfStatsForAllVillages = unstable_cache(
+  async (): Promise<DvfVillageStats[]> => {
+    const rows = await prisma.dvfTransaction.groupBy({
+      by: ["villageSlug"],
+      _count: { _all: true },
+      _avg: { prixM2: true },
+      _min: { sourceAnnee: true },
+      _max: { sourceAnnee: true },
+    });
 
-  return rows
-    .filter((r) => r._avg.prixM2 !== null)
-    .map((r) => ({
-      villageSlug: r.villageSlug,
-      count: r._count._all,
-      avgPrixM2: Math.round(r._avg.prixM2 as number),
-      minAnnee: r._min.sourceAnnee ?? 0,
-      maxAnnee: r._max.sourceAnnee ?? 0,
-    }));
-}
+    return rows
+      .filter((r) => r._avg.prixM2 !== null)
+      .map((r) => ({
+        villageSlug: r.villageSlug,
+        count: r._count._all,
+        avgPrixM2: Math.round(r._avg.prixM2 as number),
+        minAnnee: r._min.sourceAnnee ?? 0,
+        maxAnnee: r._max.sourceAnnee ?? 0,
+      }));
+  },
+  ["dvf-stats-all-villages"],
+  { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
+);
