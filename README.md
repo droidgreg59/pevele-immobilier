@@ -73,6 +73,45 @@ externe ci-dessous.
 curl "https://pevele-immobilier.fr/api/cron/sync-agencies?secret=$CRON_SECRET"
 ```
 
+## Syndication — flux d'annonces sortant
+
+Toutes les annonces publiées sont exposées en XML à **`/annonces.xml`**
+(`src/lib/listing-feed.ts`, ISR 1 h). Public, uniquement des données déjà
+visibles sur le site. Format maison, volontairement simple et stable :
+
+```xml
+<annonces source="…" genereLe="ISO-8601" total="N">
+  <annonce>
+    <ref>…</ref>                     <!-- identifiant stable -->
+    <url>…</url>                     <!-- fiche publique (absolue) -->
+    <transaction>vente|location</transaction>
+    <type>maison|appartement|terrain</type>
+    <typeMaison>individuelle|semi-individuelle|mitoyenne</typeMaison>
+    <commune>…</commune>
+    <codeInsee>59xxx</codeInsee>
+    <latitude>…</latitude> <longitude>…</longitude>   <!-- centre de la commune -->
+    <prix>…</prix>                   <!-- € ; loyer CC/mois si location -->
+    <surface>…</surface> <pieces>…</pieces> <chambres>…</chambres>
+    <dpe>A..G</dpe> <ges>A..G</ges>
+    <chargesCopro>…</chargesCopro> <taxeFonciere>…</taxeFonciere>
+    <honoraires charge="acquereur|vendeur">…</honoraires>
+    <charges>…</charges> <depotGarantie>…</depotGarantie> <meuble>oui|non</meuble>
+    <titre>…</titre> <description>…</description>
+    <publieeLe>ISO-8601</publieeLe>
+    <photos><photo>URL absolue</photo>…</photos>
+    <contact type="agence|particulier|artisan">Nom</contact>
+  </annonce>
+</annonces>
+```
+
+Les balises optionnelles (DPE, frais, photos…) sont **omises** quand la
+donnée est absente — jamais émises vides. `latitude`/`longitude` situent la
+commune, pas le logement (pas d'adresse précise en base).
+
+L'import *entrant* multi-formats (au-delà d'AC3/Immofacile) reste à faire :
+il exige d'inspecter un flux réel de chaque éditeur avant tout mapping
+(cf. `AGENTS.md`).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
