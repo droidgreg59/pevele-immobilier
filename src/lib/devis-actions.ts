@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { devisRequestReceivedEmail } from "./email-templates";
 import { logEvent } from "./events";
+import { verifyTurnstile } from "./turnstile";
 
 export type DevisFormState = { error?: string; success?: boolean };
 
@@ -20,6 +21,9 @@ export async function createDevisRequestAction(
   }
   if (session.userId === artisanId) {
     return { error: "Vous ne pouvez pas demander un devis à votre propre fiche." };
+  }
+  if (!(await verifyTurnstile(formData, "devis_request"))) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
   const message = String(formData.get("message") ?? "").trim();

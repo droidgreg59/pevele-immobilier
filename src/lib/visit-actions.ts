@@ -7,6 +7,7 @@ import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
 import { visitRequestReceivedEmail } from "./email-templates";
 import { logEvent } from "./events";
+import { verifyTurnstile } from "./turnstile";
 
 export type VisitFormState = { error?: string; success?: boolean };
 
@@ -28,6 +29,9 @@ export async function createVisitRequestAction(
   }
   if (listing.ownerId === session.userId) {
     return { error: "Vous ne pouvez pas demander une visite pour votre propre annonce." };
+  }
+  if (!(await verifyTurnstile(formData, "visit_request"))) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
   const message = String(formData.get("message") ?? "").trim();

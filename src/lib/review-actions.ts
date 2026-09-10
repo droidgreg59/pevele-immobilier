@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { reviewReceivedEmail } from "./email-templates";
 import { logEvent } from "./events";
+import { verifyTurnstile } from "./turnstile";
 
 export type ReviewFormState = { error?: string };
 
@@ -20,6 +21,9 @@ export async function upsertReviewAction(
   }
   if (session.userId === agencyId) {
     return { error: "Vous ne pouvez pas noter votre propre agence." };
+  }
+  if (!(await verifyTurnstile(formData, "review"))) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
   const note = Number(formData.get("note"));

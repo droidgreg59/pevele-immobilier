@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
@@ -9,7 +8,7 @@ import { getSession, setSessionCookie, clearSessionCookie } from "./session";
 import { sendEmail } from "./email";
 import { emailVerificationEmail, passwordResetEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
-import { verifyTurnstileToken } from "./turnstile";
+import { verifyTurnstile } from "./turnstile";
 import { logEvent } from "./events";
 import type { AccountType } from "@prisma/client";
 
@@ -43,11 +42,6 @@ function safeNextPath(formData: FormData): string {
   return next.startsWith("/") && !next.startsWith("//") ? next : "/compte";
 }
 
-async function clientIp(): Promise<string | undefined> {
-  const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
-}
-
 export async function registerAction(
   _prevState: AuthState,
   formData: FormData
@@ -74,9 +68,7 @@ export async function registerAction(
     return { error: "Merci d'indiquer le nom de votre entreprise." };
   }
 
-  const turnstileToken = formData.get("cf-turnstile-response");
-  const turnstileOk = await verifyTurnstileToken(turnstileToken, "register", await clientIp());
-  if (!turnstileOk) {
+  if (!(await verifyTurnstile(formData, "register"))) {
     return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
@@ -161,6 +153,10 @@ export async function loginAction(
 
   const genericError = { error: "Email ou mot de passe incorrect." };
 
+  if (!(await verifyTurnstile(formData, "login"))) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return genericError;
 
@@ -195,6 +191,9 @@ export async function requestPasswordResetAction(
     .toLowerCase();
   if (!EMAIL_RE.test(email)) {
     return { error: "Adresse email invalide." };
+  }
+  if (!(await verifyTurnstile(formData, "password_reset"))) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
   const user = await prisma.user.findUnique({ where: { email } });

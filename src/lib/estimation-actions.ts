@@ -7,6 +7,7 @@ import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
 import { estimationRequestReceivedEmail, estimationRequestRespondedEmail } from "./email-templates";
 import { logEvent } from "./events";
+import { verifyTurnstile } from "./turnstile";
 
 export type EstimationFormState = { error?: string; success?: boolean };
 
@@ -21,6 +22,9 @@ export async function createEstimationRequestAction(
   }
   if (session.userId === agencyId) {
     return { error: "Vous ne pouvez pas demander une estimation à votre propre agence." };
+  }
+  if (!(await verifyTurnstile(formData, "estimation_request"))) {
+    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }
 
   const adresse = String(formData.get("adresse") ?? "").trim();

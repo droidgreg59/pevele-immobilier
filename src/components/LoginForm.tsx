@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { loginAction, type AuthState } from "@/lib/auth-actions";
+import TurnstileWidget from "./TurnstileWidget";
 
 const initialState: AuthState = {};
 
@@ -42,6 +43,8 @@ export default function LoginForm({ next }: { next?: string }) {
       <Link href="/mot-de-passe-oublie" className="self-start text-[12.5px] font-semibold text-blue">
         Mot de passe oublié ?
       </Link>
+
+      <TurnstileWidget action="login" resetKey={state.error} />
 
       {state.error ? (
         <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">
