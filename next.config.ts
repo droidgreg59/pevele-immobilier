@@ -7,11 +7,23 @@ import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "./src/lib/photo-constants";
 // fetch"). Marge de +20 % pour l'overhead multipart et les autres champs.
 const photosLimitMb = Math.ceil((MAX_PHOTOS * MAX_PHOTO_BYTES * 1.2) / (1024 * 1024));
 
+// Photos d'annonces et logos servis depuis Cloudflare R2 (src/lib/r2.ts) —
+// next/image doit connaître ce domaine pour l'optimiser. R2_PUBLIC_URL peut
+// être absent en local tant que le bucket n'est pas configuré.
+const r2Hostname = process.env.R2_PUBLIC_URL
+  ? new URL(process.env.R2_PUBLIC_URL).hostname
+  : undefined;
+
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: `${photosLimitMb}mb`,
     },
+  },
+  images: {
+    remotePatterns: r2Hostname
+      ? [{ protocol: "https", hostname: r2Hostname, pathname: "/**" }]
+      : [],
   },
 };
 

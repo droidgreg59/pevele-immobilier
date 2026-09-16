@@ -27,15 +27,22 @@ fait. Deux URLs de connexion en jeu, toutes deux dans `.env` en local et dans le
 transaction ne supporte pas les prepared statements qu'utilisent `prisma migrate`/`db push`).
 `prisma/dev.db` (l'ancienne base SQLite locale) est obsolète et n'est plus utilisée.
 
+### Stockage objet — Cloudflare R2
+
+Depuis le 2026-09-16, les photos d'annonces et les logos sont envoyés sur un bucket **Cloudflare R2**
+(API compatible S3, `src/lib/r2.ts` + `src/lib/photo-upload.ts`) plutôt que sur le disque local — le
+filesystem de Vercel est éphémère/read-only en production, un fichier écrit via `fs` à l'exécution ne
+survit pas à la requête suivante. Clé objet : `listings/<listingId>/<uuid>.<ext>` et
+`logos/<userId>-<uuid>.<ext>` ; URL publique = `R2_PUBLIC_URL` + clé (domaine `*.r2.dev` fourni par R2,
+ou un domaine personnalisé). `next.config.ts` déclare ce domaine dans `images.remotePatterns` pour
+`next/image`. L'ancien dossier `public/uploads/` (disque local) n'est plus utilisé.
+
 ### Fichiers locaux à transférer manuellement entre machines
 
-`.env` et `public/uploads/` sont **volontairement exclus de git** (`.gitignore`) — ils ne suivent jamais
-un `git clone`/`pull`. En changeant de machine, les copier à part (jamais via le chat — ce sont des
-secrets et des données réelles). `.env` contient tous les secrets (Resend, Turnstile, Cloudflare beacon,
-cron, `AUTH_SECRET`, `DATABASE_URL`/`DATABASE_URL_UNPOOLED`) ; `public/uploads/` contient les photos des
-annonces (structure : `uploads/listings/<id>/*.jpg`, `uploads/logos/...`) — **à migrer vers un stockage
-objet (Cloudflare R2) avant mise en prod sur Vercel**, dont le système de fichiers est éphémère/read-only
-en production : les photos uploadées via le disque local ne survivraient pas à un redéploiement.
+`.env` est **volontairement exclu de git** (`.gitignore`) — il ne suit jamais un `git clone`/`pull`. En
+changeant de machine, le copier à part (jamais via le chat — ce sont des secrets). Il contient tous les
+secrets (Resend, Turnstile, Cloudflare beacon, cron, `AUTH_SECRET`, `DATABASE_URL`/`DATABASE_URL_UNPOOLED`,
+`R2_*`).
 
 ### Discipline « données réelles uniquement »
 

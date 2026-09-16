@@ -1,7 +1,12 @@
 import "server-only";
-import { mkdir, writeFile, rm, unlink } from "node:fs/promises";
-import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import {
+  PutObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
+} from "@aws-sdk/client-s3";
+import { r2Client, r2Bucket, r2PublicUrl } from "./r2";
 import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "./photo-constants";
 
 const EXT_BY_MIME: Record<string, string> = {
@@ -31,11 +36,16 @@ export function validatePhotoFiles(files: File[], existingCount = 0): string | n
   return null;
 }
 
+async function putObject(key: string, buffer: Buffer, contentType: string): Promise<string> {
+  await r2Client.send(
+    new PutObjectCommand({ Bucket: r2Bucket, Key: key, Body: buffer, ContentType: contentType })
+  );
+  return `${r2PublicUrl}/${key}`;
+}
+
 /**
- * Écrit les fichiers sur disque sous public/uploads/listings/{listingId}/ et
- * renvoie leurs URLs publiques. Stockage local uniquement pour l'instant —
- * à remplacer par un stockage objet (S3, R2...) avant un déploiement sur une
- * plateforme serverless.
+ * Envoie les fichiers sur R2 sous listings/{listingId}/ et renvoie leurs
+ * URLs publiques (domaine public R2, cf. src/lib/r2.ts).
  */
 export async function savePhotoFiles(
   listingId: string,
@@ -43,16 +53,12 @@ export async function savePhotoFiles(
 ): Promise<string[]> {
   if (files.length === 0) return [];
 
-  const dir = join(process.cwd(), "public", "uploads", "listings", listingId);
-  await mkdir(dir, { recursive: true });
-
   const urls: string[] = [];
   for (const file of files) {
     const ext = EXT_BY_MIME[file.type];
-    const filename = `${randomUUID()}.${ext}`;
+    const key = `listings/${listingId}/${randomUUID()}.${ext}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(join(dir, filename), buffer);
-    urls.push(`/uploads/listings/${listingId}/${filename}`);
+    urls.push(await putObject(key, buffer, file.type));
   }
   return urls;
 }
@@ -66,8 +72,8 @@ const EXT_BY_CONTENT_TYPE: Record<string, string> = {
 
 /**
  * Télécharge des photos depuis des URLs distantes (flux XML d'agence) et les
- * écrit sous public/uploads/listings/{listingId}/, comme savePhotoFiles.
- * Les URLs qui échouent ou ne renvoient pas une image reconnue sont ignorées
+ * envoie sur R2 sous listings/{listingId}/, comme savePhotoFiles. Les URLs
+ * qui échouent ou ne renvoient pas une image reconnue sont ignorées
  * (best-effort — un flux agence peut contenir des liens morts).
  */
 export async function saveRemotePhotos(
@@ -76,20 +82,18 @@ export async function saveRemotePhotos(
 ): Promise<string[]> {
   if (urls.length === 0) return [];
 
-  const dir = join(process.cwd(), "public", "uploads", "listings", listingId);
-  await mkdir(dir, { recursive: true });
-
   const saved: string[] = [];
   for (const url of urls) {
     try {
       const res = await fetch(url);
       if (!res.ok) continue;
       const contentType = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
-      const ext = EXT_BY_CONTENT_TYPE[contentType] ?? (/\.(jpe?g|png|webp)$/i.exec(url)?.[1]?.toLowerCase().replace("jpeg", "jpg") || "jpg");
-      const filename = `${randomUUID()}.${ext}`;
+      const ext =
+        EXT_BY_CONTENT_TYPE[contentType] ??
+        (/\.(jpe?g|png|webp)$/i.exec(url)?.[1]?.toLowerCase().replace("jpeg", "jpg") || "jpg");
+      const key = `listings/${listingId}/${randomUUID()}.${ext}`;
       const buffer = Buffer.from(await res.arrayBuffer());
-      await writeFile(join(dir, filename), buffer);
-      saved.push(`/uploads/listings/${listingId}/${filename}`);
+      saved.push(await putObject(key, buffer, contentType || "image/jpeg"));
     } catch {
       // URL injoignable — ignorée, sans bloquer l'import du reste
     }
@@ -97,24 +101,42 @@ export async function saveRemotePhotos(
   return saved;
 }
 
-/** Supprime tous les fichiers d'une annonce (best-effort, ne lève pas si absent). */
-export async function deleteListingUploadDir(listingId: string): Promise<void> {
-  const dir = join(process.cwd(), "public", "uploads", "listings", listingId);
-  await rm(dir, { recursive: true, force: true });
+/** URL publique R2 -> clé objet, ou null si l'URL n'appartient pas au bucket. */
+function keyFromUrl(url: string): string | null {
+  if (!r2PublicUrl || !url.startsWith(`${r2PublicUrl}/`)) return null;
+  return url.slice(r2PublicUrl.length + 1);
 }
 
-/** Supprime des fichiers photo individuels par leur URL publique (best-effort). */
+/** Supprime tous les objets d'une annonce (best-effort, ne lève pas si absent). */
+export async function deleteListingUploadDir(listingId: string): Promise<void> {
+  try {
+    const prefix = `listings/${listingId}/`;
+    const list = await r2Client.send(
+      new ListObjectsV2Command({ Bucket: r2Bucket, Prefix: prefix })
+    );
+    const objects = (list.Contents ?? [])
+      .map((o) => o.Key)
+      .filter((key): key is string => Boolean(key))
+      .map((Key) => ({ Key }));
+    if (objects.length === 0) return;
+    await r2Client.send(new DeleteObjectsCommand({ Bucket: r2Bucket, Delete: { Objects: objects } }));
+  } catch {
+    // best-effort — un échec de nettoyage ne doit pas bloquer l'appelant
+  }
+}
+
+/** Supprime des objets photo individuels par leur URL publique (best-effort). */
 export async function deletePhotoFilesByUrl(urls: string[]): Promise<void> {
-  await Promise.all(
-    urls.map(async (url) => {
-      if (!url.startsWith("/uploads/listings/")) return;
-      try {
-        await unlink(join(process.cwd(), "public", url));
-      } catch {
-        // fichier déjà absent — sans conséquence
-      }
-    })
-  );
+  const objects = urls
+    .map(keyFromUrl)
+    .filter((key): key is string => key !== null)
+    .map((Key) => ({ Key }));
+  if (objects.length === 0) return;
+  try {
+    await r2Client.send(new DeleteObjectsCommand({ Bucket: r2Bucket, Delete: { Objects: objects } }));
+  } catch {
+    // best-effort
+  }
 }
 
 export function pickLogoFile(formData: FormData): File | null {
@@ -132,24 +154,22 @@ export function validateLogoFile(file: File): string | null {
   return null;
 }
 
-/** Écrit le logo sur disque sous public/uploads/logos/ et renvoie son URL publique. */
+/** Envoie le logo sur R2 sous logos/ et renvoie son URL publique. */
 export async function saveLogoFile(userId: string, file: File): Promise<string> {
-  const dir = join(process.cwd(), "public", "uploads", "logos");
-  await mkdir(dir, { recursive: true });
-
   const ext = EXT_BY_MIME[file.type];
-  const filename = `${userId}-${randomUUID()}.${ext}`;
+  const key = `logos/${userId}-${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(join(dir, filename), buffer);
-  return `/uploads/logos/${filename}`;
+  return putObject(key, buffer, file.type);
 }
 
-/** Supprime un fichier logo par son URL publique (best-effort). */
+/** Supprime un objet logo par son URL publique (best-effort). */
 export async function deleteLogoFile(url: string | null | undefined): Promise<void> {
-  if (!url || !url.startsWith("/uploads/logos/")) return;
+  if (!url) return;
+  const key = keyFromUrl(url);
+  if (!key || !key.startsWith("logos/")) return;
   try {
-    await unlink(join(process.cwd(), "public", url));
+    await r2Client.send(new DeleteObjectCommand({ Bucket: r2Bucket, Key: key }));
   } catch {
-    // fichier déjà absent — sans conséquence
+    // fichier déjà absent ou erreur réseau — sans conséquence
   }
 }
