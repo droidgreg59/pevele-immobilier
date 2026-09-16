@@ -11,17 +11,31 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Pévèle-Immobilier.fr — contexte projet
 
 Site immobilier de référence pour la région de la Pévèle (Nord). Next.js 16 App Router, TypeScript,
-Tailwind v4, Prisma + SQLite, auth JWT maison (`jose`, cookies de session). **Toute mutation passe par une
+Tailwind v4, Prisma + Postgres (Neon), auth JWT maison (`jose`, cookies de session). **Toute mutation passe par une
 Server Action** (`"use server"` + `FormData`) — pas de routes REST/Express classiques, sauf les endpoints
 `/api/cron/*` (protégés par `CRON_SECRET`, voir README) et `/api/session`.
 
+### Base de données — Postgres (Neon)
+
+Depuis le 2026-09-16, la base est un projet **Neon** (Postgres serverless), créé depuis l'onglet Storage
+du projet Vercel. `prisma/schema.prisma` n'autorise qu'un seul `provider` par schéma : **dev local et
+prod pointent donc sur la même base Neon** pour l'instant (pas de séparation dev/prod). Si besoin
+d'isoler le dev, Neon permet de créer une branche de base (copie instantanée) en un clic — pas encore
+fait. Deux URLs de connexion en jeu, toutes deux dans `.env` en local et dans les env vars Vercel :
+`DATABASE_URL` (poolée via pgbouncer, utilisée par Prisma Client à l'exécution) et
+`DATABASE_URL_UNPOOLED` (connexion directe, requise en `directUrl` par le schéma — pgbouncer en mode
+transaction ne supporte pas les prepared statements qu'utilisent `prisma migrate`/`db push`).
+`prisma/dev.db` (l'ancienne base SQLite locale) est obsolète et n'est plus utilisée.
+
 ### Fichiers locaux à transférer manuellement entre machines
 
-`.env`, `prisma/dev.db` et `public/uploads/` sont **volontairement exclus de git** (`.gitignore`) — ils ne
-suivent jamais un `git clone`/`pull`. En changeant de machine, les copier à part (jamais via le chat — ce
-sont des secrets et des données réelles). `.env` contient tous les secrets (Resend, Turnstile, Cloudflare
-beacon, cron, `AUTH_SECRET`) ; `dev.db` est la vraie base (utilisateurs, annonces) ; `public/uploads/`
-contient les photos des annonces (structure : `uploads/listings/<id>/*.jpg`, `uploads/logos/...`).
+`.env` et `public/uploads/` sont **volontairement exclus de git** (`.gitignore`) — ils ne suivent jamais
+un `git clone`/`pull`. En changeant de machine, les copier à part (jamais via le chat — ce sont des
+secrets et des données réelles). `.env` contient tous les secrets (Resend, Turnstile, Cloudflare beacon,
+cron, `AUTH_SECRET`, `DATABASE_URL`/`DATABASE_URL_UNPOOLED`) ; `public/uploads/` contient les photos des
+annonces (structure : `uploads/listings/<id>/*.jpg`, `uploads/logos/...`) — **à migrer vers un stockage
+objet (Cloudflare R2) avant mise en prod sur Vercel**, dont le système de fichiers est éphémère/read-only
+en production : les photos uploadées via le disque local ne survivraient pas à un redéploiement.
 
 ### Discipline « données réelles uniquement »
 
@@ -81,8 +95,9 @@ fonctions pures / la logique (validation, barèmes coût d'achat, slugify, forma
 `searchParams`, `where` Prisma des recherches, JSON-LD, invariants du jeu de communes). **Pas de
 tests qui touchent la base ou le réseau.** `import "server-only"` est neutralisé dans les tests via
 un alias vers `test/stubs/server-only.ts`. La CI (`.github/workflows/ci.yml`, sur chaque PR + master)
-enchaîne `lint` → `tsc --noEmit` → `test` → `build`, avec une SQLite vide créée par `prisma db push`
-(le build exécute `sitemap.ts` qui interroge la base).
+enchaîne `lint` → `tsc --noEmit` → `test` → `build`, avec un conteneur Postgres jetable (service
+GitHub Actions) dont le schéma est créé par `prisma db push` (le build exécute `sitemap.ts` qui
+interroge la base).
 
 ### Pièges d'environnement rencontrés
 
