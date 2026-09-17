@@ -115,6 +115,11 @@ interroge la base).
 - **Windows uniquement — verrou de fichier à la régénération du client Prisma** : `npx prisma generate`
   peut échouer avec `EPERM` sur `query_engine-windows.dll.node` si le serveur dev tourne encore. Arrêter le
   serveur dev avant tout `prisma db push`/`generate`, le relancer après.
+- **Neon peut renvoyer `P1001` (connexion refusée) sur la toute première requête**
+  après une période d'inactivité (auto-suspend du plan gratuit, reprise en ~500ms
+  d'habitude mais parfois plus lors d'un `npm run build` qui enchaîne beaucoup de
+  requêtes DVF). Reste transitoire — relancer la commande suffit, pas besoin
+  d'investiguer plus loin si ça passe au retry.
 - **`.next/dev/types/routes.d.ts` peut se corrompre** après une activité concurrente du serveur dev,
   provoquant des erreurs `tsc`/`build` incompréhensibles sans rapport avec le code réel. Arrêter le
   serveur, `rm -rf .next`, reconstruire.
