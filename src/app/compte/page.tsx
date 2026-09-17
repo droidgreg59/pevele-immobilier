@@ -8,27 +8,19 @@ import {
   toggleDigestOptInAction,
 } from "@/lib/auth-actions";
 import { prisma } from "@/lib/prisma";
-import { getListingsByUser } from "@/lib/listings";
-import { getFavoriteListingIds, getFavoriteCount } from "@/lib/favorites";
+import { getFavoriteCount } from "@/lib/favorites";
 import { getSavedSearchesByUser, savedSearchUrl } from "@/lib/saved-searches";
 import { deleteSavedSearchAction } from "@/lib/saved-search-actions";
 import { sendMandateAction } from "@/lib/mandate-actions";
 import { respondToProposalAction } from "@/lib/proposal-actions";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
-import { getVisitRequestsForOwner } from "@/lib/visits";
-import {
-  getPendingOpenHouseRegistrationsForOwner,
-  getOpenHouseRegistrationsByUser,
-} from "@/lib/open-house";
+import { getOpenHouseRegistrationsByUser } from "@/lib/open-house";
 import { getEstimationRequestsByUser } from "@/lib/estimations";
 import { getAgencies } from "@/lib/agencies";
 import { isUserAdmin, getPendingListings } from "@/lib/admin";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix } from "@/lib/format";
-import ListingCard from "@/components/ListingCard";
 import DevisList from "@/components/DevisList";
-import VisitRequestList from "@/components/VisitRequestList";
-import OpenHouseRegistrationList from "@/components/OpenHouseRegistrationList";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -79,9 +71,6 @@ export const metadata: Metadata = {
   title: "Mon compte",
 };
 
-const STUBS_PARTICULIER: string[] = [];
-const STUBS_ARTISAN: string[] = [];
-
 const TYPE_LABEL: Record<string, string> = {
   PARTICULIER: "Particulier",
   AGENCE: "Agence",
@@ -91,10 +80,12 @@ const TYPE_LABEL: Record<string, string> = {
 export default async function ComptePage({ searchParams }: PageProps<"/compte">) {
   const session = await getSession();
   if (!session) redirect("/connexion");
-  // Espace agence dédié, type CRM (menu latéral, une page par activité) —
-  // voir src/app/compte/agence/layout.tsx. Remplace l'empilement vertical
-  // ci-dessous, conservé tel quel pour les comptes particulier et artisan.
+  // Espaces dédiés, type CRM (menu latéral, une page par activité) — voir
+  // src/app/compte/agence/layout.tsx et src/app/compte/particulier/layout.tsx.
+  // Remplacent l'empilement vertical ci-dessous, conservé tel quel pour le
+  // seul type de compte restant ici, artisan (non redemandé pour l'instant).
   if (session.type === "AGENCE") redirect("/compte/agence");
+  if (session.type === "PARTICULIER") redirect("/compte/particulier");
 
   const sp = await searchParams;
   const verifEmailRenvoye = sp.verif === "renvoye";
@@ -104,30 +95,18 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
   });
   const emailNonVerifie = currentUser != null && currentUser.emailVerifiedAt == null;
 
-  const isArtisan = session.type === "ARTISAN";
-  const stubs = isArtisan ? STUBS_ARTISAN : STUBS_PARTICULIER;
   const [
-    mesAnnonces,
-    favoriteIds,
     favoriteCount,
     mesRecherches,
     devisRequests,
-    visitRequests,
-    openHouseReceived,
     myOpenHouseRegistrations,
     myEstimationRequests,
     agencies,
     isAdmin,
   ] = await Promise.all([
-    isArtisan ? Promise.resolve([]) : getListingsByUser(session.userId),
-    getFavoriteListingIds(session.userId),
     getFavoriteCount(session.userId),
     getSavedSearchesByUser(session.userId),
-    isArtisan ? getDevisRequestsForArtisan(session.userId) : Promise.resolve([]),
-    isArtisan ? Promise.resolve([]) : getVisitRequestsForOwner(session.userId),
-    isArtisan
-      ? Promise.resolve([])
-      : getPendingOpenHouseRegistrationsForOwner(session.userId),
+    getDevisRequestsForArtisan(session.userId),
     getOpenHouseRegistrationsByUser(session.userId),
     getEstimationRequestsByUser(session.userId),
     getAgencies(),
@@ -159,31 +138,6 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
         })
       : null,
   }));
-  const visitItems = visitRequests.map((v) => ({
-    id: v.id,
-    message: v.message,
-    telephone: v.telephone,
-    preferredDateLabel: v.preferredDate ? v.preferredDate.toLocaleDateString("fr-FR") : null,
-    traite: v.traite,
-    createdLabel: v.createdAt.toLocaleDateString("fr-FR"),
-    authorNom: v.author.nom,
-    authorEmail: v.author.email,
-    listingId: v.listing.id,
-    listingTitre: v.listing.titre,
-    listingHref: `/${v.listing.transaction === "VENTE" ? "acheter" : "louer"}/${v.listing.id}`,
-  }));
-  const openHouseItems = openHouseReceived.map((r) => ({
-    id: r.id,
-    nom: r.nom,
-    prenom: r.prenom,
-    telephone: r.telephone,
-    email: r.email,
-    createdLabel: r.createdAt.toLocaleDateString("fr-FR"),
-    creneauLabel: formatCreneau(r.dateStartAt, r.dateEndAt),
-    listingTitre: r.listingTitre,
-    listingHref: r.listingHref,
-    manageHref: `/compte/annonces/${r.listingId}`,
-  }));
   const myOpenHouseItems = myOpenHouseRegistrations.map((r) => ({
     id: r.id,
     statut: r.statut,
@@ -192,21 +146,6 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
     listingTitre: r.listingTitre,
     listingHref: r.listingHref,
   }));
-
-  const totalNewMatches = mesRecherches.reduce((sum, s) => sum + s.newMatches, 0);
-  const pendingProposals = mesRecherches.reduce(
-    (sum, s) =>
-      sum +
-      s.mandates.reduce(
-        (mSum, m) => mSum + m.proposals.filter((p) => p.statut === "PROPOSEE").length,
-        0
-      ),
-    0
-  );
-  // Un particulier qui n'a encore rien déposé est ici pour chercher, pas pour
-  // vendre : ses favoris et ses recherches sauvegardées sont ce qui compte,
-  // pas deux sections "(0)" vides sur ses annonces et ses demandes de visite.
-  const isChercheur = !isArtisan && mesAnnonces.length === 0;
 
   const favorisSection = (
     <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
@@ -401,68 +340,6 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
       ) : (
         <p className="mt-3 text-[14px] text-muted">
           Enregistrez une recherche depuis « Acheter » ou « Louer » pour la retrouver ici.
-        </p>
-      )}
-    </div>
-  );
-
-  const annoncesSection = (
-    <div className="mt-8">
-      <span className="text-[11px] font-semibold text-ink">
-        Mes annonces ({mesAnnonces.length})
-      </span>
-      {mesAnnonces.length > 0 ? (
-        <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {mesAnnonces.map((listing) => (
-            <div key={listing.id} className="flex flex-col gap-2">
-              <ListingCard listing={listing} isFavorited={favoriteIds.has(listing.id)} />
-              {listing.statut === "REFUSEE" ? (
-                <p className="m-0 text-[12.5px] text-muted">
-                  Refusée
-                  {listing.statutRaison ? ` — ${listing.statutRaison}` : ""}
-                </p>
-              ) : null}
-              <Link
-                href={`/compte/annonces/${listing.id}`}
-                className="self-start text-[12.5px] font-semibold text-blue"
-              >
-                Modifier cette annonce →
-              </Link>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-3 text-[14px] text-muted">Vous n&apos;avez pas encore déposé d&apos;annonce.</p>
-      )}
-    </div>
-  );
-
-  const visitesSection = (
-    <div className="mt-8">
-      <span className="text-[11px] font-semibold text-ink">
-        Demandes de visite ({visitItems.length})
-      </span>
-      {visitItems.length > 0 ? (
-        <VisitRequestList items={visitItems} />
-      ) : (
-        <p className="mt-3 text-[14px] text-muted">
-          Les demandes de visite envoyées sur vos annonces apparaîtront ici.
-        </p>
-      )}
-    </div>
-  );
-
-  const openHouseReceivedSection = (
-    <div className="mt-8">
-      <span className="text-[11px] font-semibold text-ink">
-        Inscriptions portes ouvertes ({openHouseItems.length})
-      </span>
-      {openHouseItems.length > 0 ? (
-        <OpenHouseRegistrationList items={openHouseItems} />
-      ) : (
-        <p className="mt-3 text-[14px] text-muted">
-          Les inscriptions aux portes ouvertes de vos annonces apparaîtront ici. Créez un
-          évènement depuis « Modifier cette annonce ».
         </p>
       )}
     </div>
@@ -664,109 +541,32 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
         </div>
       ) : null}
 
-      {!isArtisan ? (
-        <div className="mt-6 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
-          <span className="text-[11px] font-semibold text-ink">Mes alertes</span>
-          {totalNewMatches > 0 || pendingProposals > 0 ? (
-            <div className="mt-2 flex flex-col gap-1.5">
-              {totalNewMatches > 0 ? (
-                <Link href="#recherches" className="text-[13.5px] text-ink hover:text-blue">
-                  🔔{" "}
-                  <b>
-                    {totalNewMatches} nouvelle{totalNewMatches > 1 ? "s" : ""} annonce
-                    {totalNewMatches > 1 ? "s" : ""}
-                  </b>{" "}
-                  correspondant à vos recherches
-                </Link>
-              ) : null}
-              {pendingProposals > 0 ? (
-                <Link href="#recherches" className="text-[13.5px] text-ink hover:text-blue">
-                  📨{" "}
-                  <b>
-                    {pendingProposals} proposition{pendingProposals > 1 ? "s" : ""}
-                  </b>{" "}
-                  à examiner
-                </Link>
-              ) : null}
-            </div>
-          ) : (
-            <p className="m-0 mt-2 text-[13.5px] text-muted">Rien de nouveau pour le moment.</p>
-          )}
-        </div>
-      ) : null}
+      <div className="mt-4 flex flex-wrap gap-4">
+        <Link href={`/artisans/${session.userId}`} className="text-[13px] font-semibold text-blue">
+          Voir ma fiche publique →
+        </Link>
+        <Link href="/compte/artisan" className="text-[13px] font-semibold text-blue">
+          Modifier ma fiche →
+        </Link>
+      </div>
 
-      {isArtisan ? (
-        <div className="mt-4 flex flex-wrap gap-4">
-          <Link href={`/artisans/${session.userId}`} className="text-[13px] font-semibold text-blue">
-            Voir ma fiche publique →
-          </Link>
-          <Link href="/compte/artisan" className="text-[13px] font-semibold text-blue">
-            Modifier ma fiche →
-          </Link>
-        </div>
-      ) : null}
+      <div className="mt-8">
+        <span className="text-[11px] font-semibold text-ink">
+          Demandes de devis ({devisItems.length})
+        </span>
+        {devisItems.length > 0 ? (
+          <DevisList items={devisItems} />
+        ) : (
+          <p className="mt-3 text-[14px] text-muted">
+            Les demandes de devis envoyées depuis votre fiche publique apparaîtront ici.
+          </p>
+        )}
+      </div>
 
-      {isArtisan ? (
-        <div className="mt-8">
-          <span className="text-[11px] font-semibold text-ink">
-            Demandes de devis ({devisItems.length})
-          </span>
-          {devisItems.length > 0 ? (
-            <DevisList items={devisItems} />
-          ) : (
-            <p className="mt-3 text-[14px] text-muted">
-              Les demandes de devis envoyées depuis votre fiche publique apparaîtront ici.
-            </p>
-          )}
-        </div>
-      ) : null}
-
-      {isChercheur ? (
-        <>
-          {favorisSection}
-          {recherchesSection}
-          {annoncesSection}
-          {visitesSection}
-          {openHouseReceivedSection}
-          {myEstimationSection}
-          {myOpenHouseSection}
-        </>
-      ) : (
-        <>
-          {!isArtisan ? annoncesSection : null}
-          {!isArtisan ? visitesSection : null}
-          {!isArtisan ? openHouseReceivedSection : null}
-          {myEstimationSection}
-          {myOpenHouseSection}
-          {favorisSection}
-          {recherchesSection}
-        </>
-      )}
-
-      {stubs.length > 0 ? (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {stubs.map((label) => (
-            <div key={label} className="rounded-2xl border border-dashed border-line bg-surface p-5">
-              <span className="text-[11px] font-semibold text-muted">{label}</span>
-              <p className="m-0 mt-2 text-[13px] text-muted-2">Bientôt disponible.</p>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      {!isArtisan ? (
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-surface px-6 py-5">
-          <span className="text-[15px] text-ink">
-            Prêt à publier votre premier bien ?
-          </span>
-          <Link
-            href="/vendre/deposer"
-            className="rounded-full bg-yellow px-5 py-3 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
-          >
-            + Déposer une annonce
-          </Link>
-        </div>
-      ) : null}
+      {myEstimationSection}
+      {myOpenHouseSection}
+      {favorisSection}
+      {recherchesSection}
     </div>
   );
 }
