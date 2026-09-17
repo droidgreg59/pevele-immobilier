@@ -27,3 +27,38 @@ self.addEventListener("fetch", (event) => {
     )
   );
 });
+
+/**
+ * Notifications push (Web Push / VAPID, voir src/lib/push.ts) — payload JSON
+ * {title, body, url?}. Best-effort sur le parsing : un payload inattendu ne
+ * doit pas faire échouer l'affichage.
+ */
+self.addEventListener("push", (event) => {
+  let data = { title: "Pévèle Immobilier", body: "Nouvelle notification." };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch {
+    // payload non-JSON — on garde le texte par défaut
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: data.url || "/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if (client.url === url && "focus" in client) return client.focus();
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});

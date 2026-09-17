@@ -5,6 +5,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { reviewReceivedEmail } from "./email-templates";
+import { sendPushNotification } from "./push";
 import { logEvent } from "./events";
 import { verifyTurnstile } from "./turnstile";
 
@@ -54,6 +55,11 @@ export async function upsertReviewAction(
   if (!existing) {
     const { subject, html } = reviewReceivedEmail({ authorNom: session.nom, note });
     await sendEmail({ to: agency.email, subject, html });
+    await sendPushNotification(agencyId, {
+      title: "Nouvel avis reçu",
+      body: `${session.nom} vous a laissé un avis ${note}/5.`,
+      url: `/professionnels/${agencyId}`,
+    });
     await logEvent("review_submitted", {
       userId: session.userId,
       path: `/professionnels/${agencyId}`,

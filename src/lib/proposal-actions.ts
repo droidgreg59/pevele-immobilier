@@ -5,6 +5,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { proposalReceivedEmail } from "./email-templates";
+import { sendPushNotification } from "./push";
 
 export async function createProposalAction(formData: FormData) {
   const mandateId = String(formData.get("mandateId") ?? "");
@@ -36,6 +37,11 @@ export async function createProposalAction(formData: FormData) {
     listingHref: `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`,
   });
   await sendEmail({ to: mandate.client.email, subject, html });
+  await sendPushNotification(mandate.clientId, {
+    title: "Nouveau bien proposé",
+    body: `${session.nom} vous propose « ${listing.titre} ».`,
+    url: "/compte",
+  });
 
   redirect("/compte/agence/clients");
 }

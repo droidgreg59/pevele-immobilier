@@ -31,6 +31,7 @@ import DevisList from "@/components/DevisList";
 import VisitRequestList from "@/components/VisitRequestList";
 import OpenHouseRegistrationList from "@/components/OpenHouseRegistrationList";
 import EstimationList from "@/components/EstimationList";
+import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 function formatCreneau(start: Date, end: Date): string {
   const day = start.toLocaleDateString("fr-FR", {
@@ -688,6 +689,8 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
           </button>
         </form>
       </div>
+
+      <PushNotificationToggle />
 
       {isAdmin ? (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">

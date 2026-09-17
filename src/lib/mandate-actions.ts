@@ -5,6 +5,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { mandateReceivedEmail, mandateRespondedEmail } from "./email-templates";
+import { sendPushNotification } from "./push";
 import { logEvent } from "./events";
 
 export async function sendMandateAction(formData: FormData) {
@@ -32,6 +33,11 @@ export async function sendMandateAction(formData: FormData) {
 
   const { subject, html } = mandateReceivedEmail({ clientNom: session.nom });
   await sendEmail({ to: agency.email, subject, html });
+  await sendPushNotification(agencyId, {
+    title: "Nouvelle recherche confiée",
+    body: `${session.nom} vous confie sa recherche.`,
+    url: "/compte/agence/clients",
+  });
   await logEvent("mandate_created", { userId: session.userId, path: "/compte" });
 
   redirect("/compte");
@@ -46,7 +52,11 @@ export async function respondToMandateAction(formData: FormData) {
 
   const existing = await prisma.searchMandate.findFirst({
     where: { id: mandateId, agencyId: session.userId, statut: "EN_ATTENTE" },
-    select: { client: { select: { email: true } }, agency: { select: { nom: true, entreprise: true } } },
+    select: {
+      clientId: true,
+      client: { select: { email: true } },
+      agency: { select: { nom: true, entreprise: true } },
+    },
   });
 
   await prisma.searchMandate.updateMany({
@@ -58,11 +68,15 @@ export async function respondToMandateAction(formData: FormData) {
   });
 
   if (existing) {
-    const { subject, html } = mandateRespondedEmail({
-      agencyNom: existing.agency.entreprise ?? existing.agency.nom,
-      accepted: decision === "accept",
-    });
+    const accepted = decision === "accept";
+    const agencyNom = existing.agency.entreprise ?? existing.agency.nom;
+    const { subject, html } = mandateRespondedEmail({ agencyNom, accepted });
     await sendEmail({ to: existing.client.email, subject, html });
+    await sendPushNotification(existing.clientId, {
+      title: accepted ? "Recherche confiée acceptée" : "Recherche confiée déclinée",
+      body: `${agencyNom} ${accepted ? "a accepté" : "a décliné"} votre recherche.`,
+      url: "/compte",
+    });
   }
 
   redirect("/compte/agence/clients");

@@ -93,7 +93,23 @@ statiques demanderait d'hydrater l'état « favori » côté client — chantier
 aucune mise en cache d'assets ou de pages (zéro risque de contenu périmé), juste une
 page de repli hors ligne pour les navigations. Les icônes PNG sont générées depuis
 `public/icon.svg` par `npx tsx scripts/gen-pwa-icons.ts` (rejouer si le visuel de
-marque change). Notifications push : pas encore faites (nécessitent des clés VAPID).
+marque change).
+
+### Notifications push (Web Push / VAPID)
+
+Depuis le 2026-09-17. `src/lib/push.ts` (`sendPushNotification`, même discipline « ne
+lève jamais » que `sendEmail`) envoie via `web-push` aux abonnements stockés dans
+`PushSubscription` (un utilisateur peut avoir plusieurs appareils). Abonnements créés/
+retirés côté client par `src/components/PushNotificationToggle.tsx` (sur `/compte`) via
+`src/lib/push-actions.ts` ; `sw.js` gère les évènements `push` (affiche la notification) et
+`notificationclick` (focus un onglet existant ou en ouvre un). Un abonnement qui répond
+404/410 à l'envoi est supprimé automatiquement (expiré ou révoqué côté navigateur).
+Branché sur les mêmes déclencheurs que les emails transactionnels : nouvelle demande de
+visite/estimation/devis, réponse à une estimation/recherche confiée, nouveau bien
+proposé, avis reçu, inscription/réponse portes ouvertes — un `sendPushNotification` juste
+après le `sendEmail` correspondant dans chaque Server Action concernée. `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
+(exposée au client, pas un secret) / `VAPID_PRIVATE_KEY` générées via
+`npx web-push generate-vapid-keys`.
 
 ### Tests
 

@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
 import { estimationRequestReceivedEmail, estimationRequestRespondedEmail } from "./email-templates";
+import { sendPushNotification } from "./push";
 import { logEvent } from "./events";
 import { verifyTurnstile } from "./turnstile";
 
@@ -67,6 +68,11 @@ export async function createEstimationRequestAction(
 
   const { subject, html } = estimationRequestReceivedEmail({ adresse, authorNom: session.nom });
   await sendEmail({ to: agency.email, subject, html });
+  await sendPushNotification(agencyId, {
+    title: "Nouvelle demande d'estimation",
+    body: `${session.nom} souhaite une estimation — ${adresse}.`,
+    url: "/compte",
+  });
   await logEvent("estimation_requested", {
     userId: session.userId,
     path: `/professionnels/${agencyId}`,
@@ -84,7 +90,11 @@ export async function respondToEstimationRequestAction(formData: FormData) {
 
   const existing = await prisma.estimationRequest.findFirst({
     where: { id: estimationRequestId, agencyId: session.userId, statut: "EN_ATTENTE" },
-    select: { author: { select: { email: true } }, agency: { select: { nom: true, entreprise: true } } },
+    select: {
+      authorId: true,
+      author: { select: { email: true } },
+      agency: { select: { nom: true, entreprise: true } },
+    },
   });
 
   await prisma.estimationRequest.updateMany({
@@ -96,11 +106,15 @@ export async function respondToEstimationRequestAction(formData: FormData) {
   });
 
   if (existing) {
-    const { subject, html } = estimationRequestRespondedEmail({
-      agencyNom: existing.agency.entreprise ?? existing.agency.nom,
-      accepted: decision === "accept",
-    });
+    const accepted = decision === "accept";
+    const agencyNom = existing.agency.entreprise ?? existing.agency.nom;
+    const { subject, html } = estimationRequestRespondedEmail({ agencyNom, accepted });
     await sendEmail({ to: existing.author.email, subject, html });
+    await sendPushNotification(existing.authorId, {
+      title: accepted ? "Estimation acceptée" : "Estimation déclinée",
+      body: `${agencyNom} ${accepted ? "a accepté" : "a décliné"} votre demande d'estimation.`,
+      url: "/compte",
+    });
   }
 
   redirect("/compte");

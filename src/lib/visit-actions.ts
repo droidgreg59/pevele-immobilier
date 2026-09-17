@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
 import { visitRequestReceivedEmail } from "./email-templates";
+import { sendPushNotification } from "./push";
 import { logEvent } from "./events";
 import { verifyTurnstile } from "./turnstile";
 
@@ -73,6 +74,11 @@ export async function createVisitRequestAction(
     message,
   });
   await sendEmail({ to: listing.owner.email, subject, html });
+  await sendPushNotification(listing.ownerId, {
+    title: "Nouvelle demande de visite",
+    body: `${session.nom} souhaite visiter « ${listing.titre} ».`,
+    url: "/compte",
+  });
   await logEvent("visit_requested", {
     userId: session.userId,
     path: detailPath,

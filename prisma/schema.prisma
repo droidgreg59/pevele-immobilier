@@ -71,6 +71,7 @@ model User {
   estimationsRecues   EstimationRequest[] @relation("AgencyEstimations")
   estimationsEnvoyees EstimationRequest[] @relation("AuthorEstimations")
   openHouseRegistrations OpenHouseRegistration[]
+  pushSubscriptions   PushSubscription[]
 
   @@index([emailVerifyToken])
 }
@@ -488,6 +489,24 @@ model Event {
 
   @@index([name, createdAt])
   @@index([createdAt])
+}
+
+/// Abonnement push (Web Push / VAPID) d'un appareil pour un compte. Un même
+/// utilisateur peut avoir plusieurs abonnements (plusieurs appareils/navigateurs) ;
+/// `endpoint` identifie l'appareil (unique par service de push du navigateur).
+/// `p256dh`/`auth` sont les clés de chiffrement fournies par le navigateur à la
+/// souscription. Purgé automatiquement par sendPushNotification (src/lib/push.ts)
+/// quand le navigateur répond 404/410 (abonnement expiré ou révoqué).
+model PushSubscription {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 /// Transactions immobilières issues des DVF (Demandes de Valeurs Foncières,

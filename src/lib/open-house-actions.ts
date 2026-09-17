@@ -7,6 +7,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
 import { sendEmail } from "./email";
+import { sendPushNotification } from "./push";
 import { listingDetailPath } from "./open-house";
 import { logEvent } from "./events";
 import {
@@ -229,6 +230,11 @@ export async function registerToOpenHouseAction(
     dateLabel: formatDateLabel(date.startAt, date.endAt),
   });
   await sendEmail({ to: listing.owner.email, subject, html });
+  await sendPushNotification(listing.ownerId, {
+    title: "Nouvelle inscription — portes ouvertes",
+    body: `${prenom} ${nom} s'est inscrit(e) à vos portes ouvertes « ${listing.titre} ».`,
+    url: "/compte",
+  });
   await logEvent("open_house_registered", {
     userId: session.userId,
     path: detailPath,
@@ -303,6 +309,11 @@ export async function respondToOpenHouseRegistrationAction(
     accepted: decision === "accept",
   });
   await sendEmail({ to: registration.visiteur.email, subject, html });
+  await sendPushNotification(registration.visiteurId, {
+    title: decision === "accept" ? "Inscription acceptée" : "Inscription déclinée",
+    body: `Votre inscription aux portes ouvertes « ${listing.titre} » a été ${decision === "accept" ? "acceptée" : "déclinée"}.`,
+    url: "/compte",
+  });
 
   revalidatePath(`/compte/annonces/${listing.id}`);
   revalidatePath(listingDetailPath(listing.transaction, listing.id));

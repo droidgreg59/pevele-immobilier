@@ -5,6 +5,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { devisRequestReceivedEmail } from "./email-templates";
+import { sendPushNotification } from "./push";
 import { logEvent } from "./events";
 import { verifyTurnstile } from "./turnstile";
 
@@ -49,6 +50,11 @@ export async function createDevisRequestAction(
 
   const { subject, html } = devisRequestReceivedEmail({ authorNom: session.nom, message });
   await sendEmail({ to: artisan.email, subject, html });
+  await sendPushNotification(artisanId, {
+    title: "Nouvelle demande de devis",
+    body: `${session.nom} vous a envoyé une demande de devis.`,
+    url: "/compte",
+  });
   await logEvent("devis_requested", {
     userId: session.userId,
     path: `/artisans/${artisanId}`,
