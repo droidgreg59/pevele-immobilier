@@ -79,7 +79,7 @@ export default async function ArtisanPage({
           ← Tous les artisans
         </Link>
         {isOwner ? (
-          <Link href="/compte/artisan" className="text-[13px] font-semibold text-blue">
+          <Link href="/compte/artisan/profil" className="text-[13px] font-semibold text-blue">
             Modifier ma fiche →
           </Link>
         ) : null}

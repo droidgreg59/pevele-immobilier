@@ -14,7 +14,7 @@ export async function updateArtisanProfileAction(
   formData: FormData
 ): Promise<ArtisanProfileFormState> {
   const session = await getSession();
-  if (!session) redirect("/connexion?next=/compte/artisan");
+  if (!session) redirect("/connexion?next=/compte/artisan/profil");
   if (session.type !== "ARTISAN") {
     return { error: "Réservé aux comptes artisan." };
   }
