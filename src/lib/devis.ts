@@ -4,16 +4,17 @@ import { prisma } from "./prisma";
 export type DevisRequestForArtisan = {
   id: string;
   message: string;
+  /** Téléphone saisi sur le formulaire de devis (facultatif), sinon celui du compte de l'auteur. */
   telephone: string | null;
   traite: boolean;
   createdAt: Date;
-  author: { nom: string; email: string };
+  author: { nom: string; prenom: string | null; email: string };
 };
 
 export async function getDevisRequestsForArtisan(
   artisanId: string
 ): Promise<DevisRequestForArtisan[]> {
-  return prisma.devisRequest.findMany({
+  const rows = await prisma.devisRequest.findMany({
     where: { artisanId },
     orderBy: { createdAt: "desc" },
     select: {
@@ -22,9 +23,18 @@ export async function getDevisRequestsForArtisan(
       telephone: true,
       traite: true,
       createdAt: true,
-      author: { select: { nom: true, email: true } },
+      author: { select: { nom: true, prenom: true, email: true, telephone: true } },
     },
   });
+
+  return rows.map((r) => ({
+    id: r.id,
+    message: r.message,
+    telephone: r.telephone ?? r.author.telephone,
+    traite: r.traite,
+    createdAt: r.createdAt,
+    author: { nom: r.author.nom, prenom: r.author.prenom, email: r.author.email },
+  }));
 }
 
 export async function getDevisRequestCount(artisanId: string): Promise<number> {

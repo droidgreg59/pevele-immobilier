@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
+import { fullName } from "@/lib/format";
 import DevisList from "@/components/DevisList";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export default async function CompteArtisanDevisPage() {
     telephone: d.telephone,
     traite: d.traite,
     createdLabel: d.createdAt.toLocaleDateString("fr-FR"),
-    authorNom: d.author.nom,
+    authorNom: fullName(d.author.prenom, d.author.nom),
     authorEmail: d.author.email,
   }));
 
