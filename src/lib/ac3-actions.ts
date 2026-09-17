@@ -40,6 +40,7 @@ export type XmlSyncFormState = {
   success?: boolean;
   imported?: number;
   updated?: number;
+  removed?: number;
   skipped?: number;
 };
 
@@ -66,6 +67,7 @@ export async function syncAgencyXmlAction(
     success: true,
     imported: result.created,
     updated: result.updated,
+    removed: result.removed,
     skipped: result.skipped,
   };
 }

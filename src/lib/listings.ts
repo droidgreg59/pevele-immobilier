@@ -396,6 +396,36 @@ export async function upsertImportedListing(
   return { id: existing.id, created: false };
 }
 
+/**
+ * Supprime les annonces importées (`importSource`) d'une agence dont la
+ * référence n'apparaît plus dans le flux courant (bien vendu/loué ou retiré
+ * côté CRM) — sans quoi une synchro n'ajoute/actualise que les biens présents
+ * et laisse en ligne indéfiniment ceux qui ont disparu du flux. Renvoie les
+ * annonces supprimées (pour que l'appelant nettoie aussi leurs photos R2,
+ * comme pour deleteListing/adminDeleteListing).
+ */
+export async function pruneStaleImportedListings(
+  ownerId: string,
+  importSource: string,
+  currentExternalRefs: string[]
+) {
+  // Garde-fou : un flux vide (panne, réponse tronquée...) ne doit jamais se
+  // traduire par la suppression de toutes les annonces déjà importées.
+  if (currentExternalRefs.length === 0) return [];
+
+  const stale = await prisma.listing.findMany({
+    where: {
+      ownerId,
+      importSource,
+      externalRef: { notIn: currentExternalRefs },
+    },
+    select: { id: true },
+  });
+  if (stale.length === 0) return [];
+  await prisma.listing.deleteMany({ where: { id: { in: stale.map((l) => l.id) } } });
+  return stale;
+}
+
 export async function addListingPhotos(listingId: string, urls: string[]) {
   if (urls.length === 0) return;
   const startOrder = await prisma.listingPhoto.count({ where: { listingId } });

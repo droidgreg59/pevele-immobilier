@@ -102,8 +102,8 @@ export default function XmlImportPanel({ agency }: { agency: AgencyProfile }) {
           {syncState.success ? (
             <p className="m-0 rounded-xl bg-[#EAF4EA] px-4 py-3 text-[13px] text-ink">
               {syncState.imported} annonce(s) créée(s), {syncState.updated} mise(s) à
-              jour, {syncState.skipped} ignorée(s) (hors zone, type non pris en
-              charge ou statut inactif).
+              jour, {syncState.removed} retirée(s) (plus dans le flux), {syncState.skipped} ignorée(s)
+              (hors zone, type non pris en charge ou statut inactif).
             </p>
           ) : null}
           <button
