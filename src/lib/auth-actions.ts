@@ -9,6 +9,7 @@ import { sendEmail } from "./email";
 import { emailVerificationEmail, passwordResetEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
 import { verifyTurnstile } from "./turnstile";
+import { isLoginThrottled, recordFailedLogin, clearFailedLogins } from "./login-throttle";
 import { logEvent } from "./events";
 import type { AccountType } from "@prisma/client";
 
@@ -164,15 +165,23 @@ export async function loginAction(
 
   const genericError = { error: "Email ou mot de passe incorrect." };
 
-  if (!(await verifyTurnstile(formData, "login"))) {
-    return { error: "Vérification anti-robot échouée. Merci de réessayer." };
+  if (await isLoginThrottled(email)) {
+    return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return genericError;
+  if (!user) {
+    await recordFailedLogin(email);
+    return genericError;
+  }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) return genericError;
+  if (!valid) {
+    await recordFailedLogin(email);
+    return genericError;
+  }
+
+  await clearFailedLogins(email);
 
   await setSessionCookie({
     userId: user.id,

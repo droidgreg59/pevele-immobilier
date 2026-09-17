@@ -477,6 +477,22 @@ enum TypeMaison {
 /// Évènement produit (entonnoir) — écrit en « fire and forget » depuis les
 /// Server Actions (et quelques pages serveur) via `src/lib/events.ts`. Sert
 /// au tableau de bord `/admin/stats`. Volontairement minimal et sans PII :
+/// Tentatives de connexion échouées, pour un blocage temporaire par email
+/// (bourrage d'identifiants) — remplace Turnstile sur /connexion, retiré car
+/// il gênait les connexions légitimes sans protéger contre autre chose que
+/// les bots (voir src/lib/login-throttle.ts). Pas de FK vers User : on
+/// enregistre aussi les tentatives sur des emails inconnus (sinon un
+/// attaquant pourrait déduire qu'un compte existe en constatant l'absence de
+/// blocage). Les lignes expirées d'un email sont purgées à chaque vérification
+/// (isLoginThrottled) — pas de job de nettoyage séparé nécessaire.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+}
+
 /// `userId` est libre (pas de FK — on garde l'historique même après
 /// suppression du compte), `meta` = petit JSON optionnel (< 2 ko).
 model Event {
