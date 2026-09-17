@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
@@ -9,16 +8,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/mentions-legales",
   },
-  robots: { index: false, follow: true },
 };
-
-function ACompleter({ children }: { children: ReactNode }) {
-  return (
-    <span className="rounded-md bg-[#FBF3DC] px-1.5 py-0.5 font-semibold text-gold">
-      [À COMPLÉTER : {children}]
-    </span>
-  );
-}
 
 export default function MentionsLegalesPage() {
   return (
@@ -32,22 +22,13 @@ export default function MentionsLegalesPage() {
       </Link>
 
       <div className="mt-8 flex flex-col gap-8 font-sans text-[14.5px] leading-[1.7] text-muted">
-        <div className="rounded-2xl border border-dashed border-line bg-surface p-5 text-[13.5px] text-ink">
-          Il reste à préciser la forme juridique/SIRET, le directeur de publication et
-          l&apos;hébergeur ci-dessous avant la mise en ligne publique du site — obligatoires au
-          regard de la loi française (LCEN).
-        </div>
-
         <section>
           <h2 className="m-0 font-display text-xl text-ink">Éditeur du site</h2>
           <p className="mt-3">
-            Le site <b>{SITE_URL.replace("https://", "")}</b> est édité par <b>Galt Lab</b>,{" "}
-            <ACompleter>forme juridique (auto-entrepreneur, SAS, SARL…) et SIRET si applicable</ACompleter>,
-            dont le siège est situé au <b>78 avenue du Peuple Belge, 59800 Lille</b>.
+            Le site <b>{SITE_URL.replace("https://", "")}</b> est édité par <b>Galt Lab</b>, dont le
+            siège est situé au <b>78 avenue du Peuple Belge, 59800 Lille</b>.
           </p>
-          <p className="mt-2">
-            Directeur de la publication : <ACompleter>nom du responsable de publication</ACompleter>.
-          </p>
+          <p className="mt-2">Directeur de la publication : <b>Thibault Garbo</b>.</p>
           <p className="mt-2">
             Contact : <a href="mailto:contact@pevele-immobilier.fr" className="text-blue">contact@pevele-immobilier.fr</a>.
           </p>
@@ -56,8 +37,12 @@ export default function MentionsLegalesPage() {
         <section>
           <h2 className="m-0 font-display text-xl text-ink">Hébergement</h2>
           <p className="mt-3">
-            Le site est hébergé par <ACompleter>nom de l&apos;hébergeur</ACompleter>,{" "}
-            <ACompleter>adresse et contact de l&apos;hébergeur</ACompleter>.
+            Le site est hébergé par <b>Vercel Inc.</b>, 340 S Lemon Ave #4133, Walnut, CA 91789,
+            États-Unis —{" "}
+            <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-blue">
+              vercel.com
+            </a>
+            .
           </p>
         </section>
 
