@@ -81,7 +81,7 @@ Trois briques distinctes, à ne pas confondre :
 Les lectures DVF (`src/lib/dvf.ts`, sauf `getRecentDvfTransactions` qui renvoie des `Date`) sont
 enveloppées dans `unstable_cache` avec le tag `dvf` et une revalidation d'une semaine — la route cron
 `/api/cron/dvf-import` appelle `revalidateTag("dvf", "max")` après réécriture. Les pages `/prix` et
-`/prix/[commune]` sont en ISR (`export const revalidate`, + `generateStaticParams` pour les 38
+`/prix/[commune]` sont en ISR (`export const revalidate`, + `generateStaticParams` pour les 44
 communes). `/villages/[slug]`, `/carte` et `/immobilier/[commune]/[intent]` restent dynamiques (session
 pour les favoris, `searchParams`) mais ne tapent plus la base pour les DVF. Rendre ces trois-là
 statiques demanderait d'hydrater l'état « favori » côté client — chantier à part.
@@ -115,6 +115,13 @@ interroge la base).
 - **Windows uniquement — verrou de fichier à la régénération du client Prisma** : `npx prisma generate`
   peut échouer avec `EPERM` sur `query_engine-windows.dll.node` si le serveur dev tourne encore. Arrêter le
   serveur dev avant tout `prisma db push`/`generate`, le relancer après.
+- **Next 16 en dev : le cache `unstable_cache`/fetch vit dans `.next/dev/cache`,**
+  **pas `.next/cache`** (qui existe aussi mais n'est pas celui lu en `next dev`
+  avec Turbopack). Vider `.next/cache` après avoir corrigé des données en base
+  (ex. réimport DVF) ne rafraîchit donc rien : `rm -rf .next/dev/cache` puis
+  redémarrer le serveur dev. Repéré le 2026-09-17 après ~20 min à chercher
+  pourquoi une page restait bloquée sur une ancienne valeur malgré des données
+  DB correctes et un serveur fraîchement relancé.
 - **Une migration de base (ex. SQLite → Postgres) ne rejoue pas les données de
   référence chargées par script** (ici `DvfTransaction`, peuplée par
   `npm run dvf:import` / `/api/cron/dvf-import` depuis data.gouv.fr — pas par

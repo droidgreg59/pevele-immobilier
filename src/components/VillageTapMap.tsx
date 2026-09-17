@@ -6,7 +6,7 @@ import { villageBoundaries } from "@/data/village-boundaries";
 import { contextBoundaries } from "@/data/context-boundaries";
 
 /**
- * Carte tactile du tunnel « Mon projet » : les vrais contours des 38 communes
+ * Carte tactile du tunnel « Mon projet » : les vrais contours des 44 communes
  * de la Pévèle, une commune = une forme que l'on touche pour l'ajouter /
  * retirer de sa sélection. Même repère 440×600 que la carte principale, mais
  * recadré au plus près du territoire. Complète `VillageMultiSelect` (recherche

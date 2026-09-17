@@ -77,21 +77,18 @@ function largestRing(geom: CommuneGeo["contour"]): LonLat[] {
 // cf. session de debug des zones non cliquables. Anstaing, Bouvines et
 // Péronne-en-Mélantois sont passées en communes suivies (villages.ts) et
 // sont donc sorties de cette liste ; Forest-sur-Marque, nouvellement
-// exposée au nord d'Anstaing, l'a rejointe.
+// exposée au nord d'Anstaing, l'a rejointe. Bouvignies, Faumont,
+// Flines-lez-Raches, Marchiennes, Rosult et Rumegies sont passées en
+// communes suivies le 2026-09-17 (fiches, DVF, cartes) et sont sorties
+// de cette liste à leur tour.
 const CONTEXT_COMMUNES: { insee: string; nom: string }[] = [
   { insee: "59009", nom: "Villeneuve-d'Ascq" },
-  { insee: "59105", nom: "Bouvignies" },
-  { insee: "59222", nom: "Faumont" },
-  { insee: "59239", nom: "Flines-lez-Raches" },
   { insee: "59247", nom: "Forest-sur-Marque" },
   { insee: "59256", nom: "Fretin" },
   { insee: "59299", nom: "Hem" },
   { insee: "59335", nom: "Lecelles" },
   { insee: "59343", nom: "Lesquin" },
   { insee: "59346", nom: "Lezennes" },
-  { insee: "59375", nom: "Marchiennes" },
-  { insee: "59511", nom: "Rosult" },
-  { insee: "59519", nom: "Rumegies" },
   { insee: "59522", nom: "Sailly-lez-Lannoy" },
   { insee: "59554", nom: "Sars-et-Rosières" },
   { insee: "59560", nom: "Seclin" },

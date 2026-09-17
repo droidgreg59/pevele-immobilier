@@ -5,8 +5,8 @@ import { villageCoords } from "./village-coords";
 import { villageAmenities } from "./village-amenities";
 
 describe("jeu de communes suivies", () => {
-  it("compte 38 communes", () => {
-    expect(villages.length).toBe(38);
+  it("compte 44 communes", () => {
+    expect(villages.length).toBe(44);
   });
 
   it("a des slugs et des codes INSEE uniques", () => {
@@ -54,6 +54,15 @@ describe("getVillageBySlug / getVillageByInsee", () => {
     expect(getVillageBySlug("bouvines")?.insee).toBe("59106");
     expect(getVillageBySlug("peronne-en-melantois")?.insee).toBe("59458");
   });
+
+  it("inclut les 6 communes ajoutées le 2026-09-17 (Flines-lez-Raches, Faumont, Marchiennes, Bouvignies, Rumegies, Rosult)", () => {
+    expect(getVillageBySlug("flines-lez-raches")?.insee).toBe("59239");
+    expect(getVillageBySlug("faumont")?.insee).toBe("59222");
+    expect(getVillageBySlug("marchiennes")?.insee).toBe("59375");
+    expect(getVillageBySlug("bouvignies")?.insee).toBe("59105");
+    expect(getVillageBySlug("rumegies")?.insee).toBe("59519");
+    expect(getVillageBySlug("rosult")?.insee).toBe("59511");
+  });
 });
 
 describe("nearestVillages", () => {
@@ -61,9 +70,12 @@ describe("nearestVillages", () => {
     const near = nearestVillages("cysoing", 4);
     expect(near).toHaveLength(4);
     expect(near.map((v) => v.slug)).not.toContain("cysoing");
-    // distances croissantes sur le repère carte
-    const origin = getVillageBySlug("cysoing")!;
-    const d = near.map((v) => (v.mapX - origin.mapX) ** 2 + (v.mapY - origin.mapY) ** 2);
+    // distances croissantes sur le repère carte (centroïdes réels des contours)
+    const origin = villageBoundaries[getVillageBySlug("cysoing")!.insee];
+    const d = near.map((v) => {
+      const b = villageBoundaries[v.insee];
+      return (b.cx - origin.cx) ** 2 + (b.cy - origin.cy) ** 2;
+    });
     expect([...d]).toEqual([...d].sort((a, b) => a - b));
   });
 

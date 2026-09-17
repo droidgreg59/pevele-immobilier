@@ -4,9 +4,9 @@ import { villages } from "@/data/villages";
 import VillageCard from "@/components/VillageCard";
 
 export const metadata: Metadata = {
-  title: "Les 38 communes de la Pévèle",
+  title: "Les 44 communes de la Pévèle",
   description:
-    "Découvrez les 38 communes de la Pévèle : présentation, annonces immobilières et prix au m² village par village.",
+    "Découvrez les 44 communes de la Pévèle : présentation, annonces immobilières et prix au m² village par village.",
   alternates: {
     canonical: "/villages",
   },

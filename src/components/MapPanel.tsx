@@ -5,6 +5,10 @@ import type { BrowseMapAggregate } from "@/lib/listing-query";
 import { villages } from "@/data/villages";
 import { villageBoundaries } from "@/data/village-boundaries";
 import { contextBoundaries } from "@/data/context-boundaries";
+import { polygonAreaFromPath } from "@/lib/svg-path-area";
+
+/** Voir VillageMap.tsx — même seuil, même repère SVG partagé. */
+const SMALL_COMMUNE_AREA = 1800;
 
 /**
  * Carte des annonces filtrées, avec les vraies délimitations de commune
@@ -23,6 +27,7 @@ type VillageShape = {
   cy: number;
   count: number;
   minPrix: number | null;
+  isSmall: boolean;
 };
 
 export default function MapPanel({
@@ -52,6 +57,7 @@ export default function MapPanel({
           cy: boundary.cy,
           count: agg?.count ?? 0,
           minPrix: agg?.minPrix ?? null,
+          isSmall: polygonAreaFromPath(boundary.path) < SMALL_COMMUNE_AREA,
         };
       })
       .filter((s): s is VillageShape => s !== null);
@@ -124,7 +130,7 @@ export default function MapPanel({
                 >
                   dès {Math.round((s.minPrix ?? 0) / 1000)}k€
                 </text>
-              ) : (
+              ) : hovered || !s.isSmall ? (
                 <text
                   x={s.cx}
                   y={s.cy}
@@ -138,7 +144,7 @@ export default function MapPanel({
                 >
                   {s.labelCourt}
                 </text>
-              )}
+              ) : null}
             </g>
           );
         })}

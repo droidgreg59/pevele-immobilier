@@ -5,7 +5,17 @@ import Link from "next/link";
 import { villages } from "@/data/villages";
 import { villageBoundaries } from "@/data/village-boundaries";
 import { contextBoundaries } from "@/data/context-boundaries";
+import { polygonAreaFromPath } from "@/lib/svg-path-area";
 import type { DvfVillageStats } from "@/lib/dvf";
+
+/**
+ * Superficie (unités du repère SVG 440×600) en dessous de laquelle une
+ * commune est trop petite pour afficher son étiquette en permanence sans
+ * qu'elle chevauche ses voisines — l'étiquette n'apparaît alors qu'au survol
+ * ou à la sélection. Choisi empiriquement (~tiers inférieur des 44 communes)
+ * pour dégager les grappes denses (Anstaing/Chéreng/Gruson/Camphin...).
+ */
+const SMALL_COMMUNE_AREA = 1800;
 
 export default function VillageMap({
   initialSlug,
@@ -31,11 +41,15 @@ export default function VillageMap({
 
   const shapes = useMemo(
     () =>
-      villages.map((v, i) => ({
-        ...v,
-        index: i,
-        boundary: villageBoundaries[v.insee],
-      })),
+      villages.map((v, i) => {
+        const boundary = villageBoundaries[v.insee];
+        return {
+          ...v,
+          index: i,
+          boundary,
+          isSmall: boundary ? polygonAreaFromPath(boundary.path) < SMALL_COMMUNE_AREA : false,
+        };
+      }),
     []
   );
 
@@ -113,19 +127,21 @@ export default function VillageMap({
                     filter={active ? "url(#village-shape-shadow)" : undefined}
                     className="transition-colors duration-150"
                   />
-                  <text
-                    x={v.boundary.cx}
-                    y={v.boundary.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={active ? 8.5 : 7.5}
-                    fontWeight={active ? 700 : 600}
-                    fill={isSelected ? "#fff" : active ? "var(--pvl-blue)" : "var(--pvl-ink)"}
-                    className="pointer-events-none select-none transition-all duration-150"
-                    style={{ opacity: active ? 1 : 0.82 }}
-                  >
-                    {v.labelCourt}
-                  </text>
+                  {active || !v.isSmall ? (
+                    <text
+                      x={v.boundary.cx}
+                      y={v.boundary.cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize={active ? 8.5 : 7.5}
+                      fontWeight={active ? 700 : 600}
+                      fill={isSelected ? "#fff" : active ? "var(--pvl-blue)" : "var(--pvl-ink)"}
+                      className="pointer-events-none select-none transition-all duration-150"
+                      style={{ opacity: active ? 1 : 0.82 }}
+                    >
+                      {v.labelCourt}
+                    </text>
+                  ) : null}
                 </g>
               );
             })}

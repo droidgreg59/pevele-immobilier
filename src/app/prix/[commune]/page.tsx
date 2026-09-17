@@ -13,7 +13,7 @@ import { villages } from "@/data/villages";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
 
-// Page de contenu (DVF) : rendu ISR, pré-générée pour les 38 communes. Le
+// Page de contenu (DVF) : rendu ISR, pré-générée pour les 44 communes. Le
 // cache des lectures DVF est invalidé par le cron d'import.
 export const revalidate = 3600;
 

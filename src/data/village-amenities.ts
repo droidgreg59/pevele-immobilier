@@ -326,6 +326,25 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       "arretsBus": 12
     }
   },
+  "59105": {
+    "commerces": [],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire privée Sacré-Coeur",
+        "type": "École primaire",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire Pigeon Vole",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 4
+    }
+  },
   "59106": {
     "commerces": [
       {
@@ -609,6 +628,75 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       "arretsBus": 14
     }
   },
+  "59222": {
+    "commerces": [],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire publique Marceline Desbordes Valmore",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 24
+    }
+  },
+  "59239": {
+    "commerces": [
+      {
+        "nom": "Carrefour Contact",
+        "type": "Supermarché"
+      },
+      {
+        "nom": "Pharmacie Emmanuel Leclercq",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Pharmacie Vanhoucke",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Au Petit Hall MMW",
+        "type": "Primeur"
+      },
+      {
+        "nom": "Artisan Boulanger Dauchy",
+        "type": "Boulangerie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole maternelle Gérard Philipe",
+        "type": "École maternelle",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole élémentaire René Cassin",
+        "type": "École élémentaire",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Collège Jean Moulin",
+        "type": "Collège",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire privée Saint Michel",
+        "type": "École primaire",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire Pierre Brossolette",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 25
+    }
+  },
   "59258": {
     "commerces": [
       {
@@ -733,6 +821,81 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     "transports": {
       "gares": [],
       "arretsBus": 6
+    }
+  },
+  "59375": {
+    "commerces": [
+      {
+        "nom": "Pharmacie Pasteur",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Au Fournil de Marchiennes",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "Boulangerie Pâtisserie Mazingarbe",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "Le Goût et les Saveurs",
+        "type": "Épicerie"
+      },
+      {
+        "nom": "Dupire-Flament",
+        "type": "Boucherie"
+      },
+      {
+        "nom": "Boulangerie Grande Saveur",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "Carrefour Contact",
+        "type": "Épicerie"
+      },
+      {
+        "nom": "Les ateliers du bio",
+        "type": "Épicerie"
+      },
+      {
+        "nom": "La Cave d'Ericc",
+        "type": "Épicerie"
+      },
+      {
+        "nom": "Jet Boutique",
+        "type": "Épicerie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire privée Sainte Thérèse",
+        "type": "École primaire",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire Le Grand Meaulnes",
+        "type": "École primaire",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole maternelle Françoise Dolto",
+        "type": "École maternelle",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole élémentaire Georges Brassens",
+        "type": "École élémentaire",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Collège Marguerite Yourcenar",
+        "type": "Collège",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 17
     }
   },
   "59398": {
@@ -1069,6 +1232,63 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     "transports": {
       "gares": [],
       "arretsBus": 17
+    }
+  },
+  "59511": {
+    "commerces": [
+      {
+        "nom": "Le Fournil de Rosult",
+        "type": "Boulangerie"
+      },
+      {
+        "nom": "La Halle de Rosult",
+        "type": "Marché"
+      },
+      {
+        "nom": "Pharmacie de l'Alène d'Or",
+        "type": "Pharmacie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire Les Prés Verts",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [
+        "Rosult"
+      ],
+      "arretsBus": 16
+    }
+  },
+  "59519": {
+    "commerces": [
+      {
+        "nom": "Pharmacie Dheris",
+        "type": "Pharmacie"
+      },
+      {
+        "nom": "Boulangerie Delbassé",
+        "type": "Boulangerie"
+      }
+    ],
+    "ecoles": [
+      {
+        "nom": "Ecole primaire privée Immaculée-Conception",
+        "type": "École primaire",
+        "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire du Ridoir",
+        "type": "École primaire",
+        "secteur": "Public"
+      }
+    ],
+    "transports": {
+      "gares": [],
+      "arretsBus": 18
     }
   },
   "59523": {
