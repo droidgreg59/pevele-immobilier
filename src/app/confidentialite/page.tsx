@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { SITE_NAME } from "@/lib/seo";
 
@@ -9,16 +8,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/confidentialite",
   },
-  robots: { index: false, follow: true },
 };
-
-function ACompleter({ children }: { children: ReactNode }) {
-  return (
-    <span className="rounded-md bg-[#FBF3DC] px-1.5 py-0.5 font-semibold text-gold">
-      [À COMPLÉTER : {children}]
-    </span>
-  );
-}
 
 export default function ConfidentialitePage() {
   return (
@@ -34,12 +24,6 @@ export default function ConfidentialitePage() {
       </Link>
 
       <div className="mt-8 flex flex-col gap-8 font-sans text-[14.5px] leading-[1.7] text-muted">
-        <div className="rounded-2xl border border-dashed border-line bg-surface p-5 text-[13.5px] text-ink">
-          Ce texte décrit précisément les données réellement collectées par le site à ce jour.
-          Les points marqués <ACompleter>à compléter</ACompleter> nécessitent une décision ou une
-          information de votre part avant mise en ligne publique.
-        </div>
-
         <section>
           <h2 className="m-0 font-display text-xl text-ink">Responsable du traitement</h2>
           <p className="mt-3">
@@ -120,12 +104,9 @@ export default function ConfidentialitePage() {
         <section>
           <h2 className="m-0 font-display text-xl text-ink">Durée de conservation</h2>
           <p className="mt-3">
-            Vos données sont conservées le temps de l&apos;existence de votre compte, puis{" "}
-            <ACompleter>
-              durée de conservation après suppression du compte ou dernière activité — 3 ans est une
-              durée usuelle à confirmer
-            </ACompleter>
-            .
+            Vos données sont conservées le temps de l&apos;existence de votre compte, puis
+            supprimées dans un délai de <b>3 ans</b> après la suppression du compte ou la dernière
+            activité.
           </p>
         </section>
 
