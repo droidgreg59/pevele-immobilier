@@ -56,8 +56,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 border-b border-line bg-cream/90 backdrop-blur">
       <div className="flex h-14 items-center justify-between gap-3 px-4 md:h-18 md:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element -- icône statique locale, next/image inutile ici */}
-          <img src="/icon.svg" alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue">
+            <span className="h-2.5 w-2.5 rounded-full bg-yellow" />
+          </span>
           <span className="hidden font-display text-[18px] font-extrabold tracking-tight text-ink sm:inline">
             Pévèle <span className="text-blue">Immobilier</span>
           </span>
