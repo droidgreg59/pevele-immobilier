@@ -29,7 +29,14 @@ export default function TurnstileWidget({
   resetKey?: unknown;
 }) {
   useEffect(() => {
-    if (resetKey) window.turnstile?.reset();
+    if (!resetKey) return;
+    try {
+      window.turnstile?.reset();
+    } catch {
+      // Le conteneur peut avoir disparu entre-temps (ex. redirection juste
+      // après une soumission réussie, qui démonte le formulaire) — il n'y a
+      // alors simplement plus rien à réinitialiser, sans conséquence.
+    }
   }, [resetKey]);
 
   return (
