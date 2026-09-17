@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { createVisitRequestAction, type VisitFormState } from "@/lib/visit-actions";
 import { tomorrowDateString } from "@/lib/validation";
+import TurnstileWidget from "./TurnstileWidget";
 
 const initialState: VisitFormState = {};
 
@@ -63,6 +64,8 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
           />
         </label>
       </div>
+
+      <TurnstileWidget action="visit_request" resetKey={state.error} />
 
       {state.error ? (
         <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">

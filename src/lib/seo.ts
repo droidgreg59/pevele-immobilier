@@ -1,3 +1,6 @@
+import { getVillageBySlug } from "@/data/villages";
+import { villageCoords } from "@/data/village-coords";
+
 export const SITE_URL = "https://pevele-immobilier.fr";
 export const SITE_NAME = "Pévèle Immobilier";
 
@@ -16,6 +19,20 @@ export function breadcrumbJsonLd(items: BreadcrumbItem[]) {
   };
 }
 
+export function itemListJsonLd(items: { url: string; name: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${SITE_URL}${it.url}`,
+      name: it.name,
+    })),
+  };
+}
+
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
@@ -23,7 +40,7 @@ export function organizationJsonLd() {
     name: SITE_NAME,
     url: SITE_URL,
     description:
-      "Le portail local des annonces et des prix immobiliers de la Pévèle : agences, particuliers et artisans réunis pour les 35 communes.",
+      "Le portail local des annonces et des prix immobiliers de la Pévèle : agences, particuliers et artisans réunis pour les 38 communes.",
     areaServed: {
       "@type": "Place",
       name: "La Pévèle",
@@ -55,12 +72,27 @@ export function listingJsonLd(listing: {
   prix: number;
   transaction: "VENTE" | "LOCATION";
   commune: string;
+  villageSlug: string;
   surface: number;
   pieces: number;
   chambres: number;
+  createdAt: Date;
   photos: { url: string }[];
+  owner: { nom: string; entreprise: string | null; type: "PARTICULIER" | "AGENCE" | "ARTISAN" };
 }) {
   const path = listing.transaction === "VENTE" ? "acheter" : "louer";
+  const village = getVillageBySlug(listing.villageSlug);
+  const coords = villageCoords[village?.insee ?? ""];
+  const broker =
+    listing.owner.type === "AGENCE"
+      ? {
+          broker: {
+            "@type": "RealEstateAgent",
+            name: listing.owner.entreprise ?? listing.owner.nom,
+          },
+        }
+      : {};
+
   return {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
@@ -68,6 +100,7 @@ export function listingJsonLd(listing: {
     url: `${SITE_URL}/${path}/${listing.id}`,
     name: listing.titre,
     description: listing.description,
+    datePosted: listing.createdAt.toISOString(),
     image: listing.photos.map((p) => (p.url.startsWith("http") ? p.url : `${SITE_URL}${p.url}`)),
     numberOfRooms: listing.pieces,
     numberOfBedrooms: listing.chambres,
@@ -82,6 +115,10 @@ export function listingJsonLd(listing: {
       addressRegion: "Hauts-de-France",
       addressCountry: "FR",
     },
+    ...(coords
+      ? { geo: { "@type": "GeoCoordinates", latitude: coords.lat, longitude: coords.lng } }
+      : {}),
+    ...broker,
     offers: {
       "@type": "Offer",
       price: listing.prix,

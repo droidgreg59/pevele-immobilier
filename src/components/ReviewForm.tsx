@@ -6,6 +6,7 @@ import {
   deleteReviewAction,
   type ReviewFormState,
 } from "@/lib/review-actions";
+import TurnstileWidget from "./TurnstileWidget";
 
 const initialState: ReviewFormState = {};
 
@@ -61,6 +62,8 @@ export default function ReviewForm({
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
+
+        <TurnstileWidget action="review" resetKey={state.error} />
 
         {state.error ? (
           <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">

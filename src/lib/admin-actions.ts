@@ -5,6 +5,7 @@ import { requireAdmin, publishListing, rejectListing } from "./admin";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { listingModeratedEmail } from "./email-templates";
+import { logEvent } from "./events";
 
 async function notifyOwnerOfModeration(id: string, accepted: boolean, raison?: string) {
   const listing = await prisma.listing.findUnique({
@@ -31,6 +32,7 @@ export async function publishListingAction(formData: FormData): Promise<void> {
   if (!id) return;
   await publishListing(id);
   await notifyOwnerOfModeration(id, true);
+  await logEvent("listing_published", { path: "/admin/annonces", meta: { listingId: id } });
   revalidatePath("/admin/annonces");
 }
 

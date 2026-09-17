@@ -1,0 +1,14 @@
+import { buildListingsFeed } from "@/lib/listing-feed";
+
+// Flux de syndication : régénéré au plus une fois par heure.
+export const revalidate = 3600;
+
+export async function GET() {
+  const xml = await buildListingsFeed();
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+    },
+  });
+}

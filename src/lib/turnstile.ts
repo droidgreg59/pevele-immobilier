@@ -1,15 +1,32 @@
 import "server-only";
+import { headers } from "next/headers";
 
 /**
  * Vérification côté serveur d'un token Cloudflare Turnstile (widget anti-bot
- * sur l'inscription). Le token vient du champ caché `cf-turnstile-response`
- * ajouté par le script Turnstile dans le formulaire ; il est vérifié ici via
- * l'API `siteverify` — jamais côté navigateur. Échoue fermé (retourne
- * `false`) sur tout token manquant, action inattendue, hostname non
- * approuvé, ou erreur réseau/API.
+ * sur les formulaires publics : inscription, connexion, mot de passe oublié,
+ * demandes de visite / d'estimation / de devis, dépôt d'avis). Le token vient
+ * du champ caché `cf-turnstile-response` ajouté par le script Turnstile dans
+ * le formulaire ; il est vérifié ici via l'API `siteverify` — jamais côté
+ * navigateur. Échoue fermé (retourne `false`) sur tout token manquant, action
+ * inattendue, hostname non approuvé, ou erreur réseau/API.
  */
 
 const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+/** Première IP de `x-forwarded-for` — passée à siteverify en `remoteip`. */
+export async function clientIp(): Promise<string | undefined> {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
+}
+
+/**
+ * Raccourci pour les Server Actions : lit le token du `FormData`, résout l'IP
+ * cliente et délègue à `verifyTurnstileToken`. `action` doit correspondre au
+ * `data-action` du widget (`<TurnstileWidget action="…">`).
+ */
+export async function verifyTurnstile(formData: FormData, action: string): Promise<boolean> {
+  return verifyTurnstileToken(formData.get("cf-turnstile-response"), action, await clientIp());
+}
 
 function expectedHostnames(): Set<string> {
   return new Set(

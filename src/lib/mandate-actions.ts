@@ -5,6 +5,7 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { mandateReceivedEmail, mandateRespondedEmail } from "./email-templates";
+import { logEvent } from "./events";
 
 export async function sendMandateAction(formData: FormData) {
   const savedSearchId = String(formData.get("savedSearchId") ?? "");
@@ -31,6 +32,7 @@ export async function sendMandateAction(formData: FormData) {
 
   const { subject, html } = mandateReceivedEmail({ clientNom: session.nom });
   await sendEmail({ to: agency.email, subject, html });
+  await logEvent("mandate_created", { userId: session.userId, path: "/compte" });
 
   redirect("/compte");
 }

@@ -11,17 +11,38 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Pévèle-Immobilier.fr — contexte projet
 
 Site immobilier de référence pour la région de la Pévèle (Nord). Next.js 16 App Router, TypeScript,
-Tailwind v4, Prisma + SQLite, auth JWT maison (`jose`, cookies de session). **Toute mutation passe par une
+Tailwind v4, Prisma + Postgres (Neon), auth JWT maison (`jose`, cookies de session). **Toute mutation passe par une
 Server Action** (`"use server"` + `FormData`) — pas de routes REST/Express classiques, sauf les endpoints
 `/api/cron/*` (protégés par `CRON_SECRET`, voir README) et `/api/session`.
 
+### Base de données — Postgres (Neon)
+
+Depuis le 2026-09-16, la base est un projet **Neon** (Postgres serverless), créé depuis l'onglet Storage
+du projet Vercel. `prisma/schema.prisma` n'autorise qu'un seul `provider` par schéma : **dev local et
+prod pointent donc sur la même base Neon** pour l'instant (pas de séparation dev/prod). Si besoin
+d'isoler le dev, Neon permet de créer une branche de base (copie instantanée) en un clic — pas encore
+fait. Deux URLs de connexion en jeu, toutes deux dans `.env` en local et dans les env vars Vercel :
+`DATABASE_URL` (poolée via pgbouncer, utilisée par Prisma Client à l'exécution) et
+`DATABASE_URL_UNPOOLED` (connexion directe, requise en `directUrl` par le schéma — pgbouncer en mode
+transaction ne supporte pas les prepared statements qu'utilisent `prisma migrate`/`db push`).
+`prisma/dev.db` (l'ancienne base SQLite locale) est obsolète et n'est plus utilisée.
+
+### Stockage objet — Cloudflare R2
+
+Depuis le 2026-09-16, les photos d'annonces et les logos sont envoyés sur un bucket **Cloudflare R2**
+(API compatible S3, `src/lib/r2.ts` + `src/lib/photo-upload.ts`) plutôt que sur le disque local — le
+filesystem de Vercel est éphémère/read-only en production, un fichier écrit via `fs` à l'exécution ne
+survit pas à la requête suivante. Clé objet : `listings/<listingId>/<uuid>.<ext>` et
+`logos/<userId>-<uuid>.<ext>` ; URL publique = `R2_PUBLIC_URL` + clé (domaine `*.r2.dev` fourni par R2,
+ou un domaine personnalisé). `next.config.ts` déclare ce domaine dans `images.remotePatterns` pour
+`next/image`. L'ancien dossier `public/uploads/` (disque local) n'est plus utilisé.
+
 ### Fichiers locaux à transférer manuellement entre machines
 
-`.env`, `prisma/dev.db` et `public/uploads/` sont **volontairement exclus de git** (`.gitignore`) — ils ne
-suivent jamais un `git clone`/`pull`. En changeant de machine, les copier à part (jamais via le chat — ce
-sont des secrets et des données réelles). `.env` contient tous les secrets (Resend, Turnstile, Cloudflare
-beacon, cron, `AUTH_SECRET`) ; `dev.db` est la vraie base (utilisateurs, annonces) ; `public/uploads/`
-contient les photos des annonces (structure : `uploads/listings/<id>/*.jpg`, `uploads/logos/...`).
+`.env` est **volontairement exclu de git** (`.gitignore`) — il ne suit jamais un `git clone`/`pull`. En
+changeant de machine, le copier à part (jamais via le chat — ce sont des secrets). Il contient tous les
+secrets (Resend, Turnstile, Cloudflare beacon, cron, `AUTH_SECRET`, `DATABASE_URL`/`DATABASE_URL_UNPOOLED`,
+`R2_*`).
 
 ### Discipline « données réelles uniquement »
 
@@ -29,11 +50,61 @@ Toute donnée de référence ajoutée (commerces/écoles/transports par village,
 maison, mentions légales…) doit venir d'une source vérifiable — jamais inventée. Sources déjà utilisées :
 flux XML AC3/Immofacile de l'agence (inspecté en direct via un script Node avant d'écrire le moindre
 mapping — ne jamais deviner un nom de balise), OpenStreetMap/Overpass API (commerces, transports),
-annuaire officiel de l'Éducation nationale (écoles, filtré `etat === "OUVERT"`), et les faits fournis
-directement par l'utilisateur (raison sociale, adresse…). Pour un fait légal non confirmé, utiliser le
+annuaire officiel de l'Éducation nationale (écoles, filtré `etat === "OUVERT"`), API publique Géorisques
+(`georisques.gouv.fr/api/v1`, état des risques par commune — endpoints inspectés en direct avant mapping,
+`src/lib/georisques.ts`), et les faits fournis directement par l'utilisateur (raison sociale, adresse…). Pour un fait légal non confirmé, utiliser le
 composant `<ACompleter>` (`[À COMPLÉTER : ...]`) plutôt que d'inventer une valeur plausible — les pages
 concernées (`/mentions-legales`, `/confidentialite`, `/cgu`) sont volontairement `noindex` tant que des
 `<ACompleter>` y subsistent.
+
+Le badge « Agence vérifiée » n'est jamais posé automatiquement : l'agence soumet son SIRET et son
+numéro de carte professionnelle (carte T), et un administrateur valide à la main depuis
+`/admin/verifications` (`User.verifStatut`). La raison sociale officielle est récupérée en best-effort
+sur `recherche-entreprises.api.gouv.fr` mais ne fait pas foi.
+
+### Observabilité
+
+Trois briques distinctes, à ne pas confondre :
+- **Audience** — Cloudflare Web Analytics (`src/app/layout.tsx`, sur `CF_BEACON_TOKEN`) : pages vues,
+  référents, Web Vitals. Pas d'API d'évènement.
+- **Entonnoir produit** — modèle `Event` + `logEvent(name, …)` (`src/lib/events.ts`), appelé en
+  « fire and forget » (jamais `throw`, toujours `await` avant un `return`/`redirect`) dans les Server
+  Actions aux étapes clés. Lu par `/admin/stats`. Ajouter un `EventName` à l'union **et** à
+  `EVENT_LABELS` (`src/lib/admin-stats.ts`) quand on instrumente une nouvelle étape.
+- **Erreurs** — `src/lib/report-error.ts` poste une enveloppe Sentry **sans SDK** (dépendances = 0),
+  branché via `src/instrumentation.ts` (serveur) et `src/instrumentation-client.ts` +
+  `src/app/global-error.tsx` (client). No-op tant que `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` sont
+  vides. Pas de symbolication des stacks minifiées — c'est le compromis assumé du « sans SDK ».
+
+### Cache / ISR
+
+Les lectures DVF (`src/lib/dvf.ts`, sauf `getRecentDvfTransactions` qui renvoie des `Date`) sont
+enveloppées dans `unstable_cache` avec le tag `dvf` et une revalidation d'une semaine — la route cron
+`/api/cron/dvf-import` appelle `revalidateTag("dvf", "max")` après réécriture. Les pages `/prix` et
+`/prix/[commune]` sont en ISR (`export const revalidate`, + `generateStaticParams` pour les 38
+communes). `/villages/[slug]`, `/carte` et `/immobilier/[commune]/[intent]` restent dynamiques (session
+pour les favoris, `searchParams`) mais ne tapent plus la base pour les DVF. Rendre ces trois-là
+statiques demanderait d'hydrater l'état « favori » côté client — chantier à part.
+
+### PWA
+
+`public/manifest.webmanifest` + `public/sw.js` (enregistré depuis
+`src/instrumentation-client.ts`). Le service worker est **volontairement minimal** :
+aucune mise en cache d'assets ou de pages (zéro risque de contenu périmé), juste une
+page de repli hors ligne pour les navigations. Les icônes PNG sont générées depuis
+`public/icon.svg` par `npx tsx scripts/gen-pwa-icons.ts` (rejouer si le visuel de
+marque change). Notifications push : pas encore faites (nécessitent des clés VAPID).
+
+### Tests
+
+`npm test` (Vitest, `vitest.config.ts`) — tests co-localisés `src/**/*.test.ts`, ciblés sur les
+fonctions pures / la logique (validation, barèmes coût d'achat, slugify, format, parsing des
+`searchParams`, `where` Prisma des recherches, JSON-LD, invariants du jeu de communes). **Pas de
+tests qui touchent la base ou le réseau.** `import "server-only"` est neutralisé dans les tests via
+un alias vers `test/stubs/server-only.ts`. La CI (`.github/workflows/ci.yml`, sur chaque PR + master)
+enchaîne `lint` → `tsc --noEmit` → `test` → `build`, avec un conteneur Postgres jetable (service
+GitHub Actions) dont le schéma est créé par `prisma db push` (le build exécute `sitemap.ts` qui
+interroge la base).
 
 ### Pièges d'environnement rencontrés
 

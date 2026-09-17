@@ -6,7 +6,7 @@ import { saveRemotePhotos, deletePhotoFilesByUrl } from "./photo-upload";
 
 export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
   include: {
-    owner: { select: { nom: true, entreprise: true, type: true, logoUrl: true } },
+    owner: { select: { nom: true, entreprise: true, type: true, logoUrl: true, verifStatut: true } },
     photos: { orderBy: { order: "asc" } },
     priceHistory: {
       orderBy: { changedAt: "asc" },
@@ -38,10 +38,54 @@ export async function getPublicListingsByVillage(
   });
 }
 
+/** Annonces publiées d'un type et d'une transaction donnés dans une commune — pages d'atterrissage SEO. */
+export async function getListingsForIntent(
+  villageSlug: string,
+  typeBien: TypeBien,
+  transaction: TransactionType
+): Promise<ListingWithOwner[]> {
+  return prisma.listing.findMany({
+    where: { villageSlug, typeBien, transaction, statut: "PUBLIEE" },
+    orderBy: { createdAt: "desc" },
+    ...listingWithOwner,
+  });
+}
+
 export async function getListingById(
   id: string
 ): Promise<ListingWithOwner | null> {
   return prisma.listing.findUnique({ where: { id }, ...listingWithOwner });
+}
+
+/**
+ * Biens comparables à afficher en bas de fiche : même transaction, même type,
+ * budget proche (±35 %), dans la commune ou les communes voisines fournies,
+ * en excluant l'annonce courante. Sert l'engagement et le maillage interne.
+ */
+export async function getSimilarListings(
+  listing: Pick<
+    ListingWithOwner,
+    "id" | "transaction" | "typeBien" | "prix" | "villageSlug"
+  >,
+  nearbySlugs: string[],
+  take = 4
+): Promise<ListingWithOwner[]> {
+  return prisma.listing.findMany({
+    where: {
+      id: { not: listing.id },
+      statut: "PUBLIEE",
+      transaction: listing.transaction,
+      typeBien: listing.typeBien,
+      villageSlug: { in: [listing.villageSlug, ...nearbySlugs] },
+      prix: {
+        gte: Math.round(listing.prix * 0.65),
+        lte: Math.round(listing.prix * 1.35),
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+    ...listingWithOwner,
+  });
 }
 
 export async function getListingsByUser(
@@ -108,9 +152,47 @@ export type ListingFieldsInput = {
   exterieur: string;
   equipements: string;
   dpe?: string;
+  ges?: string;
+  dpeConsommation?: number | null;
+  dpeEmissions?: number | null;
+  dpeCoutMin?: number | null;
+  dpeCoutMax?: number | null;
+  dpeCoutAnneeRef?: number | null;
+  dpeDate?: Date | null;
   modeChauffage?: string | null;
+  /**
+   * Frais & charges (voir schema.prisma). Renseignés par le formulaire
+   * d'annonce ; omis par l'import de flux tant que les balises AC3
+   * correspondantes n'ont pas été inspectées.
+   */
+  honoraires?: number | null;
+  honorairesCharge?: string | null;
+  chargesCopro?: number | null;
+  taxeFonciere?: number | null;
+  chargesLoc?: number | null;
+  depotGarantie?: number | null;
+  meuble?: boolean | null;
+  /** Caractéristiques détaillées (voir schema.prisma). Formulaire d'annonce uniquement. */
+  anneeConstruction?: number | null;
+  etat?: string | null;
+  exposition?: string | null;
+  surfaceTerrain?: number | null;
+  etage?: number | null;
+  ascenseur?: boolean | null;
+  nbSallesDeBain?: number | null;
+  stationnement?: string | null;
+  chauffageType?: string | null;
+  fibre?: boolean | null;
+  assainissement?: string | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
+  /**
+   * Modes de visite. Omis par l'import de flux (les valeurs par défaut Prisma
+   * s'appliquent à la création, l'existant est laissé tel quel en mise à jour) ;
+   * toujours renseignés explicitement depuis le formulaire d'annonce.
+   */
+  visitesIndividuelles?: boolean;
+  visitesGroupees?: boolean;
 };
 
 export type CreateListingInput = ListingFieldsInput & { ownerId: string };
@@ -120,13 +202,65 @@ export async function createListing(input: CreateListingInput) {
   return prisma.listing.create({
     data: {
       ...fields,
-      dpe: fields.dpe || null,
+      ...dpeData(fields),
+      ...fraisData(fields),
+      ...caracData(fields),
       videoUrl: fields.videoUrl || null,
       visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
       owner: { connect: { id: ownerId } },
       priceHistory: { create: [{ prix: fields.prix }] },
     },
   });
+}
+
+/**
+ * Normalise le bloc « frais & charges » : `undefined` → `null` (efface en
+ * mise à jour), et remet à `null` les champs hors périmètre de la transaction
+ * (pas d'honoraires ni de taxe foncière sur une location, pas de dépôt de
+ * garantie sur une vente).
+ */
+function fraisData(f: ListingFieldsInput) {
+  const vente = f.transaction === "VENTE";
+  return {
+    honoraires: vente ? f.honoraires ?? null : null,
+    honorairesCharge: vente ? f.honorairesCharge ?? null : null,
+    chargesCopro: f.chargesCopro ?? null,
+    taxeFonciere: vente ? f.taxeFonciere ?? null : null,
+    chargesLoc: vente ? null : f.chargesLoc ?? null,
+    depotGarantie: vente ? null : f.depotGarantie ?? null,
+    meuble: vente ? null : f.meuble ?? null,
+  };
+}
+
+/** Normalise le bloc « caractéristiques » : `undefined` → `null` (efface en MàJ). */
+function caracData(f: ListingFieldsInput) {
+  return {
+    anneeConstruction: f.anneeConstruction ?? null,
+    etat: f.etat ?? null,
+    exposition: f.exposition ?? null,
+    surfaceTerrain: f.surfaceTerrain ?? null,
+    etage: f.etage ?? null,
+    ascenseur: f.ascenseur ?? null,
+    nbSallesDeBain: f.nbSallesDeBain ?? null,
+    stationnement: f.stationnement ?? null,
+    chauffageType: f.chauffageType ?? null,
+    fibre: f.fibre ?? null,
+    assainissement: f.assainissement ?? null,
+  };
+}
+
+/** Normalise le bloc DPE : chaîne vide → null, nombre absent → null. */
+function dpeData(f: ListingFieldsInput) {
+  return {
+    dpe: f.dpe || null,
+    ges: f.ges || null,
+    dpeConsommation: f.dpeConsommation ?? null,
+    dpeEmissions: f.dpeEmissions ?? null,
+    dpeCoutMin: f.dpeCoutMin ?? null,
+    dpeCoutMax: f.dpeCoutMax ?? null,
+    dpeCoutAnneeRef: f.dpeCoutAnneeRef ?? null,
+    dpeDate: f.dpeDate ?? null,
+  };
 }
 
 async function applyListingUpdate(
@@ -139,7 +273,9 @@ async function applyListingUpdate(
       where: { id },
       data: {
         ...input,
-        dpe: input.dpe || null,
+        ...dpeData(input),
+        ...fraisData(input),
+        ...caracData(input),
         videoUrl: input.videoUrl || null,
         visiteVirtuelleUrl: input.visiteVirtuelleUrl || null,
         // Une annonce refusée repasse en vérification après correction.
@@ -217,7 +353,7 @@ export async function upsertImportedListing(
     ...fields,
     typeMaison: fields.typeMaison ?? null,
     modeChauffage: fields.modeChauffage || null,
-    dpe: fields.dpe || null,
+    ...dpeData(fields),
     videoUrl: fields.videoUrl || null,
     visiteVirtuelleUrl: fields.visiteVirtuelleUrl || null,
   };

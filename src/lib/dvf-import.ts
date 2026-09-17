@@ -16,7 +16,10 @@ import { villages } from "@/data/villages";
  */
 
 const DEPARTEMENT = "59";
-const YEARS = [2023, 2024, 2025];
+/** Nombre de millésimes DVF conservés (fenêtre glissante). */
+const WINDOW_SIZE = 3;
+/** On ne remonte pas plus loin que ça en cherchant des fichiers disponibles. */
+const MAX_LOOKBACK = 5;
 const TYPES_RETENUS = new Set(["Maison", "Appartement"]);
 const PRIX_M2_MIN = 200;
 const PRIX_M2_MAX = 15000;
@@ -36,9 +39,15 @@ type DvfRow = {
   nombre_lots: string;
 };
 
-async function downloadDepartementCsv(year: number): Promise<string> {
+/**
+ * Télécharge le CSV DVF d'un département pour une année. Renvoie `null` si le
+ * fichier n'existe pas encore (millésime pas publié — cas normal en début
+ * d'année), lève une erreur pour toute autre défaillance.
+ */
+async function downloadDepartementCsv(year: number): Promise<string | null> {
   const url = `https://files.data.gouv.fr/geo-dvf/latest/csv/${year}/departements/${DEPARTEMENT}.csv.gz`;
   const res = await fetch(url);
+  if (res.status === 404) return null;
   if (!res.ok) {
     throw new Error(`Échec du téléchargement DVF ${year} : HTTP ${res.status}`);
   }
@@ -100,19 +109,41 @@ function filterYear(csv: string, year: number, inseeToSlug: Map<string, string>)
 
 export type DvfImportResult = { year: number; count: number }[];
 
+/**
+ * Réimporte les DVF sur une fenêtre glissante des `WINDOW_SIZE` millésimes les
+ * plus récents réellement disponibles chez data.gouv (à partir de l'année en
+ * cours, en descendant jusqu'à `MAX_LOOKBACK` ans). Aucune année codée en
+ * dur : le jeu de données ne se périme plus tout seul.
+ *
+ * Tous les fichiers sont téléchargés et filtrés d'abord ; la table n'est
+ * vidée puis réécrite qu'ensuite, dans une transaction — un échec réseau
+ * laisse donc les anciennes données en place.
+ */
 export async function runDvfImport(): Promise<DvfImportResult> {
   const inseeToSlug = new Map(villages.map((v) => [v.insee, v.slug]));
-  await prisma.dvfTransaction.deleteMany({ where: { sourceAnnee: { in: YEARS } } });
+  const currentYear = new Date().getFullYear();
 
-  const results: DvfImportResult = [];
-  for (const year of YEARS) {
+  const batches: { year: number; rows: ReturnType<typeof filterYear> }[] = [];
+  for (
+    let year = currentYear;
+    year >= currentYear - MAX_LOOKBACK && batches.length < WINDOW_SIZE;
+    year--
+  ) {
     const csv = await downloadDepartementCsv(year);
-    const filtered = filterYear(csv, year, inseeToSlug);
-    if (filtered.length > 0) {
-      await prisma.dvfTransaction.createMany({ data: filtered });
-    }
-    results.push({ year, count: filtered.length });
+    if (csv === null) continue;
+    batches.push({ year, rows: filterYear(csv, year, inseeToSlug) });
   }
 
-  return results;
+  if (batches.length === 0) {
+    throw new Error("Aucun millésime DVF disponible au téléchargement.");
+  }
+
+  await prisma.$transaction([
+    prisma.dvfTransaction.deleteMany({}),
+    ...batches
+      .filter((b) => b.rows.length > 0)
+      .map((b) => prisma.dvfTransaction.createMany({ data: b.rows })),
+  ]);
+
+  return batches.map((b) => ({ year: b.year, count: b.rows.length }));
 }

@@ -1,0 +1,40 @@
+name: Rafraîchir les équipements des villages
+
+# Refetch mensuel des commerces / écoles / transports par commune depuis
+# OpenStreetMap et l'annuaire de l'Éducation nationale. Commit direct sur la
+# branche par défaut si le fichier généré a changé. Déclenchable à la main.
+on:
+  schedule:
+    - cron: "0 3 1 * *" # le 1er de chaque mois, 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Refetch des équipements (toutes communes)
+        run: npx tsx scripts/fetch-village-amenities.ts --force
+
+      - name: Commit si le fichier a changé
+        run: |
+          if git diff --quiet -- src/data/village-amenities.ts; then
+            echo "Aucun changement."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/village-amenities.ts
+          git commit -m "Rafraîchit les équipements des villages (OSM + Éducation nationale)"
+          git push

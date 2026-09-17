@@ -5,7 +5,7 @@ import { getDvfStatsForAllVillages } from "@/lib/dvf";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "La carte des 35 communes de la Pévèle",
+  title: "La carte des 38 communes de la Pévèle",
   description:
     "Explorez la Pévèle village par village sur la carte interactive : accédez aux annonces et aux prix immobiliers de chaque commune.",
   alternates: {

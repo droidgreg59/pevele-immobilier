@@ -8,6 +8,7 @@ export type AgencySummary = {
   logoUrl: string | null;
   createdAt: Date;
   listingCount: number;
+  verified: boolean;
 };
 
 export async function getAgencies(): Promise<AgencySummary[]> {
@@ -19,6 +20,7 @@ export async function getAgencies(): Promise<AgencySummary[]> {
       entreprise: true,
       logoUrl: true,
       createdAt: true,
+      verifStatut: true,
       _count: { select: { listings: { where: { statut: "PUBLIEE" } } } },
     },
     orderBy: { createdAt: "asc" },
@@ -31,6 +33,7 @@ export async function getAgencies(): Promise<AgencySummary[]> {
     logoUrl: a.logoUrl,
     createdAt: a.createdAt,
     listingCount: a._count.listings,
+    verified: a.verifStatut === "VERIFIEE",
   }));
 }
 
@@ -50,6 +53,7 @@ const AGENCY_PROFILE_SELECT = {
   xmlLastSyncAt: true,
   xmlLastSyncCount: true,
   xmlLastSyncError: true,
+  verifStatut: true,
   createdAt: true,
 } as const;
 
@@ -69,6 +73,7 @@ export type AgencyProfile = {
   xmlLastSyncAt: Date | null;
   xmlLastSyncCount: number | null;
   xmlLastSyncError: string | null;
+  verifStatut: "NON_SOUMISE" | "EN_ATTENTE" | "VERIFIEE" | "REFUSEE";
   createdAt: Date;
 };
 

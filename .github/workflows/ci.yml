@@ -1,0 +1,65 @@
+name: CI
+
+# Lint + typecheck + tests + build sur chaque PR et sur master.
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      # Postgres jetable pour la durée du job : `next build` exécute `sitemap.ts`
+      # qui interroge la base, d'où un schéma vide poussé par `prisma db push`.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Valeurs factices : la CI ne se connecte à aucun service externe réel,
+      # seulement au conteneur Postgres ci-dessus. `AUTH_SECRET` doit juste
+      # être non vide. Pas de pooling en CI, donc même URL pour les deux.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
+      DATABASE_URL_UNPOOLED: "postgresql://ci:ci@localhost:5432/ci"
+      AUTH_SECRET: "ci-placeholder-secret-ci-placeholder-secret"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Générer le client Prisma
+        run: npx prisma generate
+
+      - name: Créer le schéma Postgres
+        run: npx prisma db push --skip-generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      # `next build` génère `.next/types/**` (types `PageProps` / `LayoutProps`)
+      # PUIS lance sa propre passe TypeScript. Le `tsc --noEmit` explicite qui
+      # suit dépend de ces types générés — d'où l'ordre build → tsc.
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck
+        run: npx tsc --noEmit

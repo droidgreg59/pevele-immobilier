@@ -96,7 +96,7 @@ export default async function VillagePage({
       </div>
 
       <div className="mt-9">
-        <h2 className="m-0 font-display text-xl text-ink">Biens à vendre à {village.nom}</h2>
+        <h2 className="m-0 font-display text-xl text-ink">Annonces à {village.nom}</h2>
         {villageListings.length > 0 ? (
           <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {villageListings.map((listing) => (
@@ -115,6 +115,23 @@ export default async function VillagePage({
             </Link>
           </p>
         )}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {[
+            ["maisons-a-vendre", "Maisons à vendre"],
+            ["appartements-a-vendre", "Appartements à vendre"],
+            ["terrains-a-vendre", "Terrains à vendre"],
+            ["maisons-a-louer", "Maisons à louer"],
+            ["appartements-a-louer", "Appartements à louer"],
+          ].map(([intent, label]) => (
+            <Link
+              key={intent}
+              href={`/immobilier/${village.slug}/${intent}`}
+              className="rounded-full border border-line bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+            >
+              {label} à {village.nom}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="mt-9">
@@ -162,8 +179,16 @@ export default async function VillagePage({
         )}
         <p className="mt-3 text-[11px] text-muted-2">
           Source : DVF (data.gouv.fr / Etalab) —{" "}
+          {dvfStats ? (
+            <>
+              <Link href={`/prix/${village.slug}`} className="text-blue">
+                prix détaillé à {village.nom} →
+              </Link>{" "}
+              ·{" "}
+            </>
+          ) : null}
           <Link href="/prix" className="text-blue">
-            voir tous les villages →
+            tous les villages →
           </Link>
         </p>
       </div>

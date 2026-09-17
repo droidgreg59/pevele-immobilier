@@ -90,6 +90,11 @@ export default async function ProfessionnelsPage() {
                   <span className="font-display text-xl text-blue">
                     {a.entreprise ?? a.nom}
                   </span>
+                  {a.verified ? (
+                    <span className="rounded-full bg-[#EAF3E8] px-2 py-0.5 text-[10.5px] font-semibold text-green">
+                      ✓ Vérifiée
+                    </span>
+                  ) : null}
                 </div>
                 <span className="text-[12.5px] font-medium text-muted">
                   {a.listingCount} annonce{a.listingCount > 1 ? "s" : ""} en ligne

@@ -1,6 +1,6 @@
 /**
  * Récupère les vraies délimitations administratives (contours GeoJSON) des
- * 28 communes de la Pévèle depuis l'API officielle geo.api.gouv.fr, les
+ * communes suivies de la Pévèle depuis l'API officielle geo.api.gouv.fr, les
  * simplifie (Douglas-Peucker) et les projette dans le même repère 440x600
  * que villages.ts, pour un rendu carte avec de vraies frontières de commune.
  *

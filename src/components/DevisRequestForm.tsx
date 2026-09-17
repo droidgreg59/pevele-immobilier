@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createDevisRequestAction, type DevisFormState } from "@/lib/devis-actions";
+import TurnstileWidget from "./TurnstileWidget";
 
 const initialState: DevisFormState = {};
 
@@ -47,6 +48,8 @@ export default function DevisRequestForm({ artisanId }: { artisanId: string }) {
           className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
         />
       </label>
+
+      <TurnstileWidget action="devis_request" resetKey={state.error} />
 
       {state.error ? (
         <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">

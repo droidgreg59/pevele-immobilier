@@ -1,0 +1,18 @@
+{
+  "name": "Pévèle Immobilier",
+  "short_name": "Pévèle Immo",
+  "description": "Annonces et prix immobiliers de la Pévèle — 38 communes, agences et particuliers.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf8",
+  "theme_color": "#2c439c",
+  "lang": "fr",
+  "categories": ["business", "lifestyle", "shopping"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

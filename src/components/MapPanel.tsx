@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { ListingWithOwner } from "@/lib/listings";
+import type { BrowseMapAggregate } from "@/lib/listing-query";
 import { villages } from "@/data/villages";
 import { villageBoundaries } from "@/data/village-boundaries";
 import { contextBoundaries } from "@/data/context-boundaries";
@@ -26,28 +26,23 @@ type VillageShape = {
 };
 
 export default function MapPanel({
-  listings,
+  aggregates,
   hoveredVillageSlug,
   onHoverVillage,
   onSelectVillage,
 }: {
-  listings: ListingWithOwner[];
+  aggregates: BrowseMapAggregate[];
   hoveredVillageSlug: string | null;
   onHoverVillage: (slug: string | null) => void;
   onSelectVillage: (slug: string) => void;
 }) {
   const shapes = useMemo<VillageShape[]>(() => {
-    const byVillage = new Map<string, ListingWithOwner[]>();
-    for (const l of listings) {
-      const arr = byVillage.get(l.villageSlug) ?? [];
-      arr.push(l);
-      byVillage.set(l.villageSlug, arr);
-    }
+    const byVillage = new Map(aggregates.map((a) => [a.villageSlug, a]));
     return villages
       .map((v) => {
         const boundary = villageBoundaries[v.insee];
         if (!boundary) return null;
-        const items = byVillage.get(v.slug);
+        const agg = byVillage.get(v.slug);
         return {
           slug: v.slug,
           nom: v.nom,
@@ -55,12 +50,12 @@ export default function MapPanel({
           path: boundary.path,
           cx: boundary.cx,
           cy: boundary.cy,
-          count: items?.length ?? 0,
-          minPrix: items ? Math.min(...items.map((l) => l.prix)) : null,
+          count: agg?.count ?? 0,
+          minPrix: agg?.minPrix ?? null,
         };
       })
       .filter((s): s is VillageShape => s !== null);
-  }, [listings]);
+  }, [aggregates]);
 
   const hasAnyMatch = shapes.some((s) => s.count > 0);
 

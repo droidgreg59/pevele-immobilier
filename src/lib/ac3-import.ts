@@ -31,6 +31,13 @@ export type ParsedAc3Listing = {
   exterieur: string;
   equipements: string;
   dpe?: string;
+  ges?: string;
+  dpeConsommation?: number | null;
+  dpeEmissions?: number | null;
+  dpeCoutMin?: number | null;
+  dpeCoutMax?: number | null;
+  dpeCoutAnneeRef?: number | null;
+  dpeDate?: Date | null;
   modeChauffage?: string | null;
   videoUrl?: string;
   visiteVirtuelleUrl?: string;
@@ -61,6 +68,20 @@ function truthy(value: unknown): boolean {
 function numGtZero(value: unknown): boolean {
   const n = Number(value);
   return Number.isFinite(n) && n > 0;
+}
+
+/** Entier positif arrondi d'une balise numérique (« 153.8 » → 154), sinon `null`. */
+function roundedIntOrNull(value: unknown): number | null {
+  const n = Number(String(value).replace(",", "."));
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+}
+
+/** Date d'une balise au format JJ/MM/AAAA (flux AC3), sinon `null`. */
+function frDateOrNull(value: unknown): Date | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(value).trim());
+  if (!m) return null;
+  const d = new Date(`${m[3]}-${m[2]}-${m[1]}T00:00:00Z`);
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
 function textOf(value: unknown): string {
@@ -196,8 +217,21 @@ export function parseAc3Feed(xml: string): {
       `${typeBien === "MAISON" ? "Maison" : typeBien === "APPARTEMENT" ? "Appartement" : "Terrain"} à ${village.nom}`;
     const description = textOf(bien?.COMMENTAIRES?.FR) || titre;
 
+    // Bloc DPE du flux réel (balises inspectées en direct — cf. AGENTS.md) :
+    // CONSOMMATIONENERGETIQUE = classe énergie, GAZEFFETDESERRE = classe climat,
+    // CONSO_ANNUEL_ENERGIE = kWh/m²/an (énergie primaire), VALEUR_GES =
+    // kgCO₂/m²/an, CHARGE_ENERGIE_MIN/MAX = coût annuel estimé, DATE_DPE et
+    // ANNEE_REF_PRIX_ENERGIE = dates de référence.
     const dpeRaw = textOf(typeNode.CONSOMMATIONENERGETIQUE).toUpperCase();
     const dpe = /^[A-G]$/.test(dpeRaw) ? dpeRaw : undefined;
+    const gesRaw = textOf(typeNode.GAZEFFETDESERRE).toUpperCase();
+    const ges = /^[A-G]$/.test(gesRaw) ? gesRaw : undefined;
+    const dpeConsommation = roundedIntOrNull(typeNode.CONSO_ANNUEL_ENERGIE);
+    const dpeEmissions = roundedIntOrNull(typeNode.VALEUR_GES);
+    const dpeCoutMin = roundedIntOrNull(typeNode.CHARGE_ENERGIE_MIN);
+    const dpeCoutMax = roundedIntOrNull(typeNode.CHARGE_ENERGIE_MAX);
+    const dpeCoutAnneeRef = roundedIntOrNull(typeNode.ANNEE_REF_PRIX_ENERGIE);
+    const dpeDate = frDateOrNull(typeNode.DATE_DPE);
     const typeMaison = typeBien === "MAISON" ? parseTypeMaison(typeNode) : undefined;
     // Balise MODE_CHAUFFAGE (source d'énergie) du flux réel — valeurs
     // observées : "Gaz", "Electrique", "Fuel". Reprise telle quelle, sans
@@ -229,6 +263,13 @@ export function parseAc3Feed(xml: string): {
       exterieur: buildExterieur(typeBien, typeNode),
       equipements: buildEquipements(typeNode),
       dpe,
+      ges,
+      dpeConsommation,
+      dpeEmissions,
+      dpeCoutMin,
+      dpeCoutMax,
+      dpeCoutAnneeRef,
+      dpeDate,
       videoUrl,
       visiteVirtuelleUrl,
       photoUrls,

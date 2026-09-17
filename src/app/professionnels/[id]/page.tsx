@@ -163,6 +163,11 @@ export default async function AgencyPage({
           <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
             {agency.entreprise ?? agency.nom}
           </h1>
+          {agency.verifStatut === "VERIFIEE" ? (
+            <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#EAF3E8] px-3 py-1 text-[12px] font-semibold text-green">
+              ✓ Agence vérifiée — SIRET et carte professionnelle contrôlés
+            </span>
+          ) : null}
         </div>
       </div>
       <div className="flex flex-wrap gap-4">

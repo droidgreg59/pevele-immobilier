@@ -1,16 +1,20 @@
 /**
- * Récupère, pour chacune des communes suivies, les commerces (supermarché /
- * épicerie / boulangerie) et arrêts de bus/gares réels depuis OpenStreetMap
- * (Overpass API), et les écoles/collèges/lycées réels depuis l'annuaire
- * officiel de l'Éducation nationale (data.education.gouv.fr). Aucune donnée
- * inventée : un résultat vide reste vide dans le fichier généré.
+ * Récupère, pour chacune des communes suivies, les commerces de proximité et
+ * les arrêts de bus / gares réels depuis OpenStreetMap (Overpass API), et les
+ * écoles / collèges / lycées réels depuis l'annuaire officiel de l'Éducation
+ * nationale (data.education.gouv.fr). Aucune donnée inventée : un résultat
+ * vide reste vide dans le fichier généré.
  *
- * Usage : npx tsx scripts/fetch-village-amenities.ts
+ * Usage :
+ *   npx tsx scripts/fetch-village-amenities.ts           → complète les communes absentes
+ *   npx tsx scripts/fetch-village-amenities.ts --force   → refetch TOUTES les communes (rafraîchissement)
  */
 import { writeFileSync } from "node:fs";
 import { villages } from "../src/data/villages";
 import { villageAmenities } from "../src/data/village-amenities";
 import type { Commerce, Ecole, VillageAmenities } from "../src/data/village-amenities";
+
+const FORCE = process.argv.includes("--force");
 
 const OVERPASS_URLS = [
   "https://overpass-api.de/api/interpreter",
@@ -23,11 +27,27 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** shop=… OpenStreetMap → libellé Commerce. */
 const SHOP_TYPE: Record<string, Commerce["type"]> = {
   supermarket: "Supermarché",
   convenience: "Épicerie",
+  general: "Épicerie",
+  deli: "Épicerie",
   bakery: "Boulangerie",
+  pastry: "Boulangerie",
+  butcher: "Boucherie",
+  greengrocer: "Primeur",
+  farm: "Primeur",
 };
+
+/** amenity=… OpenStreetMap → libellé Commerce. */
+const AMENITY_TYPE: Record<string, Commerce["type"]> = {
+  pharmacy: "Pharmacie",
+  marketplace: "Marché",
+};
+
+const SHOP_REGEX = `^(${Object.keys(SHOP_TYPE).join("|")})$`;
+const AMENITY_REGEX = `^(${Object.keys(AMENITY_TYPE).join("|")})$`;
 
 type OverpassElement = {
   type: string;
@@ -35,7 +55,7 @@ type OverpassElement = {
 };
 
 async function fetchOverpass(insee: string, retries = 6): Promise<OverpassElement[]> {
-  const query = `[out:json][timeout:30];area["ref:INSEE"="${insee}"]->.a;(nwr["shop"~"^(supermarket|convenience|bakery)$"](area.a);nwr["railway"~"^(station|halt)$"](area.a);nwr["highway"="bus_stop"](area.a););out tags;`;
+  const query = `[out:json][timeout:30];area["ref:INSEE"="${insee}"]->.a;(nwr["shop"~"${SHOP_REGEX}"](area.a);nwr["amenity"~"${AMENITY_REGEX}"](area.a);nwr["railway"~"^(station|halt)$"](area.a);nwr["highway"="bus_stop"](area.a););out tags;`;
   let lastError = "";
   for (let attempt = 0; attempt < retries; attempt++) {
     const url = OVERPASS_URLS[attempt % OVERPASS_URLS.length];
@@ -115,7 +135,14 @@ function writeOutput(output: Record<string, VillageAmenities>) {
 
 export type Commerce = {
   nom: string;
-  type: "Supermarché" | "Épicerie" | "Boulangerie";
+  type:
+    | "Supermarché"
+    | "Épicerie"
+    | "Boulangerie"
+    | "Boucherie"
+    | "Primeur"
+    | "Pharmacie"
+    | "Marché";
 };
 
 export type Ecole = {
@@ -148,7 +175,7 @@ async function main() {
   const failed: string[] = [];
 
   for (const v of villages) {
-    if (output[v.insee]) {
+    if (output[v.insee] && !FORCE) {
       console.log(`${v.nom} (${v.insee})... déjà récupéré, ignoré`);
       continue;
     }
@@ -157,12 +184,19 @@ async function main() {
     try {
       const elements = await fetchOverpass(v.insee);
       const commerces: Commerce[] = [];
+      const seenCommerce = new Set<string>();
       const gares: string[] = [];
       let arretsBus = 0;
       for (const el of elements) {
         const tags = el.tags ?? {};
-        if (tags.shop && SHOP_TYPE[tags.shop] && tags.name) {
-          commerces.push({ nom: tags.name, type: SHOP_TYPE[tags.shop] });
+        const commerceType =
+          (tags.shop && SHOP_TYPE[tags.shop]) || (tags.amenity && AMENITY_TYPE[tags.amenity]);
+        if (commerceType && tags.name) {
+          const key = `${tags.name}|${commerceType}`;
+          if (!seenCommerce.has(key)) {
+            seenCommerce.add(key);
+            commerces.push({ nom: tags.name, type: commerceType });
+          }
         } else if ((tags.railway === "station" || tags.railway === "halt") && tags.name) {
           gares.push(tags.name);
         } else if (tags.highway === "bus_stop") {

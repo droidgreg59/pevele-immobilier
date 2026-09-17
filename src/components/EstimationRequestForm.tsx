@@ -7,6 +7,7 @@ import {
   type EstimationFormState,
 } from "@/lib/estimation-actions";
 import { tomorrowDateString } from "@/lib/validation";
+import TurnstileWidget from "./TurnstileWidget";
 
 const initialState: EstimationFormState = {};
 
@@ -95,6 +96,8 @@ export default function EstimationRequestForm({ agencyId }: { agencyId: string }
           />
         </label>
       </div>
+
+      <TurnstileWidget action="estimation_request" resetKey={state.error} />
 
       {state.error ? (
         <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">

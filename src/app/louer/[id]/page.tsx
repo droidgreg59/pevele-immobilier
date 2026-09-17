@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getListingById, getPriceHistory } from "@/lib/listings";
+import { getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
 import { getSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
+import { getOpenHouseForListing } from "@/lib/open-house";
+import { getCommuneRisques } from "@/lib/georisques";
+import { getVillageBySlug, nearestVillages } from "@/data/villages";
+import { villageCoords } from "@/data/village-coords";
+import { villageAmenities } from "@/data/village-amenities";
 import ListingDetail from "@/components/ListingDetail";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
@@ -27,7 +32,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description: listing.description,
-      images: listing.photos.length > 0 ? listing.photos.map((p) => ({ url: p.url })) : undefined,
+      // L'image de partage est la carte de marque générée par opengraph-image.tsx.
     },
   };
 }
@@ -39,14 +44,23 @@ export default async function LouerListingPage({
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "LOCATION") notFound();
 
-  const [priceHistory, session, artisans] = await Promise.all([
+  const village = getVillageBySlug(listing.villageSlug);
+  const [priceHistory, session, artisans, risques] = await Promise.all([
     getPriceHistory(listing.id),
     getSession(),
     getArtisansForVillage(listing.villageSlug),
+    village
+      ? getCommuneRisques(village.insee, villageCoords[village.insee] ?? null)
+      : Promise.resolve(null),
   ]);
-  const isFavorited = session
-    ? await isListingFavorited(session.userId, listing.id)
-    : false;
+  const [isFavorited, openHouse, similar] = await Promise.all([
+    session ? isListingFavorited(session.userId, listing.id) : Promise.resolve(false),
+    getOpenHouseForListing(listing.id, session?.userId),
+    getSimilarListings(
+      listing,
+      nearestVillages(listing.villageSlug, 4).map((v) => v.slug)
+    ),
+  ]);
 
   return (
     <>
@@ -68,6 +82,11 @@ export default async function LouerListingPage({
         isLoggedIn={session !== null}
         isFavorited={isFavorited}
         artisans={artisans}
+        openHouse={openHouse}
+        risques={risques}
+        amenities={village ? villageAmenities[village.insee] ?? null : null}
+        similar={similar}
+        viewerNom={session?.nom ?? ""}
       />
     </>
   );

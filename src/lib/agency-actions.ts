@@ -1,11 +1,17 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getSession } from "./session";
+import { prisma } from "./prisma";
 import { updateAgencyProfile, getAgencyById } from "./agencies";
+import { lookupSiretDenomination } from "./agency-verification";
+import { isValidSiret, normalizeSiret } from "./validation";
+import { logEvent } from "./events";
 import { pickLogoFile, validateLogoFile, saveLogoFile, deleteLogoFile } from "./photo-upload";
 
 export type AgencyProfileFormState = { error?: string };
+export type AgencyVerificationFormState = { error?: string; success?: boolean };
 
 function isValidHttpUrl(value: string): boolean {
   try {
@@ -66,4 +72,60 @@ export async function updateAgencyProfileAction(
   });
 
   redirect(`/professionnels/${session.userId}`);
+}
+
+/**
+ * L'agence soumet ses justificatifs de vérification (loi Hoguet) : SIRET,
+ * numéro de carte professionnelle (carte T), CCI émettrice, zone couverte.
+ * Le statut passe en EN_ATTENTE ; un administrateur valide ensuite depuis le
+ * back-office. La raison sociale officielle est récupérée en best-effort.
+ */
+export async function submitAgencyVerificationAction(
+  _prevState: AgencyVerificationFormState,
+  formData: FormData
+): Promise<AgencyVerificationFormState> {
+  const session = await getSession();
+  if (!session) redirect("/connexion?next=/compte/agence");
+  if (session.type !== "AGENCE") return { error: "Réservé aux comptes agence." };
+
+  const siret = normalizeSiret(String(formData.get("siret") ?? ""));
+  const carteProfessionnelle = String(formData.get("carteProfessionnelle") ?? "").trim();
+  const carteProCci = String(formData.get("carteProCci") ?? "").trim();
+  const zoneCouverte = String(formData.get("zoneCouverte") ?? "").trim();
+
+  if (!isValidSiret(siret)) {
+    return { error: "Le SIRET doit comporter 14 chiffres et une clé de contrôle valide." };
+  }
+  if (!carteProfessionnelle) {
+    return { error: "Merci d'indiquer le numéro de votre carte professionnelle (carte T)." };
+  }
+  if (!carteProCci) {
+    return { error: "Merci d'indiquer la CCI qui a délivré la carte." };
+  }
+
+  const siretDenomination = await lookupSiretDenomination(siret);
+
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: {
+      siret,
+      carteProfessionnelle,
+      carteProCci,
+      zoneCouverte: zoneCouverte || null,
+      siretDenomination,
+      verifStatut: "EN_ATTENTE",
+      verifSoumiseLe: new Date(),
+      verifTraiteeLe: null,
+      verifRaison: null,
+    },
+  });
+
+  await logEvent("agency_verification_submitted", {
+    userId: session.userId,
+    path: "/compte/agence",
+  });
+
+  revalidatePath("/compte/agence");
+  revalidatePath("/compte");
+  return { success: true };
 }

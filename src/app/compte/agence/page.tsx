@@ -3,7 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getAgencyById } from "@/lib/agencies";
+import { getAgencyVerification } from "@/lib/agency-verification";
 import AgencyProfileForm from "@/components/AgencyProfileForm";
+import AgencyVerificationCard from "@/components/AgencyVerificationCard";
 import XmlImportPanel from "@/components/XmlImportPanel";
 
 export const dynamic = "force-dynamic";
@@ -17,8 +19,11 @@ export default async function CompteAgencePage() {
   if (!session) redirect("/connexion?next=/compte/agence");
   if (session.type !== "AGENCE") redirect("/compte");
 
-  const agency = await getAgencyById(session.userId);
-  if (!agency) redirect("/compte");
+  const [agency, verification] = await Promise.all([
+    getAgencyById(session.userId),
+    getAgencyVerification(session.userId),
+  ]);
+  if (!agency || !verification) redirect("/compte");
 
   return (
     <div className="animate-fade-up max-w-[900px] px-9 py-8">
@@ -47,6 +52,10 @@ export default async function CompteAgencePage() {
 
       <div className="mt-7">
         <AgencyProfileForm agency={agency} />
+      </div>
+
+      <div className="mt-8">
+        <AgencyVerificationCard verification={verification} />
       </div>
 
       <div className="mt-8">
