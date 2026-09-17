@@ -44,7 +44,7 @@ function layout(title: string, bodyHtml: string, cta?: { label: string; href: st
             <tr>
               <td style="padding:18px 28px;border-top:1px solid ${LINE};">
                 <span style="font-size:11.5px;color:${MUTED};">
-                  ${SITE_NAME} — l'immobilier local de la Pévèle · <a href="${SITE_URL}" style="color:${MUTED};">${SITE_URL.replace("https://", "")}</a>
+                  ${SITE_NAME} — la référence de l'immobilier en Pévèle · <a href="${SITE_URL}" style="color:${MUTED};">${SITE_URL.replace("https://", "")}</a>
                 </span>
               </td>
             </tr>
