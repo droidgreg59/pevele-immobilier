@@ -39,24 +39,14 @@ export default async function AgenceClientsPage() {
   ]);
 
   return (
-    <div className="animate-fade-up max-w-[1000px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
-        Mon compte
-      </span>
-      <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
-        Mes clients
-      </h1>
-      <Link href="/compte" className="text-[13px] font-semibold text-blue">
-        ← Mon compte
-      </Link>
-
-      <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
-        Les particuliers vous confient leurs recherches sauvegardées depuis
-        leur compte. Acceptez une demande pour faire apparaître sa fiche
-        client ci-dessous.
+    <div className="flex flex-col gap-1">
+      <h2 className="m-0 font-display text-[24px] text-ink">Mes clients</h2>
+      <p className="m-0 max-w-[64ch] text-[14px] leading-[1.6] text-muted">
+        Les particuliers vous confient leurs recherches sauvegardées depuis leur compte.
+        Acceptez une demande pour faire apparaître sa fiche client ci-dessous.
       </p>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <span className="text-[11px] font-semibold text-ink">
           Demandes en attente ({pending.length})
         </span>

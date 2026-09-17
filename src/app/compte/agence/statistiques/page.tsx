@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getAgencyStats } from "@/lib/stats";
@@ -36,20 +35,11 @@ export default async function AgenceStatistiquesPage() {
   const stats = await getAgencyStats(session.userId);
 
   return (
-    <div className="animate-fade-up max-w-[900px] px-9 py-8">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
-        Mon compte
-      </span>
-      <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">
-        Statistiques
-      </h1>
-      <Link href="/compte" className="text-[13px] font-semibold text-blue">
-        ← Mon compte
-      </Link>
-
-      <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
-        Un aperçu de votre activité sur le plan — annonces, recherches
-        confiées par des particuliers, propositions envoyées et avis reçus.
+    <div>
+      <h2 className="m-0 font-display text-[24px] text-ink">Statistiques</h2>
+      <p className="m-0 mt-1 max-w-[64ch] text-[14px] leading-[1.6] text-muted">
+        Un aperçu de votre activité sur le plan — annonces, recherches confiées par des
+        particuliers, propositions envoyées et avis reçus.
       </p>
 
       <Section title="Annonces">

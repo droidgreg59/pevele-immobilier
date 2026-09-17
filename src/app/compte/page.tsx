@@ -14,14 +14,13 @@ import { getSavedSearchesByUser, savedSearchUrl } from "@/lib/saved-searches";
 import { deleteSavedSearchAction } from "@/lib/saved-search-actions";
 import { sendMandateAction } from "@/lib/mandate-actions";
 import { respondToProposalAction } from "@/lib/proposal-actions";
-import { getPendingMandateCount, getClientCount } from "@/lib/mandates";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
 import { getVisitRequestsForOwner } from "@/lib/visits";
 import {
   getPendingOpenHouseRegistrationsForOwner,
   getOpenHouseRegistrationsByUser,
 } from "@/lib/open-house";
-import { getEstimationRequestsForAgency, getEstimationRequestsByUser } from "@/lib/estimations";
+import { getEstimationRequestsByUser } from "@/lib/estimations";
 import { getAgencies } from "@/lib/agencies";
 import { isUserAdmin, getPendingListings } from "@/lib/admin";
 import { getVillageBySlug } from "@/data/villages";
@@ -30,7 +29,6 @@ import ListingCard from "@/components/ListingCard";
 import DevisList from "@/components/DevisList";
 import VisitRequestList from "@/components/VisitRequestList";
 import OpenHouseRegistrationList from "@/components/OpenHouseRegistrationList";
-import EstimationList from "@/components/EstimationList";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -82,7 +80,6 @@ export const metadata: Metadata = {
 };
 
 const STUBS_PARTICULIER: string[] = [];
-const STUBS_AGENCE = ["Mes collaborateurs"];
 const STUBS_ARTISAN: string[] = [];
 
 const TYPE_LABEL: Record<string, string> = {
@@ -94,6 +91,10 @@ const TYPE_LABEL: Record<string, string> = {
 export default async function ComptePage({ searchParams }: PageProps<"/compte">) {
   const session = await getSession();
   if (!session) redirect("/connexion");
+  // Espace agence dédié, type CRM (menu latéral, une page par activité) —
+  // voir src/app/compte/agence/layout.tsx. Remplace l'empilement vertical
+  // ci-dessous, conservé tel quel pour les comptes particulier et artisan.
+  if (session.type === "AGENCE") redirect("/compte/agence");
 
   const sp = await searchParams;
   const verifEmailRenvoye = sp.verif === "renvoye";
@@ -103,12 +104,8 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
   });
   const emailNonVerifie = currentUser != null && currentUser.emailVerifiedAt == null;
 
-  const isAgence = session.type === "AGENCE";
-  const agenceNonVerifiee =
-    isAgence &&
-    (currentUser?.verifStatut === "NON_SOUMISE" || currentUser?.verifStatut === "REFUSEE");
   const isArtisan = session.type === "ARTISAN";
-  const stubs = isAgence ? STUBS_AGENCE : isArtisan ? STUBS_ARTISAN : STUBS_PARTICULIER;
+  const stubs = isArtisan ? STUBS_ARTISAN : STUBS_PARTICULIER;
   const [
     mesAnnonces,
     favoriteIds,
@@ -118,11 +115,8 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
     visitRequests,
     openHouseReceived,
     myOpenHouseRegistrations,
-    estimationRequests,
     myEstimationRequests,
     agencies,
-    pendingMandateCount,
-    clientCount,
     isAdmin,
   ] = await Promise.all([
     isArtisan ? Promise.resolve([]) : getListingsByUser(session.userId),
@@ -135,11 +129,8 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
       ? Promise.resolve([])
       : getPendingOpenHouseRegistrationsForOwner(session.userId),
     getOpenHouseRegistrationsByUser(session.userId),
-    isAgence ? getEstimationRequestsForAgency(session.userId) : Promise.resolve([]),
     getEstimationRequestsByUser(session.userId),
     getAgencies(),
-    isAgence ? getPendingMandateCount(session.userId) : Promise.resolve(0),
-    isAgence ? getClientCount(session.userId) : Promise.resolve(0),
     isUserAdmin(session.userId),
   ]);
   const pendingModerationCount = isAdmin ? (await getPendingListings()).length : 0;
@@ -151,24 +142,6 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
     createdLabel: d.createdAt.toLocaleDateString("fr-FR"),
     authorNom: d.author.nom,
     authorEmail: d.author.email,
-  }));
-  const estimationItems = estimationRequests.map((e) => ({
-    id: e.id,
-    adresse: e.adresse,
-    nom: e.nom,
-    telephone: e.telephone,
-    preferredDateLabel: e.preferredDate
-      ? e.preferredDate.toLocaleString("fr-FR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : null,
-    statut: e.statut,
-    createdLabel: e.createdAt.toLocaleDateString("fr-FR"),
-    authorEmail: e.author.email,
   }));
   const myEstimationItems = myEstimationRequests.map((e) => ({
     id: e.id,
@@ -233,7 +206,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
   // Un particulier qui n'a encore rien déposé est ici pour chercher, pas pour
   // vendre : ses favoris et ses recherches sauvegardées sont ce qui compte,
   // pas deux sections "(0)" vides sur ses annonces et ses demandes de visite.
-  const isChercheur = !isAgence && !isArtisan && mesAnnonces.length === 0;
+  const isChercheur = !isArtisan && mesAnnonces.length === 0;
 
   const favorisSection = (
     <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
@@ -608,26 +581,6 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
         ← Retour à l&apos;accueil
       </Link>
 
-      {agenceNonVerifiee ? (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E7D9A8] bg-[#FBF3DC] px-5 py-4">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[13px] font-semibold text-ink">
-              Faites vérifier votre agence
-            </span>
-            <span className="text-[13px] text-muted">
-              Ajoutez votre SIRET et votre carte professionnelle pour afficher le badge
-              « Agence vérifiée » sur votre page et vos annonces.
-            </span>
-          </div>
-          <Link
-            href="/compte/agence"
-            className="rounded-full border border-line bg-white px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
-          >
-            Compléter →
-          </Link>
-        </div>
-      ) : null}
-
       {emailNonVerifie ? (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E7D9A8] bg-[#FBF3DC] px-5 py-4">
           <div className="flex flex-col gap-0.5">
@@ -711,52 +664,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
         </div>
       ) : null}
 
-      {isAgence ? (
-        <div className="mt-4 flex flex-wrap gap-4">
-          <Link href={`/professionnels/${session.userId}`} className="text-[13px] font-semibold text-blue">
-            Voir ma page agence publique →
-          </Link>
-          <Link href="/compte/agence" className="text-[13px] font-semibold text-blue">
-            Modifier mes coordonnées →
-          </Link>
-          <Link href="/compte/agence/statistiques" className="text-[13px] font-semibold text-blue">
-            Voir mes statistiques →
-          </Link>
-        </div>
-      ) : null}
-
-      {isAgence ? (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold text-ink">Mes clients ({clientCount})</span>
-            <span className="text-[13.5px] text-muted">
-              {pendingMandateCount > 0
-                ? `${pendingMandateCount} demande${pendingMandateCount > 1 ? "s" : ""} de recherche en attente`
-                : "Recherches confiées par des particuliers."}
-            </span>
-          </div>
-          <Link href="/compte/agence/clients" className="text-[13px] font-semibold text-blue">
-            Voir mes clients →
-          </Link>
-        </div>
-      ) : null}
-
-      {isAgence ? (
-        <div className="mt-8">
-          <span className="text-[11px] font-semibold text-ink">
-            Demandes d&apos;estimation ({estimationItems.length})
-          </span>
-          {estimationItems.length > 0 ? (
-            <EstimationList items={estimationItems} />
-          ) : (
-            <p className="mt-3 text-[14px] text-muted">
-              Les demandes de rendez-vous d&apos;estimation envoyées depuis votre page agence apparaîtront ici.
-            </p>
-          )}
-        </div>
-      ) : null}
-
-      {!isAgence && !isArtisan ? (
+      {!isArtisan ? (
         <div className="mt-6 rounded-2xl border border-line bg-white px-5 py-4 shadow-sm">
           <span className="text-[11px] font-semibold text-ink">Mes alertes</span>
           {totalNewMatches > 0 || pendingProposals > 0 ? (
