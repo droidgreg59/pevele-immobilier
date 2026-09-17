@@ -115,6 +115,14 @@ interroge la base).
 - **Windows uniquement — verrou de fichier à la régénération du client Prisma** : `npx prisma generate`
   peut échouer avec `EPERM` sur `query_engine-windows.dll.node` si le serveur dev tourne encore. Arrêter le
   serveur dev avant tout `prisma db push`/`generate`, le relancer après.
+- **Une migration de base (ex. SQLite → Postgres) ne rejoue pas les données de
+  référence chargées par script** (ici `DvfTransaction`, peuplée par
+  `npm run dvf:import` / `/api/cron/dvf-import` depuis data.gouv.fr — pas par
+  une Server Action utilisateur). Un `prisma db push` sur la nouvelle base crée
+  le schéma mais pas les lignes ; vérifier `SELECT count(*)` sur ces tables
+  après toute migration et relancer l'import si nécessaire. Piège rencontré
+  le 2026-09-17 : `/prix` affichait « données insuffisantes » partout,
+  silencieusement, pendant un jour de prod.
 - **Neon peut renvoyer `P1001` (connexion refusée) sur la toute première requête**
   après une période d'inactivité (auto-suspend du plan gratuit, reprise en ~500ms
   d'habitude mais parfois plus lors d'un `npm run build` qui enchaîne beaucoup de
