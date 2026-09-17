@@ -5,11 +5,13 @@ import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { logEvent } from "./events";
 
+/** Les favoris sont réservés aux particuliers — l'UI les masque déjà aux comptes pro, filet de sécurité ici. */
 export async function toggleFavoriteAction(listingId: string, next?: string) {
   const session = await getSession();
   if (!session) {
     redirect(`/connexion?next=${encodeURIComponent(next || "/")}`);
   }
+  if (session.type !== "PARTICULIER") return;
 
   const existing = await prisma.favorite.findUnique({
     where: { userId_listingId: { userId: session.userId, listingId } },
@@ -35,6 +37,7 @@ export async function updateFavoriteTagAction(
 ) {
   const session = await getSession();
   if (!session) redirect("/connexion");
+  if (session.type !== "PARTICULIER") return;
   if (!FAVORITE_TAGS.includes(tag)) return;
 
   await prisma.favorite.update({

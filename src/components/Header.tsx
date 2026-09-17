@@ -96,9 +96,11 @@ export default function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
-          <div className="hidden md:block">
-            <ProjectPill />
-          </div>
+          {user && user.type !== "PARTICULIER" ? null : (
+            <div className="hidden md:block">
+              <ProjectPill />
+            </div>
+          )}
 
           {user ? (
             <Link

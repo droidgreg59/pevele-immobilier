@@ -8,7 +8,7 @@ import {
   BROWSE_PAGE_SIZE,
 } from "@/lib/listing-query";
 import { getFavoriteListingIds } from "@/lib/favorites";
-import { getSession } from "@/lib/session";
+import { getSession, isParticulierSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +57,7 @@ export default async function LouerPage({ searchParams }: PageProps<"/louer">) {
       initialTri={tri}
       initialFiltre={criteria.filtre}
       isLoggedIn={session !== null}
+      isParticulier={isParticulierSession(session)}
       favoriteIds={favoriteIds}
     />
   );

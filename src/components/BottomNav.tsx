@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Home, Search, Map, Sparkles, Heart } from "lucide-react";
+import type { AccountType } from "@prisma/client";
 import { useProjectDraft, projectDraftProgress } from "@/lib/project-draft";
 
-const TABS = [
+const BASE_TABS = [
   { label: "Accueil", href: "/", icon: Home },
   { label: "Rechercher", href: "/acheter", icon: Search },
   { label: "Carte", href: "/carte", icon: Map },
+];
+
+// Réservés aux particuliers — masqués pour les comptes pro (agence, artisan).
+const PARTICULIER_TABS = [
   { label: "Projet", href: "/mon-projet", icon: Sparkles },
   { label: "Favoris", href: "/compte/favoris", icon: Heart },
 ];
@@ -21,6 +27,25 @@ export default function BottomNav() {
   const draft = useProjectDraft();
   const progress = draft ? projectDraftProgress(draft) : 0;
   const projectDot = progress > 0 && progress < 1;
+  const [accountType, setAccountType] = useState<AccountType | null | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/session")
+      .then((res) => res.json())
+      .then((data: { user: { type: AccountType } | null }) => {
+        if (!cancelled) setAccountType(data.user?.type ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setAccountType(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isPro = accountType === "AGENCE" || accountType === "ARTISAN";
+  const TABS = isPro ? BASE_TABS : [...BASE_TABS, ...PARTICULIER_TABS];
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");

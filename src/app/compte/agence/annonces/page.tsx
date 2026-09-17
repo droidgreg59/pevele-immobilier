@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getListingsByUser } from "@/lib/listings";
-import { getFavoriteListingIds } from "@/lib/favorites";
 import ListingCard from "@/components/ListingCard";
 
 export const dynamic = "force-dynamic";
@@ -17,10 +16,7 @@ export default async function CompteAgenceAnnoncesPage() {
   if (!session) redirect("/connexion?next=/compte/agence/annonces");
   if (session.type !== "AGENCE") redirect("/compte");
 
-  const [listings, favoriteIds] = await Promise.all([
-    getListingsByUser(session.userId),
-    getFavoriteListingIds(session.userId),
-  ]);
+  const listings = await getListingsByUser(session.userId);
 
   return (
     <div className="flex flex-col gap-1">
@@ -38,7 +34,7 @@ export default async function CompteAgenceAnnoncesPage() {
         <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((listing) => (
             <div key={listing.id} className="flex flex-col gap-2">
-              <ListingCard listing={listing} isFavorited={favoriteIds.has(listing.id)} />
+              <ListingCard listing={listing} showFavorite={false} />
               {listing.statut === "REFUSEE" ? (
                 <p className="m-0 text-[12.5px] text-muted">
                   Refusée{listing.statutRaison ? ` — ${listing.statutRaison}` : ""}

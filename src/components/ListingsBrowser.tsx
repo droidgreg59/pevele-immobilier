@@ -81,6 +81,7 @@ export default function ListingsBrowser({
   initialTri,
   initialFiltre,
   isLoggedIn = false,
+  isParticulier = true,
   favoriteIds = [],
 }: {
   listings: ListingWithOwner[];
@@ -103,6 +104,8 @@ export default function ListingsBrowser({
   initialTri?: ListingSort;
   initialFiltre?: ListingFiltre;
   isLoggedIn?: boolean;
+  /** false uniquement pour un compte pro (agence, artisan) — masque favoris et enregistrement de recherche. */
+  isParticulier?: boolean;
   favoriteIds?: string[];
 }) {
   const pathname = usePathname();
@@ -197,7 +200,11 @@ export default function ListingsBrowser({
           : "transition"
       }
     >
-      <ListingCard listing={listing} isFavorited={favoriteIds.includes(listing.id)} />
+      <ListingCard
+        listing={listing}
+        isFavorited={favoriteIds.includes(listing.id)}
+        showFavorite={isParticulier}
+      />
     </div>
   ));
 
@@ -259,7 +266,7 @@ export default function ListingsBrowser({
         ← Retour à l&apos;accueil
       </Link>
 
-      <ResumeBanner />
+      <ResumeBanner isParticulier={isParticulier} />
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {(Object.keys(TYPE_BIEN_LABEL) as TypeBienFiltre[]).map((key) => (
@@ -374,7 +381,7 @@ export default function ListingsBrowser({
             ))}
           </select>
         </label>
-        {isLoggedIn ? (
+        {isLoggedIn && !isParticulier ? null : isLoggedIn ? (
           <button
             type="button"
             disabled={isPending || saved}

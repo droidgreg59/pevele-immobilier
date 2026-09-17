@@ -19,9 +19,12 @@ const TYPE_BIEN_LABEL: Record<string, string> = {
 export default function ListingCard({
   listing,
   isFavorited = false,
+  showFavorite = true,
 }: {
   listing: ListingWithOwner;
   isFavorited?: boolean;
+  /** Masqué pour les comptes professionnels (agence, artisan) — les favoris sont réservés aux particuliers. */
+  showFavorite?: boolean;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -139,13 +142,15 @@ export default function ListingCard({
           </span>
         ) : null}
 
-        <div className="absolute right-2.5 top-2.5 z-20">
-          <FavoriteButton
-            listingId={listing.id}
-            initialFavorited={isFavorited}
-            className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-white/92 text-[16px] leading-none text-blue shadow-sm"
-          />
-        </div>
+        {showFavorite ? (
+          <div className="absolute right-2.5 top-2.5 z-20">
+            <FavoriteButton
+              listingId={listing.id}
+              initialFavorited={isFavorited}
+              className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-white/92 text-[16px] leading-none text-blue shadow-sm"
+            />
+          </div>
+        ) : null}
       </div>
 
       <div

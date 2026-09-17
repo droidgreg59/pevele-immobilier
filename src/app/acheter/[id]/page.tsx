@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
 import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
-import { getSession } from "@/lib/session";
+import { getSession, isParticulierSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
 import { getOpenHouseForListing } from "@/lib/open-house";
@@ -83,6 +83,7 @@ export default async function AcheterListingPage({
         priceHistory={priceHistory}
         isOwner={session?.userId === listing.ownerId}
         isLoggedIn={session !== null}
+        isParticulier={isParticulierSession(session)}
         isFavorited={isFavorited}
         artisans={artisans}
         openHouse={openHouse}

@@ -6,7 +6,7 @@ import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageAmenities } from "@/data/village-amenities";
 import { getListingsForIntent } from "@/lib/listings";
 import { getDvfStatsForVillage } from "@/lib/dvf";
-import { getSession } from "@/lib/session";
+import { getSession, isParticulierSession } from "@/lib/session";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
@@ -154,6 +154,7 @@ export default async function IntentLandingPage({
                 key={listing.id}
                 listing={listing}
                 isFavorited={favoriteIds.has(listing.id)}
+                showFavorite={isParticulierSession(session)}
               />
             ))}
           </div>

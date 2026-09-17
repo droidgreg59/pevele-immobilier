@@ -24,6 +24,9 @@ export async function createEstimationRequestAction(
   if (session.userId === agencyId) {
     return { error: "Vous ne pouvez pas demander une estimation à votre propre agence." };
   }
+  if (session.type !== "PARTICULIER") {
+    return { error: "Cette action est réservée aux comptes particuliers." };
+  }
   if (!(await verifyTurnstile(formData, "estimation_request"))) {
     return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }

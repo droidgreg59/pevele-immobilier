@@ -4,7 +4,6 @@ import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { logoutAction, resendEmailVerificationAction } from "@/lib/auth-actions";
 import { getDevisRequestsForArtisan } from "@/lib/devis";
-import { getSavedSearchesByUser } from "@/lib/saved-searches";
 import ArtisanNav from "@/components/ArtisanNav";
 
 export const dynamic = "force-dynamic";
@@ -15,28 +14,15 @@ export default async function ArtisanLayout({ children }: { children: React.Reac
   if (!session) redirect("/connexion?next=/compte/artisan");
   if (session.type !== "ARTISAN") redirect("/compte");
 
-  const [currentUser, devisRequests, mesRecherches] = await Promise.all([
+  const [currentUser, devisRequests] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.userId }, select: { emailVerifiedAt: true } }),
     getDevisRequestsForArtisan(session.userId),
-    getSavedSearchesByUser(session.userId),
   ]);
 
   const emailNonVerifie = currentUser != null && currentUser.emailVerifiedAt == null;
 
-  const totalNewMatches = mesRecherches.reduce((sum, s) => sum + s.newMatches, 0);
-  const pendingProposals = mesRecherches.reduce(
-    (sum, s) =>
-      sum +
-      s.mandates.reduce(
-        (mSum, m) => mSum + m.proposals.filter((p) => p.statut === "PROPOSEE").length,
-        0
-      ),
-    0
-  );
-
   const counts = {
     devis: devisRequests.filter((d) => !d.traite).length,
-    recherches: totalNewMatches + pendingProposals,
   };
 
   return (

@@ -6,7 +6,7 @@ import { villageAmenities } from "@/data/village-amenities";
 import { getPublicListingsByVillage } from "@/lib/listings";
 import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
 import { getFavoriteListingIds } from "@/lib/favorites";
-import { getSession } from "@/lib/session";
+import { getSession, isParticulierSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 import ResumeBanner from "@/components/ResumeBanner";
 import JsonLd from "@/components/JsonLd";
@@ -92,7 +92,7 @@ export default async function VillagePage({
       </p>
 
       <div className="mt-6">
-        <ResumeBanner />
+        <ResumeBanner isParticulier={isParticulierSession(session)} />
       </div>
 
       <div className="mt-9">
@@ -104,6 +104,7 @@ export default async function VillagePage({
                 key={listing.id}
                 listing={listing}
                 isFavorited={favoriteIds.has(listing.id)}
+                showFavorite={isParticulierSession(session)}
               />
             ))}
           </div>

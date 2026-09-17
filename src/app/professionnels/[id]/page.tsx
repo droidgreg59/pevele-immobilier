@@ -10,7 +10,7 @@ import { getAgencyReviews, getAgencyReviewStats, getUserReviewForAgency } from "
 import { getSavedSearchesByUser } from "@/lib/saved-searches";
 import { sendMandateAction } from "@/lib/mandate-actions";
 import { getVillageBySlug } from "@/data/villages";
-import { getSession } from "@/lib/session";
+import { getSession, isParticulierSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 import ReviewForm from "@/components/ReviewForm";
 import EstimationCta from "@/components/EstimationCta";
@@ -356,6 +356,10 @@ export default async function AgencyPage({
               >
                 Se connecter pour prendre RDV →
               </Link>
+            ) : session.type !== "PARTICULIER" ? (
+              <p className="m-0 text-[13.5px] text-muted">
+                Cette action est réservée aux comptes particuliers.
+              </p>
             ) : (
               <EstimationCta agencyId={agency.id} />
             )}
@@ -374,6 +378,7 @@ export default async function AgencyPage({
                 key={listing.id}
                 listing={listing}
                 isFavorited={favoriteIds.has(listing.id)}
+                showFavorite={isParticulierSession(session)}
               />
             ))}
           </div>

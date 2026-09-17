@@ -2,27 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  ClipboardList,
-  Search,
-  Heart,
-  ListChecks,
-  Settings,
-  SlidersHorizontal,
-} from "lucide-react";
+import { LayoutDashboard, ClipboardList, Settings, SlidersHorizontal } from "lucide-react";
 
 export type ArtisanNavCounts = {
   devis: number;
-  recherches: number;
 };
 
 const ITEMS = [
   { href: "/compte/artisan", label: "Tableau de bord", icon: LayoutDashboard, key: null },
   { href: "/compte/artisan/devis", label: "Demandes de devis", icon: ClipboardList, key: "devis" },
-  { href: "/compte/artisan/recherches", label: "Mes recherches", icon: Search, key: "recherches" },
-  { href: "/compte/favoris", label: "Mes favoris", icon: Heart, key: null },
-  { href: "/compte/artisan/mes-demarches", label: "Mes démarches", icon: ListChecks, key: null },
   { href: "/compte/artisan/profil", label: "Ma fiche", icon: Settings, key: null },
   { href: "/compte/artisan/parametres", label: "Paramètres", icon: SlidersHorizontal, key: null },
 ] as const;

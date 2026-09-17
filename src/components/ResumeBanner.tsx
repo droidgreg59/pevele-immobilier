@@ -43,7 +43,7 @@ function getDismissServerSnapshot(): boolean {
  * existe. Fermer ne supprime jamais le brouillon, seulement masque la
  * bannière pendant 24h.
  */
-export default function ResumeBanner() {
+export default function ResumeBanner({ isParticulier = true }: { isParticulier?: boolean }) {
   const draft = useProjectDraft();
   const dismissed = useSyncExternalStore(
     subscribeToDismiss,
@@ -51,7 +51,7 @@ export default function ResumeBanner() {
     getDismissServerSnapshot
   );
 
-  if (!draft || dismissed) return null;
+  if (!isParticulier || !draft || dismissed) return null;
   const progress = projectDraftProgress(draft);
   if (progress <= 0 || progress >= 1) return null;
 

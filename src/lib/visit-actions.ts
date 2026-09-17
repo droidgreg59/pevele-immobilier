@@ -32,6 +32,9 @@ export async function createVisitRequestAction(
   if (listing.ownerId === session.userId) {
     return { error: "Vous ne pouvez pas demander une visite pour votre propre annonce." };
   }
+  if (session.type !== "PARTICULIER") {
+    return { error: "Cette action est réservée aux comptes particuliers." };
+  }
   if (!(await verifyTurnstile(formData, "visit_request"))) {
     return { error: "Vérification anti-robot échouée. Merci de réessayer." };
   }

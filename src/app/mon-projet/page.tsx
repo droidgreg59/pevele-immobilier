@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getPublicListings } from "@/lib/listings";
 import ProjectWizard from "@/components/ProjectWizard";
@@ -17,6 +18,7 @@ export default async function MonProjetPage() {
     getPublicListings("VENTE"),
     getPublicListings("LOCATION"),
   ]);
+  if (session && session.type !== "PARTICULIER") redirect("/compte");
 
   return (
     <ProjectWizard isLoggedIn={session !== null} listings={[...ventes, ...locations]} />

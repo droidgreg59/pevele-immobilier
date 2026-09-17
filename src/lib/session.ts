@@ -60,3 +60,13 @@ export async function getSession(): Promise<SessionPayload | null> {
     return null;
   }
 }
+
+/**
+ * Favoris, « mon projet » (recherches sauvegardées), demandes de visite et
+ * d'estimation sont des outils de recherche de bien — réservés aux
+ * particuliers. Les comptes pro (agence, artisan) ont leur propre hub CRM.
+ * Un visiteur non connecté reste autorisé (le geste l'invite à se connecter).
+ */
+export function isParticulierSession(session: SessionPayload | null): boolean {
+  return session === null || session.type === "PARTICULIER";
+}

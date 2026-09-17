@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 export default async function CompteFavorisPage() {
   const session = await getSession();
   if (!session) redirect("/connexion?next=/compte/favoris");
+  if (session.type !== "PARTICULIER") redirect("/compte");
 
   const hub = await getFavoritesHub(session.userId);
 

@@ -466,6 +466,7 @@ export default function ListingDetail({
   priceHistory,
   isOwner,
   isLoggedIn,
+  isParticulier = true,
   isFavorited,
   artisans,
   openHouse,
@@ -480,6 +481,8 @@ export default function ListingDetail({
   priceHistory: PriceHistoryEntry[];
   isOwner: boolean;
   isLoggedIn: boolean;
+  /** false uniquement pour un compte pro (agence, artisan) — masque favoris et demande de visite. */
+  isParticulier?: boolean;
   isFavorited: boolean;
   artisans: ArtisanSummary[];
   openHouse: OpenHouseForListing | null;
@@ -556,11 +559,13 @@ export default function ListingDetail({
                 >
                   {sourceLabel(listing.owner)}
                 </span>
-                <FavoriteButton
-                  listingId={listing.id}
-                  initialFavorited={isFavorited}
-                  className="absolute right-3 top-3 flex items-center justify-center rounded-full border border-line bg-white text-lg leading-none text-blue shadow-sm"
-                />
+                {isParticulier ? (
+                  <FavoriteButton
+                    listingId={listing.id}
+                    initialFavorited={isFavorited}
+                    className="absolute right-3 top-3 flex items-center justify-center rounded-full border border-line bg-white text-lg leading-none text-blue shadow-sm"
+                  />
+                ) : null}
                 {statusBadge ? (
                   <span
                     className="absolute bottom-3 left-3 rounded-full px-3 py-1.5 text-[11px] font-semibold shadow-sm"
@@ -815,9 +820,11 @@ export default function ListingDetail({
               </Link>
             ) : listing.visitesIndividuelles ? (
               isLoggedIn ? (
-                <div className="hidden md:block">
-                  <VisitRequestForm listingId={listing.id} />
-                </div>
+                isParticulier ? (
+                  <div className="hidden md:block">
+                    <VisitRequestForm listingId={listing.id} />
+                  </div>
+                ) : null
               ) : (
                 <p className="mt-4 font-sans text-[12.5px] leading-[1.6] text-muted">
                   <Link
@@ -863,13 +870,23 @@ export default function ListingDetail({
                   </Link>
                 </div>
               ) : openHouse ? (
-                <OpenHouseSignupForm
-                  dates={openHouse.dates}
-                  note={openHouse.note}
-                  isLoggedIn={isLoggedIn}
-                  loginHref={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
-                  defaultNom={viewerNom}
-                />
+                isParticulier ? (
+                  <OpenHouseSignupForm
+                    dates={openHouse.dates}
+                    note={openHouse.note}
+                    isLoggedIn={isLoggedIn}
+                    loginHref={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                    defaultNom={viewerNom}
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+                    <span className="text-[11px] font-semibold text-blue">Portes ouvertes</span>
+                    <p className="m-0 mt-2 font-sans text-[13px] leading-[1.55] text-muted">
+                      {openHouse.dates.length} date{openHouse.dates.length > 1 ? "s" : ""} à venir
+                      — inscription réservée aux comptes particuliers.
+                    </p>
+                  </div>
+                )
               ) : (
                 <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
                   <span className="text-[11px] font-semibold text-blue">Portes ouvertes</span>
@@ -967,13 +984,13 @@ export default function ListingDetail({
           </div>
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {similar.map((s) => (
-              <ListingCard key={s.id} listing={s} />
+              <ListingCard key={s.id} listing={s} showFavorite={isParticulier} />
             ))}
           </div>
         </section>
       ) : null}
 
-      {!isOwner ? (
+      {!isOwner && isParticulier ? (
         <div
           className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-white/97 px-4 py-3 backdrop-blur md:hidden"
           style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}

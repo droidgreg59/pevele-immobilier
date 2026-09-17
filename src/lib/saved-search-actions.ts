@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { logEvent } from "./events";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 
+/** "Mon projet" est réservé aux particuliers — l'UI le masque déjà aux comptes pro, filet de sécurité ici. */
 export async function createSavedSearchAction(input: {
   transaction: TransactionType;
   typeBien?: TypeBien;
@@ -22,6 +23,7 @@ export async function createSavedSearchAction(input: {
   if (!session) {
     redirect(`/connexion?next=${encodeURIComponent(input.next || "/")}`);
   }
+  if (session.type !== "PARTICULIER") return;
 
   await prisma.savedSearch.create({
     data: {

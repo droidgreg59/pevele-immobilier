@@ -188,6 +188,9 @@ export async function registerToOpenHouseAction(
   if (listing.ownerId === session.userId) {
     return { error: "Vous ne pouvez pas vous inscrire à vos propres portes ouvertes." };
   }
+  if (session.type !== "PARTICULIER") {
+    return { error: "Cette action est réservée aux comptes particuliers." };
+  }
   if (date.openHouse.annulee) {
     return { error: "Ces portes ouvertes ont été annulées." };
   }

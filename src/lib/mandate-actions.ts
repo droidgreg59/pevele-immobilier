@@ -13,6 +13,7 @@ export async function sendMandateAction(formData: FormData) {
   const agencyId = String(formData.get("agencyId") ?? "");
   const session = await getSession();
   if (!session) redirect("/connexion");
+  if (session.type !== "PARTICULIER") redirect("/compte");
   if (!agencyId) redirect("/compte");
 
   const savedSearch = await prisma.savedSearch.findUnique({
