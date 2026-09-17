@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import type { TransactionType } from "@prisma/client";
+import type { SavedSearchCriteria } from "./saved-searches";
 
 export async function getPendingMandateCount(agencyId: string): Promise<number> {
   return prisma.searchMandate.count({ where: { agencyId, statut: "EN_ATTENTE" } });
@@ -15,11 +16,24 @@ export async function getClientCount(agencyId: string): Promise<number> {
   return rows.length;
 }
 
+/** Champs d'une recherche sauvegardée nécessaires à `savedSearchLabel` — mêmes critères que `SavedSearchCriteria`. */
+const SAVED_SEARCH_SELECT = {
+  transaction: true,
+  typeBien: true,
+  typeMaison: true,
+  q: true,
+  villageSlugs: true,
+  chambresMin: true,
+  equipements: true,
+  budgetMin: true,
+  budgetMax: true,
+} as const;
+
 export type PendingMandate = {
   id: string;
   createdAt: Date;
-  client: { nom: string; email: string };
-  search: { transaction: TransactionType; q: string | null; budgetMax: number | null };
+  client: { nom: string; prenom: string | null; email: string };
+  search: SavedSearchCriteria;
 };
 
 export async function getPendingMandatesForAgency(
@@ -31,8 +45,8 @@ export async function getPendingMandatesForAgency(
     select: {
       id: true,
       createdAt: true,
-      client: { select: { nom: true, email: true } },
-      savedSearch: { select: { transaction: true, q: true, budgetMax: true } },
+      client: { select: { nom: true, prenom: true, email: true } },
+      savedSearch: { select: SAVED_SEARCH_SELECT },
     },
   });
 
@@ -56,15 +70,14 @@ export type ProposedListing = {
 export type ClientFiche = {
   clientId: string;
   nom: string;
+  prenom: string | null;
   email: string;
-  searches: {
+  telephone: string | null;
+  searches: (SavedSearchCriteria & {
     mandateId: string;
-    transaction: TransactionType;
-    q: string | null;
-    budgetMax: number | null;
     acceptedAt: Date | null;
     proposals: ProposedListing[];
-  }[];
+  })[];
 };
 
 export async function getClientsForAgency(agencyId: string): Promise<ClientFiche[]> {
@@ -74,8 +87,8 @@ export async function getClientsForAgency(agencyId: string): Promise<ClientFiche
     select: {
       id: true,
       respondedAt: true,
-      client: { select: { id: true, nom: true, email: true } },
-      savedSearch: { select: { transaction: true, q: true, budgetMax: true } },
+      client: { select: { id: true, nom: true, prenom: true, email: true, telephone: true } },
+      savedSearch: { select: SAVED_SEARCH_SELECT },
       proposals: {
         select: {
           id: true,
@@ -90,10 +103,8 @@ export async function getClientsForAgency(agencyId: string): Promise<ClientFiche
   for (const r of rows) {
     const existing = byClient.get(r.client.id);
     const search = {
+      ...r.savedSearch,
       mandateId: r.id,
-      transaction: r.savedSearch.transaction,
-      q: r.savedSearch.q,
-      budgetMax: r.savedSearch.budgetMax,
       acceptedAt: r.respondedAt,
       proposals: r.proposals.map((p) => ({
         proposalId: p.id,
@@ -110,7 +121,9 @@ export async function getClientsForAgency(agencyId: string): Promise<ClientFiche
       byClient.set(r.client.id, {
         clientId: r.client.id,
         nom: r.client.nom,
+        prenom: r.client.prenom,
         email: r.client.email,
+        telephone: r.client.telephone,
         searches: [search],
       });
     }

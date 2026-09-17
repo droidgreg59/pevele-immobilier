@@ -113,6 +113,19 @@ export default function RegisterForm({
 
       <label className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Téléphone
+        </span>
+        <input
+          type="tel"
+          name="telephone"
+          required
+          placeholder="ex. 06 00 00 00 00"
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
           Mot de passe (8 caractères minimum)
         </span>
         <input

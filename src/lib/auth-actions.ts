@@ -9,6 +9,7 @@ import { sendEmail } from "./email";
 import { emailVerificationEmail, passwordResetEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
 import { verifyTurnstile } from "./turnstile";
+import { isValidPhoneNumber } from "./validation";
 import { isLoginThrottled, recordFailedLogin, clearFailedLogins } from "./login-throttle";
 import { logEvent } from "./events";
 import type { AccountType } from "@prisma/client";
@@ -53,6 +54,7 @@ export async function registerAction(
   const prenom = String(formData.get("prenom") ?? "").trim();
   const nom = String(formData.get("nom") ?? "").trim();
   const entreprise = String(formData.get("entreprise") ?? "").trim();
+  const telephone = String(formData.get("telephone") ?? "").trim();
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
@@ -60,6 +62,9 @@ export async function registerAction(
 
   if (!prenom) return { error: "Merci d'indiquer votre prénom." };
   if (!nom) return { error: "Merci d'indiquer votre nom." };
+  if (!isValidPhoneNumber(telephone)) {
+    return { error: "Merci d'indiquer un numéro de téléphone valide." };
+  }
   if (!EMAIL_RE.test(email)) return { error: "Adresse email invalide." };
   if (password.length < 8) {
     return { error: "Le mot de passe doit contenir au moins 8 caractères." };
@@ -85,6 +90,7 @@ export async function registerAction(
       passwordHash,
       nom,
       prenom,
+      telephone,
       entreprise: type === "PARTICULIER" ? null : entreprise,
       type,
     },

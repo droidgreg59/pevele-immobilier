@@ -6,20 +6,14 @@ import { getPendingMandatesForAgency, getClientsForAgency } from "@/lib/mandates
 import { respondToMandateAction } from "@/lib/mandate-actions";
 import { createProposalAction, removeProposalAction } from "@/lib/proposal-actions";
 import { getListingsByUser } from "@/lib/listings";
-import { formatPrix } from "@/lib/format";
+import { formatPrix, fullName } from "@/lib/format";
+import { savedSearchLabel } from "@/lib/saved-searches";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Mes clients",
 };
-
-function searchSummary(s: { transaction: "VENTE" | "LOCATION"; q: string | null; budgetMax: number | null }) {
-  const parts = [s.transaction === "VENTE" ? "Achat" : "Location"];
-  parts.push(s.q || "toute la Pévèle");
-  if (s.budgetMax != null) parts.push(`≤ ${s.budgetMax.toLocaleString("fr-FR")} €`);
-  return parts.join(" · ");
-}
 
 const PROPOSAL_STATUS_LABEL: Record<string, { label: string; color: string }> = {
   PROPOSEE: { label: "en attente de réponse", color: "var(--pvl-muted-2)" },
@@ -59,10 +53,10 @@ export default async function AgenceClientsPage() {
               >
                 <div className="flex flex-col gap-1">
                   <span className="text-[14px] font-semibold text-ink">
-                    {m.client.nom}
+                    {fullName(m.client.prenom, m.client.nom)}
                   </span>
                   <span className="text-[12px] text-muted-2">
-                    {searchSummary(m.search)}
+                    {savedSearchLabel(m.search)}
                   </span>
                 </div>
                 <form action={respondToMandateAction} className="flex items-center gap-3">
@@ -104,14 +98,24 @@ export default async function AgenceClientsPage() {
               <div key={c.clientId} className="rounded-2xl border border-line bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="text-[16.5px] font-bold text-ink">
-                    {c.nom}
+                    {fullName(c.prenom, c.nom)}
                   </span>
-                  <a
-                    href={`mailto:${c.email}`}
-                    className="text-[12.5px] font-semibold text-blue"
-                  >
-                    {c.email}
-                  </a>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <a
+                      href={`mailto:${c.email}`}
+                      className="text-[12.5px] font-semibold text-blue"
+                    >
+                      {c.email}
+                    </a>
+                    {c.telephone ? (
+                      <a
+                        href={`tel:${c.telephone}`}
+                        className="text-[12.5px] font-semibold text-blue"
+                      >
+                        {c.telephone}
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="mt-3 flex flex-col gap-2.5">
                   {c.searches.map((s) => {
@@ -129,7 +133,7 @@ export default async function AgenceClientsPage() {
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="text-[13px] text-ink">
-                            {searchSummary(s)}
+                            {savedSearchLabel(s)}
                           </span>
                           {s.acceptedAt ? (
                             <span className="text-[11.5px] text-muted-2">
