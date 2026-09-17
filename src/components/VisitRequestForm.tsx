@@ -16,7 +16,8 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
   if (state.success) {
     return (
       <p className="m-0 mt-4 rounded-xl bg-[#EAF3E8] px-4 py-3 text-[13px] text-ink">
-        Votre demande a été envoyée — le propriétaire vous recontactera
+        Votre demande a été envoyée —{" "}
+        {state.ownerIsAgency ? "l'agence" : "le propriétaire"} vous recontactera
         directement.
       </p>
     );

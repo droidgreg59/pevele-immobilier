@@ -63,16 +63,28 @@ export default function RegisterForm({
         </button>
       </div>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          {isPro ? "Nom du contact" : "Nom"}
-        </span>
-        <input
-          name="nom"
-          required
-          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-        />
-      </label>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            {isPro ? "Prénom du contact" : "Prénom"}
+          </span>
+          <input
+            name="prenom"
+            required
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            {isPro ? "Nom du contact" : "Nom"}
+          </span>
+          <input
+            name="nom"
+            required
+            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+          />
+        </label>
+      </div>
 
       {isPro ? (
         <label className="flex flex-col gap-1.5">

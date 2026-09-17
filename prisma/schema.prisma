@@ -13,6 +13,10 @@ model User {
   email               String              @unique
   passwordHash        String
   nom                 String
+  /// Prénom, requis à l'inscription depuis le 2026-09-17 — nullable en base
+  /// pour ne pas casser les comptes créés avant (`nom` contenait alors un nom
+  /// complet ou un prénom selon ce que la personne avait tapé, sans garantie).
+  prenom              String?
   entreprise          String?
   telephone           String?
   adresse             String?

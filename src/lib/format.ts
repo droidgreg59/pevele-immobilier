@@ -1,5 +1,10 @@
 import type { TransactionType } from "@prisma/client";
 
+/** Comptes créés avant le 2026-09-17 n'ont pas de prénom en base (champ ajouté après coup). */
+export function fullName(prenom: string | null | undefined, nom: string): string {
+  return prenom ? `${prenom} ${nom}` : nom;
+}
+
 export function formatPrix(prix: number, transaction: TransactionType): string {
   const euros = prix.toLocaleString("fr-FR") + " €";
   return transaction === "LOCATION" ? euros + "/mois" : euros;

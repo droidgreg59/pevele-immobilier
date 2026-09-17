@@ -9,8 +9,9 @@ import { visitRequestReceivedEmail } from "./email-templates";
 import { sendPushNotification } from "./push";
 import { logEvent } from "./events";
 import { verifyTurnstile } from "./turnstile";
+import { fullName } from "./format";
 
-export type VisitFormState = { error?: string; success?: boolean };
+export type VisitFormState = { error?: string; success?: boolean; ownerIsAgency?: boolean };
 
 export async function createVisitRequestAction(
   _prevState: VisitFormState,
@@ -19,7 +20,7 @@ export async function createVisitRequestAction(
   const listingId = String(formData.get("listingId") ?? "");
   const listing = await prisma.listing.findUnique({
     where: { id: listingId },
-    include: { owner: { select: { email: true } } },
+    include: { owner: { select: { email: true, type: true } } },
   });
   if (!listing) return { error: "Annonce introuvable." };
 
@@ -67,16 +68,22 @@ export async function createVisitRequestAction(
     },
   });
 
+  const author = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { prenom: true },
+  });
+  const authorNom = fullName(author?.prenom, session.nom);
+
   const { subject, html } = visitRequestReceivedEmail({
     listingTitre: listing.titre,
     listingHref: detailPath,
-    authorNom: session.nom,
+    authorNom,
     message,
   });
   await sendEmail({ to: listing.owner.email, subject, html });
   await sendPushNotification(listing.ownerId, {
     title: "Nouvelle demande de visite",
-    body: `${session.nom} souhaite visiter « ${listing.titre} ».`,
+    body: `${authorNom} souhaite visiter « ${listing.titre} ».`,
     url: "/compte",
   });
   await logEvent("visit_requested", {
@@ -85,7 +92,7 @@ export async function createVisitRequestAction(
     meta: { transaction: listing.transaction },
   });
 
-  return { success: true };
+  return { success: true, ownerIsAgency: listing.owner.type === "AGENCE" };
 }
 
 export async function updateVisitStatusAction(id: string, traite: boolean) {

@@ -50,6 +50,7 @@ export async function registerAction(
   const rawType = formData.get("type");
   const type: AccountType =
     rawType === "AGENCE" ? "AGENCE" : rawType === "ARTISAN" ? "ARTISAN" : "PARTICULIER";
+  const prenom = String(formData.get("prenom") ?? "").trim();
   const nom = String(formData.get("nom") ?? "").trim();
   const entreprise = String(formData.get("entreprise") ?? "").trim();
   const email = String(formData.get("email") ?? "")
@@ -57,6 +58,7 @@ export async function registerAction(
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
 
+  if (!prenom) return { error: "Merci d'indiquer votre prénom." };
   if (!nom) return { error: "Merci d'indiquer votre nom." };
   if (!EMAIL_RE.test(email)) return { error: "Adresse email invalide." };
   if (password.length < 8) {
@@ -82,6 +84,7 @@ export async function registerAction(
       email,
       passwordHash,
       nom,
+      prenom,
       entreprise: type === "PARTICULIER" ? null : entreprise,
       type,
     },

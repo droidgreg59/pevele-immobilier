@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getVisitRequestsForOwner } from "@/lib/visits";
+import { fullName } from "@/lib/format";
 import VisitRequestList from "@/components/VisitRequestList";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export default async function CompteAgenceVisitesPage() {
     preferredDateLabel: v.preferredDate ? v.preferredDate.toLocaleDateString("fr-FR") : null,
     traite: v.traite,
     createdLabel: v.createdAt.toLocaleDateString("fr-FR"),
-    authorNom: v.author.nom,
+    authorNom: fullName(v.author.prenom, v.author.nom),
     authorEmail: v.author.email,
     listingId: v.listing.id,
     listingTitre: v.listing.titre,
