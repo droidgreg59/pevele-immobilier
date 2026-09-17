@@ -212,7 +212,8 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
             <input
               value={siteWeb}
               onChange={(e) => setSiteWeb(e.target.value)}
-              type="url"
+              type="text"
+              inputMode="url"
               placeholder="https://…"
               className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
@@ -224,7 +225,8 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
             <input
               value={googleAvisUrl}
               onChange={(e) => setGoogleAvisUrl(e.target.value)}
-              type="url"
+              type="text"
+              inputMode="url"
               placeholder="https://g.page/r/…"
               className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />

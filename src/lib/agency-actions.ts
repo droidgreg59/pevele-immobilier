@@ -9,18 +9,10 @@ import { lookupSiretDenomination } from "./agency-verification";
 import { isValidSiret, normalizeSiret } from "./validation";
 import { logEvent } from "./events";
 import { pickLogoFile, validateLogoFile, saveLogoFile, deleteLogoFile } from "./photo-upload";
+import { normalizeUrl, isValidHttpUrl } from "./validation";
 
 export type AgencyProfileFormState = { error?: string };
 export type AgencyVerificationFormState = { error?: string; success?: boolean };
-
-function isValidHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
 
 export async function updateAgencyProfileAction(
   _prevState: AgencyProfileFormState,
@@ -37,8 +29,8 @@ export async function updateAgencyProfileAction(
   const adresse = String(formData.get("adresse") ?? "").trim();
   const codePostal = String(formData.get("codePostal") ?? "").trim();
   const ville = String(formData.get("ville") ?? "").trim();
-  const siteWeb = String(formData.get("siteWeb") ?? "").trim();
-  const googleAvisUrl = String(formData.get("googleAvisUrl") ?? "").trim();
+  const siteWeb = normalizeUrl(String(formData.get("siteWeb") ?? ""));
+  const googleAvisUrl = normalizeUrl(String(formData.get("googleAvisUrl") ?? ""));
 
   if (!entreprise) {
     return { error: "Merci d'indiquer le nom de l'agence." };

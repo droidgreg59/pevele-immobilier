@@ -4,17 +4,9 @@ import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import { updateXmlImportUrl, getAgencyById } from "./agencies";
 import { syncAgencyFeed } from "./ac3-sync";
+import { normalizeUrl, isValidHttpUrl } from "./validation";
 
 export type XmlImportUrlFormState = { error?: string; success?: boolean };
-
-function isValidHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
 
 export async function updateXmlImportUrlAction(
   _prevState: XmlImportUrlFormState,
@@ -26,7 +18,7 @@ export async function updateXmlImportUrlAction(
     return { error: "Réservé aux comptes agence." };
   }
 
-  const raw = String(formData.get("xmlImportUrl") ?? "").trim();
+  const raw = normalizeUrl(String(formData.get("xmlImportUrl") ?? ""));
   if (raw && !isValidHttpUrl(raw)) {
     return { error: "L'adresse du flux doit être une URL valide (https://...)." };
   }

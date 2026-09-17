@@ -1,6 +1,7 @@
 import { getVillageBySlug } from "@/data/villages";
 import type { ListingFieldsInput } from "./listings";
 import { ETATS, EXPOSITIONS, CHAUFFAGE_TYPES, ASSAINISSEMENTS } from "./listing-carac";
+import { normalizeUrl, isValidHttpUrl } from "./validation";
 
 function parsePositiveInt(value: FormDataEntryValue | null): number | null {
   const n = Number(value);
@@ -33,15 +34,6 @@ function triBool(value: FormDataEntryValue | null): boolean | null {
   return s === "true" ? true : s === "false" ? false : null;
 }
 
-
-function isValidHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
 
 export function parseListingFields(
   formData: FormData
@@ -106,8 +98,8 @@ export function parseListingFields(
   const assainissement =
     typeBien === "APPARTEMENT" ? null : oneOf(formData.get("assainissement"), ASSAINISSEMENTS);
 
-  const videoUrl = String(formData.get("videoUrl") ?? "").trim();
-  const visiteVirtuelleUrl = String(formData.get("visiteVirtuelleUrl") ?? "").trim();
+  const videoUrl = normalizeUrl(String(formData.get("videoUrl") ?? ""));
+  const visiteVirtuelleUrl = normalizeUrl(String(formData.get("visiteVirtuelleUrl") ?? ""));
   const visitesIndividuelles = formData.get("visitesIndividuelles") === "true";
   const visitesGroupees = formData.get("visitesGroupees") === "true";
 

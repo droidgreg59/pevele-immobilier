@@ -168,7 +168,8 @@ export default function ArtisanProfileForm({
         </span>
         <input
           name="siteWeb"
-          type="url"
+          type="text"
+          inputMode="url"
           defaultValue={artisan.siteWeb ?? ""}
           placeholder="https://…"
           className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"

@@ -52,7 +52,8 @@ export default function XmlImportPanel({ agency }: { agency: AgencyProfile }) {
           </span>
           <input
             name="xmlImportUrl"
-            type="url"
+            type="text"
+            inputMode="url"
             defaultValue={agency.xmlImportUrl ?? ""}
             placeholder="https://clients.immo-facile.com/..."
             className="rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"

@@ -258,7 +258,8 @@ export default function PublishForm({
           </span>
           <input
             name="videoUrl"
-            type="url"
+            type="text"
+            inputMode="url"
             placeholder="https://youtube.com/watch?v=…"
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
@@ -269,7 +270,8 @@ export default function PublishForm({
           </span>
           <input
             name="visiteVirtuelleUrl"
-            type="url"
+            type="text"
+            inputMode="url"
             placeholder="https://…"
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />

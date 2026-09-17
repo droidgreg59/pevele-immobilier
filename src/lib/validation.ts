@@ -26,6 +26,28 @@ export function normalizeSiret(raw: string): string {
   return raw.replace(/\D/g, "");
 }
 
+/**
+ * Ajoute `https://` devant une URL saisie sans schéma (ex. "www.site.fr" ou
+ * "site.fr") — les champs `type="text"` (voir normalizeUrl côté formulaires)
+ * n'imposent plus la saisie du schéma, très souvent omis par les utilisateurs.
+ * Ne touche pas aux valeurs vides ni à celles qui ont déjà un schéma.
+ */
+export function normalizeUrl(raw: string): string {
+  const value = raw.trim();
+  if (!value || /^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
+}
+
+/** Vrai si `value` est une URL http(s) absolue et syntaxiquement valide. */
+export function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 /** Date du jour au format YYYY-MM-DD (heure locale du serveur), pour comparaison directe avec un <input type="date">. */
 export function todayDateString(): string {
   const now = new Date();

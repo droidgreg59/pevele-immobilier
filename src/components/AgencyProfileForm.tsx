@@ -124,7 +124,8 @@ export default function AgencyProfileForm({
         </span>
         <input
           name="siteWeb"
-          type="url"
+          type="text"
+          inputMode="url"
           defaultValue={agency.siteWeb ?? ""}
           placeholder="https://…"
           className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
@@ -137,7 +138,8 @@ export default function AgencyProfileForm({
         </span>
         <input
           name="googleAvisUrl"
-          type="url"
+          type="text"
+          inputMode="url"
           defaultValue={agency.googleAvisUrl ?? ""}
           placeholder="https://g.page/r/…"
           className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"

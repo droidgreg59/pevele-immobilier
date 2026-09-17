@@ -3,6 +3,8 @@ import {
   isValidPhoneNumber,
   isValidSiret,
   normalizeSiret,
+  normalizeUrl,
+  isValidHttpUrl,
   todayDateString,
   isDateAfterToday,
   tomorrowDateString,
@@ -57,6 +59,39 @@ describe("normalizeSiret", () => {
   it("ne garde que les chiffres", () => {
     expect(normalizeSiret("356 0000 0000 048")).toBe("35600000000048");
     expect(normalizeSiret("siret: 123-456")).toBe("123456");
+  });
+});
+
+describe("normalizeUrl", () => {
+  it("ajoute https:// devant un domaine saisi sans schéma", () => {
+    expect(normalizeUrl("www.pvl-immobilier.fr")).toBe("https://www.pvl-immobilier.fr");
+    expect(normalizeUrl("pvl-immobilier.fr")).toBe("https://pvl-immobilier.fr");
+  });
+
+  it("laisse intact ce qui a déjà un schéma http(s), quelle que soit la casse", () => {
+    expect(normalizeUrl("https://pvl-immobilier.fr")).toBe("https://pvl-immobilier.fr");
+    expect(normalizeUrl("http://pvl-immobilier.fr")).toBe("http://pvl-immobilier.fr");
+    expect(normalizeUrl("HTTPS://pvl-immobilier.fr")).toBe("HTTPS://pvl-immobilier.fr");
+  });
+
+  it("rogne les espaces et laisse une valeur vide vide", () => {
+    expect(normalizeUrl("  www.pvl-immobilier.fr  ")).toBe("https://www.pvl-immobilier.fr");
+    expect(normalizeUrl("   ")).toBe("");
+    expect(normalizeUrl("")).toBe("");
+  });
+});
+
+describe("isValidHttpUrl", () => {
+  it("accepte une URL http(s) absolue", () => {
+    expect(isValidHttpUrl("https://pvl-immobilier.fr")).toBe(true);
+    expect(isValidHttpUrl("http://pvl-immobilier.fr")).toBe(true);
+  });
+
+  it("refuse un domaine sans schéma, une chaîne vide, ou un autre protocole", () => {
+    expect(isValidHttpUrl("www.pvl-immobilier.fr")).toBe(false);
+    expect(isValidHttpUrl("")).toBe(false);
+    expect(isValidHttpUrl("ftp://pvl-immobilier.fr")).toBe(false);
+    expect(isValidHttpUrl("javascript:alert(1)")).toBe(false);
   });
 });
 

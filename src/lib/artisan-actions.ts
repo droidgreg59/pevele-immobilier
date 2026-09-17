@@ -5,17 +5,9 @@ import { getSession } from "./session";
 import { updateArtisanProfile } from "./artisans";
 import { artisanCategories } from "@/data/artisanCategories";
 import { villages } from "@/data/villages";
+import { normalizeUrl, isValidHttpUrl } from "./validation";
 
 export type ArtisanProfileFormState = { error?: string };
-
-function isValidHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
 
 export async function updateArtisanProfileAction(
   _prevState: ArtisanProfileFormState,
@@ -33,7 +25,7 @@ export async function updateArtisanProfileAction(
   const adresse = String(formData.get("adresse") ?? "").trim();
   const codePostal = String(formData.get("codePostal") ?? "").trim();
   const ville = String(formData.get("ville") ?? "").trim();
-  const siteWeb = String(formData.get("siteWeb") ?? "").trim();
+  const siteWeb = normalizeUrl(String(formData.get("siteWeb") ?? ""));
   const categories = formData
     .getAll("categories")
     .map(String)

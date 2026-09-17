@@ -257,7 +257,8 @@ export default function ArtisanOnboardingWizard({ artisan }: { artisan: ArtisanP
             <input
               value={siteWeb}
               onChange={(e) => setSiteWeb(e.target.value)}
-              type="url"
+              type="text"
+              inputMode="url"
               placeholder="https://…"
               className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
             />
