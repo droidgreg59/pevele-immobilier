@@ -91,9 +91,14 @@ statiques demanderait d'hydrater l'état « favori » côté client — chantier
 `public/manifest.webmanifest` + `public/sw.js` (enregistré depuis
 `src/instrumentation-client.ts`). Le service worker est **volontairement minimal** :
 aucune mise en cache d'assets ou de pages (zéro risque de contenu périmé), juste une
-page de repli hors ligne pour les navigations. Les icônes PNG sont générées depuis
-`public/icon.svg` par `npx tsx scripts/gen-pwa-icons.ts` (rejouer si le visuel de
-marque change).
+page de repli hors ligne pour les navigations. Les icônes PNG (favicon, PWA, header)
+sont générées depuis `public/icon-master.png` (le logo carré arrondi, marge blanche
+retirée automatiquement) par `npx tsx scripts/gen-pwa-icons.ts` (rejouer si le visuel
+de marque change — remplacer `icon-master.png` par le nouveau fichier avant de
+relancer). Pas de version SVG : le logo est une illustration (pas un pictogramme
+simple), une reconstruction vectorielle à la main déforme le dessin — partir toujours
+du PNG source fourni par l'utilisateur, jamais d'une capture d'écran ou d'une
+recréation approximative.
 
 ### Notifications push (Web Push / VAPID)
 

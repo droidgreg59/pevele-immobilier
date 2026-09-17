@@ -1,13 +1,14 @@
 /**
- * Génère les icônes PNG de la PWA à partir de `public/icon.svg`.
+ * Génère les icônes PNG de la PWA à partir de `public/icon-master.png`
+ * (le carré arrondi rogné, sans marge blanche — la marge est retirée avec
+ * `.trim()` pour rester robuste si le fichier source en a une).
  * Rejouer après toute modification du visuel de marque.
  *
  * Usage : npx tsx scripts/gen-pwa-icons.ts
  */
-import { readFileSync } from "node:fs";
 import sharp from "sharp";
 
-const SRC = "public/icon.svg";
+const SRC = "public/icon-master.png";
 const OUT: { file: string; size: number }[] = [
   { file: "public/icon-192.png", size: 192 },
   { file: "public/icon-512.png", size: 512 },
@@ -15,9 +16,9 @@ const OUT: { file: string; size: number }[] = [
 ];
 
 async function main() {
-  const svg = readFileSync(SRC);
+  const trimmed = await sharp(SRC).trim({ background: "#ffffff", threshold: 8 }).toBuffer();
   for (const { file, size } of OUT) {
-    await sharp(svg, { density: 384 }).resize(size, size).png().toFile(file);
+    await sharp(trimmed).resize(size, size, { fit: "fill" }).png().toFile(file);
     console.log(`écrit ${file} (${size}×${size})`);
   }
 }
