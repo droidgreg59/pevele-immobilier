@@ -1,5 +1,52 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#2c439c"/>
-  <rect x="118" y="118" width="276" height="276" rx="72" fill="#ffffff" fill-opacity="0.08"/>
-  <circle cx="256" cy="256" r="86" fill="#f0b429"/>
+  <defs>
+    <clipPath id="squircle">
+      <rect x="64" y="64" width="384" height="384" rx="86" />
+    </clipPath>
+  </defs>
+
+  <rect x="64" y="64" width="384" height="384" rx="86" fill="#1E5BFF" />
+
+  <g clip-path="url(#squircle)">
+    <circle cx="326" cy="206" r="40" fill="#FFC542" />
+
+    <circle cx="136" cy="270" r="30" fill="#ffffff" />
+    <path d="M206 250 C220 264 222 286 206 304 C190 286 192 264 206 250 Z" fill="#ffffff" />
+    <circle cx="404" cy="288" r="26" fill="#ffffff" />
+
+    <polygon points="237,138 214,210 260,210" fill="#ffffff" />
+    <rect x="214" y="210" width="46" height="92" fill="#ffffff" />
+    <path
+      d="M230 302 L230 250 A8 8 0 0 1 246 250 L246 302 Z"
+      fill="#1E5BFF"
+    />
+
+    <polygon points="302,256 250,302 378,302" fill="#ffffff" />
+    <rect x="262" y="302" width="104" height="66" fill="#ffffff" />
+    <path d="M280 368 L280 338 A8 8 0 0 1 296 338 L296 368 Z" fill="#1E5BFF" />
+    <path d="M306 368 L306 338 A8 8 0 0 1 322 338 L322 368 Z" fill="#1E5BFF" />
+    <path d="M332 368 L332 338 A8 8 0 0 1 348 338 L348 368 Z" fill="#1E5BFF" />
+
+    <path
+      d="M50 380 C140 366 210 392 300 380 C360 372 410 388 470 376"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="16"
+      stroke-linecap="round"
+    />
+    <path
+      d="M50 408 C140 396 210 420 300 410 C360 402 410 416 470 404"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="16"
+      stroke-linecap="round"
+    />
+    <path
+      d="M230 440 C300 426 360 438 470 426"
+      fill="none"
+      stroke="#FFC542"
+      stroke-width="16"
+      stroke-linecap="round"
+    />
+  </g>
 </svg>
