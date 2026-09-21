@@ -15,7 +15,7 @@ export const metadata = {
   type: "guide",
 };
 
-Ce guide s'appuie sur les ventes de maisons réellement enregistrées (DVF), pas sur un simple calcul de budget divisé par un prix médian au m². Pour chaque palier, il indique la part des ventes effectivement conclues à ce niveau de prix ou en dessous, et la surface médiane obtenue pour ce budget.
+Ce guide s'appuie sur les ventes de maisons réellement enregistrées (DVF), pas sur un simple calcul de budget divisé par un prix médian au m². Pour chaque palier, il indique la part des ventes effectivement conclues à ce niveau de prix ou en dessous, la surface habitable médiane obtenue, et la surface de terrain médiane quand elle est disponible.
 
 ## Le tableau des paliers en Pévèle
 
@@ -31,7 +31,13 @@ Ce guide s'appuie sur les ventes de maisons réellement enregistrées (DVF), pas
       l&apos;ont été à 300 000 € ou moins ({nomain.count} ventes sur {nomain.totalRetained} retenues),
       {nomain.medianSurface !== null ? (
         <>
-          {" "}pour une surface médiane de <DvfMetric value={nomain.medianSurface} unit="m2" />.
+          {" "}pour une surface habitable médiane de <DvfMetric value={nomain.medianSurface} unit="m2" />
+          {nomain.medianTerrain !== null ? (
+            <>
+              {" "}et un terrain médian de <DvfMetric value={nomain.medianTerrain} unit="m2" />
+            </>
+          ) : null}
+          .
         </>
       ) : (
         " sans échantillon suffisant pour une surface médiane fiable à ce palier."
@@ -46,4 +52,4 @@ Ce guide s'appuie sur les ventes de maisons réellement enregistrées (DVF), pas
 
 ## Méthode et limites
 
-Mêmes valeurs atypiques exclues que sur les pages de prix (1er et 99e centile du prix au m², Pévèle entière — voir la [méthodologie](/methodologie)). La surface de terrain n'est pas incluse : les données DVF importées sur ce site ne conservent que la surface habitable. Une commune n'apparaît dans le classement que si son échantillon global de ventes retenues est suffisant.
+Mêmes valeurs atypiques exclues que sur les pages de prix (1er et 99e centile du prix au m², Pévèle entière — voir la [méthodologie](/methodologie)). Le terrain médian n'est affiché que lorsqu'au moins 5 ventes du palier ont une surface de terrain renseignée dans DVF (champ non garanti sur 100 % des ventes). Une commune n'apparaît dans le classement que si son échantillon global de ventes retenues est suffisant.

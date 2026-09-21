@@ -37,6 +37,9 @@ type DvfRow = {
   surface_reelle_bati: string;
   nombre_pieces_principales: string;
   nombre_lots: string;
+  surface_terrain: string;
+  latitude: string;
+  longitude: string;
 };
 
 /**
@@ -68,6 +71,9 @@ function filterYear(csv: string, year: number, inseeToSlug: Map<string, string>)
     nombrePieces: number | null;
     adresse: string | null;
     sourceAnnee: number;
+    surfaceTerrain: number | null;
+    latitude: number | null;
+    longitude: number | null;
   }[] = [];
 
   for (const row of rows) {
@@ -91,6 +97,14 @@ function filterYear(csv: string, year: number, inseeToSlug: Map<string, string>)
     const adresse =
       [row.adresse_numero, row.adresse_nom_voie].filter(Boolean).join(" ").trim() || null;
 
+    const surfaceTerrainRaw = Number(row.surface_terrain);
+    const surfaceTerrain =
+      Number.isFinite(surfaceTerrainRaw) && surfaceTerrainRaw > 0 ? Math.round(surfaceTerrainRaw) : null;
+    const latitudeRaw = Number(row.latitude);
+    const longitudeRaw = Number(row.longitude);
+    const latitude = row.latitude && Number.isFinite(latitudeRaw) ? latitudeRaw : null;
+    const longitude = row.longitude && Number.isFinite(longitudeRaw) ? longitudeRaw : null;
+
     filtered.push({
       villageSlug,
       dateMutation: new Date(row.date_mutation),
@@ -101,6 +115,9 @@ function filterYear(csv: string, year: number, inseeToSlug: Map<string, string>)
       nombrePieces: row.nombre_pieces_principales ? Number(row.nombre_pieces_principales) : null,
       adresse,
       sourceAnnee: year,
+      surfaceTerrain,
+      latitude,
+      longitude,
     });
   }
 

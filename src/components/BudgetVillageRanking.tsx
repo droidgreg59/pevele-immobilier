@@ -7,6 +7,7 @@ export type VillageBudgetRow = {
   count: number;
   totalRetained: number;
   medianSurface: number | null;
+  medianTerrain: number | null;
 };
 
 /**
@@ -31,6 +32,9 @@ export default function BudgetVillageRanking({ rows, budget }: { rows: VillageBu
             <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
               Surface médiane
             </th>
+            <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Terrain médian
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -46,6 +50,9 @@ export default function BudgetVillageRanking({ rows, budget }: { rows: VillageBu
               </td>
               <td className="px-4 py-3 text-muted">
                 {r.medianSurface !== null ? `${r.medianSurface} m²` : "données insuffisantes"}
+              </td>
+              <td className="px-4 py-3 text-muted">
+                {r.medianTerrain !== null ? `${r.medianTerrain} m²` : "données insuffisantes"}
               </td>
             </tr>
           ))}

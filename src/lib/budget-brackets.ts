@@ -29,9 +29,13 @@ export type BudgetBracketStat = {
   pct: number;
   medianSurface: number | null;
   medianPrix: number | null;
+  /** `null` si moins de MIN_RETAINED_SAMPLE ventes du palier ont une surface de
+   * terrain renseignée — un sous-échantillon distinct de `count`, car le champ
+   * DVF `surface_terrain` n'est pas garanti sur 100% des ventes retenues. */
+  medianTerrain: number | null;
 };
 
-type BracketRow = { valeurFonciere: number; surfaceBati: number };
+type BracketRow = { valeurFonciere: number; surfaceBati: number; surfaceTerrain: number | null };
 
 /** Construit les paliers à partir de ventes déjà filtrées (retained). Pure — testée sans base. */
 export function buildBudgetBrackets(retained: BracketRow[], budgets: number[]): BudgetBracketStat[] {
@@ -41,6 +45,10 @@ export function buildBudgetBrackets(retained: BracketRow[], budgets: number[]): 
     const count = under.length;
     const pct = totalRetained > 0 ? Math.round((count / totalRetained) * 1000) / 10 : 0;
     const enoughForMedian = count >= MIN_RETAINED_SAMPLE;
+    const terrains = under
+      .map((r) => r.surfaceTerrain)
+      .filter((t): t is number => t !== null)
+      .sort((a, b) => a - b);
     return {
       budget,
       totalRetained,
@@ -52,6 +60,7 @@ export function buildBudgetBrackets(retained: BracketRow[], budgets: number[]): 
       medianPrix: enoughForMedian
         ? median(under.map((r) => r.valeurFonciere).sort((a, b) => a - b))
         : null,
+      medianTerrain: terrains.length >= MIN_RETAINED_SAMPLE ? median(terrains) : null,
     };
   });
 }
@@ -60,7 +69,7 @@ async function retainedRows(typeLocal: DvfBienType, villageSlug?: string): Promi
   const [rows, bounds] = await Promise.all([
     prisma.dvfTransaction.findMany({
       where: { typeLocal, ...(villageSlug ? { villageSlug } : {}) },
-      select: { valeurFonciere: true, surfaceBati: true, prixM2: true },
+      select: { valeurFonciere: true, surfaceBati: true, prixM2: true, surfaceTerrain: true },
     }),
     getDvfOutlierBounds(),
   ]);

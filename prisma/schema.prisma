@@ -677,6 +677,17 @@ model DvfTransaction {
   nombrePieces   Int?
   adresse        String?
   sourceAnnee    Int
+  /// Surface du terrain (m²), balise `surface_terrain` du CSV DVF source —
+  /// non retenue à l'import avant le 2026-09-21. Présente sur ~98% des
+  /// ventes de maisons en Pévèle (vérifié en direct sur le fichier réel),
+  /// absente sur beaucoup d'appartements (pas de terrain propre) — nullable,
+  /// jamais utilisée pour exclure une transaction.
+  surfaceTerrain Int?
+  /// Coordonnées de la mutation, balises `latitude`/`longitude` du CSV DVF
+  /// source — même origine que surfaceTerrain, capturées mais pas encore
+  /// exploitées par une page (aucune carte DVF à ce jour).
+  latitude       Float?
+  longitude      Float?
 
   @@index([villageSlug])
 }

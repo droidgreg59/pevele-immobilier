@@ -15,6 +15,9 @@ export default function BudgetBracketTable({ rows }: { rows: BudgetBracketStat[]
               Surface médiane
             </th>
             <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Terrain médian
+            </th>
+            <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
               Prix médian
             </th>
           </tr>
@@ -28,6 +31,9 @@ export default function BudgetBracketTable({ rows }: { rows: BudgetBracketStat[]
               </td>
               <td className="px-4 py-3 text-muted">
                 {r.medianSurface !== null ? `${r.medianSurface} m²` : "données insuffisantes"}
+              </td>
+              <td className="px-4 py-3 text-muted">
+                {r.medianTerrain !== null ? `${r.medianTerrain} m²` : "données insuffisantes"}
               </td>
               <td className="px-4 py-3 text-muted">
                 {r.medianPrix !== null ? `${r.medianPrix.toLocaleString("fr-FR")} €` : "données insuffisantes"}
