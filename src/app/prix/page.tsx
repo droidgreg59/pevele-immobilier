@@ -1,59 +1,73 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { villages } from "@/data/villages";
-import { getDvfStatsForAllVillages } from "@/lib/dvf";
+import { getDvfMarketStatsPevele, getDvfMedianMaisonForAllVillages } from "@/lib/dvf";
+import { getCronLastRun } from "@/lib/freshness";
+import MarketSummary from "@/components/MarketSummary";
 
 // Page de contenu (DVF, données quasi statiques) : rendu ISR. Le cache des
 // lectures DVF est invalidé par le cron d'import (`revalidateTag("dvf")`).
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Prix de l'immobilier en Pévèle par commune",
+  title: "Observatoire des prix immobiliers en Pévèle",
   description:
-    "Le prix moyen au m² dans chacune des 44 communes de la Pévèle, classé et comparé, à partir des transactions DVF réellement enregistrées (data.gouv.fr).",
+    "Le prix médian au m² dans chacune des 44 communes de la Pévèle, calculé à partir des ventes réellement enregistrées (DVF, data.gouv.fr) — maisons et appartements distincts, valeurs atypiques exclues.",
   alternates: {
     canonical: "/prix",
   },
 };
 
 export default async function PrixPage() {
-  const stats = await getDvfStatsForAllVillages();
-  const statsBySlug = new Map(stats.map((s) => [s.villageSlug, s]));
-  const rows = villages
-    .map((v) => ({ village: v, stats: statsBySlug.get(v.slug) ?? null }))
-    .sort((a, b) => (b.stats?.avgPrixM2 ?? 0) - (a.stats?.avgPrixM2 ?? 0));
+  const [maisonPevele, appartementPevele, medianRows, dvfUpdatedAt] = await Promise.all([
+    getDvfMarketStatsPevele("Maison"),
+    getDvfMarketStatsPevele("Appartement"),
+    getDvfMedianMaisonForAllVillages(),
+    getCronLastRun("dvf-import"),
+  ]);
 
-  const anneeMin = Math.min(...stats.map((s) => s.minAnnee).filter(Boolean));
-  const anneeMax = Math.max(...stats.map((s) => s.maxAnnee).filter(Boolean));
+  const medianBySlug = new Map(medianRows.map((r) => [r.villageSlug, r]));
+  const rows = villages
+    .map((v) => ({ village: v, stats: medianBySlug.get(v.slug) ?? null }))
+    .sort((a, b) => (b.stats?.medianPrixM2 ?? 0) - (a.stats?.medianPrixM2 ?? 0));
 
   return (
     <div className="animate-fade-up max-w-[1100px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
         <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
-          Prix
+          Observatoire
         </span>
-        <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          Prix de l&apos;immobilier
-        </h2>
+        <h1 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
+          Observatoire des prix immobiliers en Pévèle
+        </h1>
       </div>
       <Link href="/" className="text-[13px] font-semibold text-blue">
         ← Retour à l&apos;accueil
       </Link>
 
-      <p className="mt-6 max-w-[70ch] text-[15px] leading-[1.6] text-muted">
-        Prix moyen au m² constaté dans chaque village, calculé à partir des
-        ventes de maisons et d&apos;appartements réellement enregistrées
-        (DVF, {anneeMin}–{anneeMax}). L&apos;historique du prix propre à
-        chaque annonce est visible directement sur sa fiche.
-      </p>
+      {maisonPevele ? (
+        <div className="mt-6">
+          <MarketSummary lieu="en Pévèle" {...maisonPevele} />
+        </div>
+      ) : null}
+
+      {appartementPevele ? (
+        <p className="mt-4 max-w-[70ch] text-[13.5px] leading-[1.6] text-muted">
+          Côté appartements, le prix médian s&apos;établit à{" "}
+          <b className="text-ink">{appartementPevele.medianPrixM2.toLocaleString("fr-FR")} €/m²</b>{" "}
+          sur {appartementPevele.retainedCount} vente
+          {appartementPevele.retainedCount > 1 ? "s" : ""} retenues, une typologie plus rare et
+          concentrée sur les bourgs principaux de la Pévèle.
+        </p>
+      ) : null}
 
       <div className="mt-7 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm">
         <table className="w-full min-w-[560px] border-collapse text-[13.5px]">
           <thead>
             <tr className="border-b border-line bg-surface text-left">
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Village</th>
-              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Prix moyen / m²</th>
-              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Ventes constatées</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Prix médian / m² (maisons)</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Ventes retenues</th>
             </tr>
           </thead>
           <tbody>
@@ -71,10 +85,10 @@ export default async function PrixPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-ink">
-                  {s ? `${s.avgPrixM2.toLocaleString("fr-FR")} €` : "—"}
+                  {s ? `${s.medianPrixM2.toLocaleString("fr-FR")} €` : "—"}
                 </td>
                 <td className="px-4 py-3 text-muted">
-                  {s ? `${s.count} vente${s.count > 1 ? "s" : ""}` : "données insuffisantes"}
+                  {s ? `${s.retainedCount} vente${s.retainedCount > 1 ? "s" : ""}` : "données insuffisantes"}
                 </td>
               </tr>
             ))}
@@ -83,9 +97,15 @@ export default async function PrixPage() {
       </div>
 
       <p className="mt-3 text-[11.5px] text-muted-2">
-        Source : DVF (Demandes de valeurs foncières), data.gouv.fr / Etalab —
-        ventes de maisons et appartements en un seul lot, hors valeurs
-        atypiques.
+        Source : DVF (Demandes de valeurs foncières), data.gouv.fr / Etalab — prix médian des
+        maisons, valeurs atypiques exclues (
+        <Link href="/methodologie" className="text-blue">
+          méthode de calcul détaillée
+        </Link>
+        ).
+        {dvfUpdatedAt
+          ? ` Données DVF mises à jour le ${dvfUpdatedAt.toLocaleDateString("fr-FR")}.`
+          : null}
       </p>
     </div>
   );

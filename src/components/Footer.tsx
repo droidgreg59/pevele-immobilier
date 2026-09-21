@@ -8,6 +8,9 @@ export default function Footer() {
         <Link href="/espace-professionnel" className="text-blue">
           Vous êtes un professionnel ?
         </Link>
+        <Link href="/methodologie" className="text-blue">
+          Méthodologie
+        </Link>
         <Link href="/mentions-legales" className="text-blue">
           Mentions légales
         </Link>

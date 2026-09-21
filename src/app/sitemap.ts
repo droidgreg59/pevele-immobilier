@@ -15,6 +15,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/carte", priority: 0.7, changeFrequency: "weekly" },
   { path: "/villages", priority: 0.9, changeFrequency: "weekly" },
   { path: "/prix", priority: 0.9, changeFrequency: "weekly" },
+  { path: "/methodologie", priority: 0.5, changeFrequency: "monthly" },
   { path: "/artisans", priority: 0.7, changeFrequency: "weekly" },
   { path: "/professionnels", priority: 0.7, changeFrequency: "weekly" },
   { path: "/espace-professionnel", priority: 0.5, changeFrequency: "monthly" },
