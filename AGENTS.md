@@ -88,6 +88,19 @@ prix — une annonce active 30 jours ne doit jamais compter comme 30 observation
 statistique de prix sur une période est faite d'annonces distinctes (dédupliquées), jamais d'instantanés
 quotidiens cumulés.
 
+### Identité éditoriale (guides, Sprint 4)
+
+Le site est exploité par une agence (PVL Immobilier) mais se positionne comme un portail
+multi-agences indépendant, ouvert à des agences concurrentes. La couche éditoriale (`content/guides/`)
+ne doit donc jamais créer de lien public entre Pévèle-Immobilier.fr et PVL Immobilier ou la personne qui
+exploite le site : auteur et éditeur des guides sont toujours l'Organization du site (`SITE_NAME`,
+`articleJsonLd()` dans `src/lib/seo.ts`), jamais une `Person`. Byline affichée : « Rédaction
+Pévèle-Immobilier.fr » (`GUIDE_AUTHOR` dans `src/lib/guides.ts`) — un nom éditorial de la plateforme, pas
+une fausse personne. Le profil public d'une agence (`/professionnels/[id]`, `localBusinessJsonLd()`)
+reste légitime et inchangé : la règle ne s'applique qu'à l'identité du site lui-même, jamais aux fiches
+des agences qui l'utilisent. Les mentions légales (raison sociale, directeur de publication) restent
+exactes et non concernées par cette règle — obligation légale, pas un choix éditorial.
+
 ### Observabilité
 
 Trois briques distinctes, à ne pas confondre :

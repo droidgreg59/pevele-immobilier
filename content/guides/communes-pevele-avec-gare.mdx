@@ -1,0 +1,40 @@
+import Link from "next/link";
+import DvfMetric from "@/components/DvfMetric";
+
+export const metadata = {
+  title: "Quelles communes de la Pévèle ont une gare ?",
+  description:
+    "Les communes de la Pévèle desservies par une gare SNCF, avec le prix médian des maisons dans chacune — recensement factuel, sans temps de trajet ni fréquence, données non disponibles à ce jour.",
+  publishedAt: "2026-09-21",
+  updatedAt: "2026-09-21",
+  author: "Rédaction Pévèle-Immobilier.fr",
+  scopeVillages: ["baisieux", "templeuve-en-pevele", "nomain", "orchies", "landas", "rosult"],
+  relatedVillages: ["baisieux", "templeuve-en-pevele", "nomain", "orchies", "landas", "rosult"],
+  type: "guide",
+};
+
+Sur les 44 communes de la Pévèle, 6 disposent d'au moins une gare SNCF recensée. Ce guide se limite à ce que nous pouvons affirmer avec certitude : la présence d'une gare, son nom, et le prix médian des maisons dans la commune. Il n'indique ni temps de trajet, ni fréquence, ni desserte directe vers une destination — ces données ne sont pas disponibles dans les sources utilisées par ce site (voir la méthode en bas de page).
+
+## Les communes avec une gare SNCF
+
+{props.rows.map((r) => (
+  <p key={r.slug}>
+    <Link href={`/villages/${r.slug}`}>{r.nom}</Link> — {r.gares.join(", ")}
+    {r.medianPrixM2 !== null ? (
+      <>
+        {" "}· <DvfMetric value={r.medianPrixM2} unit="eur" /> / m² (médiane maisons,{" "}
+        <Link href={`/prix/${r.slug}`}>prix détaillé</Link>)
+      </>
+    ) : (
+      " · données de prix insuffisantes"
+    )}
+  </p>
+))}
+
+## Et les communes sans gare ?
+
+Les 38 autres communes de la Pévèle restent accessibles par la route ou par bus, sans gare sur leur propre territoire. La présence d'une gare peut être un critère pertinent pour qui utilise le train régulièrement — ce n'est qu'un critère parmi d'autres, pas une mesure d'accessibilité globale.
+
+## Méthode et limites
+
+Ce recensement vient d'OpenStreetMap (transports) — voir la [méthodologie](/methodologie). Nous ne disposons pas de données de temps de trajet, de fréquence ou de ligne fiables : ce guide ne les affirme donc pas. Un guide séparé sur les temps de trajet pourra être construit plus tard si une source de données fiable (SNCF, GTFS) est intégrée.

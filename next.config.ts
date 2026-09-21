@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "./src/lib/photo-constants";
 
 // Une annonce peut inclure jusqu'à MAX_PHOTOS photos de MAX_PHOTO_BYTES chacune
@@ -15,6 +16,10 @@ const r2Hostname = process.env.R2_PUBLIC_URL
   : undefined;
 
 const nextConfig: NextConfig = {
+  // Guides éditoriaux (content/guides/*.mdx, Sprint 4) — importés
+  // dynamiquement depuis src/app/guides/[slug]/page.tsx, jamais routés
+  // directement en tant que pages (content/ est hors de app/).
+  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   experimental: {
     serverActions: {
       bodySizeLimit: `${photosLimitMb}mb`,
@@ -27,4 +32,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({});
+
+export default withMDX(nextConfig);

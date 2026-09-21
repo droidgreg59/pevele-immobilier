@@ -1,0 +1,44 @@
+import Link from "next/link";
+import AllVillagesPriceTable from "@/components/AllVillagesPriceTable";
+import DvfMetric from "@/components/DvfMetric";
+import { villages } from "@/data/villages";
+
+export const metadata = {
+  title: "Les 44 communes de la Pévèle comparées : prix, écarts, classement",
+  description:
+    "Prix médian des maisons dans chacune des 44 communes de la Pévèle, classées et comparées, à partir des transactions DVF réellement enregistrées — communes les plus chères, les plus accessibles, écarts entre voisines.",
+  publishedAt: "2026-09-21",
+  updatedAt: "2026-09-21",
+  author: "Rédaction Pévèle-Immobilier.fr",
+  scopeVillages: villages.map((v) => v.slug),
+  relatedVillages: [],
+  type: "guide",
+};
+
+Comparer les 44 communes de la Pévèle sur un même critère — le prix médian des maisons au m² — permet de situer chaque commune par rapport à ses voisines, à partir de ventes réellement enregistrées (DVF) plutôt que de prix affichés en annonce.
+
+## Le tableau complet
+
+<AllVillagesPriceTable rows={props.rows} />
+
+## Les communes où le prix médian des maisons au m² est le plus élevé
+
+{props.top5Expensive.map((r) => (
+  <p key={r.slug}>
+    <Link href={`/prix/${r.slug}`}>{r.nom}</Link> — <DvfMetric value={r.medianPrixM2} unit="eur" /> / m²
+  </p>
+))}
+
+## Les communes où le prix médian des maisons au m² est le plus bas
+
+{props.top5Affordable.map((r) => (
+  <p key={r.slug}>
+    <Link href={`/prix/${r.slug}`}>{r.nom}</Link> — <DvfMetric value={r.medianPrixM2} unit="eur" /> / m²
+  </p>
+))}
+
+Cette notion de « plus élevé » ou « plus bas » porte uniquement sur le prix au m². Elle ne dit rien du budget total nécessaire pour acheter dans une commune donnée — voir le guide [Quel budget pour acheter une maison en Pévèle ?](/guides/quel-budget-pour-acheter-en-pevele) pour cette question précise.
+
+## Comment ce classement est calculé
+
+Médiane des maisons uniquement, jamais mélangée aux appartements, valeurs atypiques exclues (1er et 99e centile du prix au m², calculés une fois pour toute la Pévèle). Détail complet sur la page [méthodologie](/methodologie).

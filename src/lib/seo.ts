@@ -48,6 +48,38 @@ export function organizationJsonLd() {
   };
 }
 
+/**
+ * Article schema.org pour les guides éditoriaux (Sprint 4) — auteur et
+ * éditeur sont TOUJOURS l'Organization du site (jamais une Person) : la
+ * rédaction est publiée sous l'identité de la plateforme, pas celle d'une
+ * personne physique ni d'une agence tenante (voir AGENTS.md, « Identité
+ * éditoriale »). Pas de champ `image` tant qu'aucune image éditoriale réelle
+ * n'existe — jamais une image générique juste pour remplir le schema.
+ */
+export function articleJsonLd(article: {
+  title: string;
+  description: string;
+  url: string;
+  publishedAt: string;
+  updatedAt: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description,
+    url: `${SITE_URL}${article.url}`,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}${article.url}`,
+    },
+    datePublished: article.publishedAt,
+    dateModified: article.updatedAt,
+    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+  };
+}
+
 export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",

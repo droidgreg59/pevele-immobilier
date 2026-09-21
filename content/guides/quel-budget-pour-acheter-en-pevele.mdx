@@ -1,0 +1,49 @@
+import BudgetBracketTable from "@/components/BudgetBracketTable";
+import BudgetVillageRanking from "@/components/BudgetVillageRanking";
+import DvfMetric from "@/components/DvfMetric";
+import { villages } from "@/data/villages";
+
+export const metadata = {
+  title: "Quel budget pour acheter une maison en Pévèle ? De 250 000 à 500 000 €",
+  description:
+    "Ce que permet réellement chaque budget en Pévèle, d'après les ventes de maisons enregistrées (DVF) : part des transactions accessibles, surface médiane obtenue, communes concernées, pour 5 paliers de 250 000 à 500 000 €.",
+  publishedAt: "2026-09-21",
+  updatedAt: "2026-09-21",
+  author: "Rédaction Pévèle-Immobilier.fr",
+  scopeVillages: villages.map((v) => v.slug),
+  relatedVillages: ["nomain"],
+  type: "guide",
+};
+
+Ce guide s'appuie sur les ventes de maisons réellement enregistrées (DVF), pas sur un simple calcul de budget divisé par un prix médian au m². Pour chaque palier, il indique la part des ventes effectivement conclues à ce niveau de prix ou en dessous, et la surface médiane obtenue pour ce budget.
+
+## Le tableau des paliers en Pévèle
+
+<BudgetBracketTable rows={props.peveleRows} />
+
+## 300 000 € : l'exemple de Nomain
+
+{(() => {
+  const nomain = props.villageRanking300k.find((r) => r.slug === "nomain");
+  return nomain ? (
+    <p>
+      À Nomain, <DvfMetric value={nomain.pct} unit="pct" /> des maisons vendues sur la période étudiée
+      l&apos;ont été à 300 000 € ou moins ({nomain.count} ventes sur {nomain.totalRetained} retenues),
+      {nomain.medianSurface !== null ? (
+        <>
+          {" "}pour une surface médiane de <DvfMetric value={nomain.medianSurface} unit="m2" />.
+        </>
+      ) : (
+        " sans échantillon suffisant pour une surface médiane fiable à ce palier."
+      )}
+    </p>
+  ) : null;
+})()}
+
+## Communes accessibles à 300 000 €
+
+<BudgetVillageRanking rows={props.villageRanking300k} budget={300000} />
+
+## Méthode et limites
+
+Mêmes valeurs atypiques exclues que sur les pages de prix (1er et 99e centile du prix au m², Pévèle entière — voir la [méthodologie](/methodologie)). La surface de terrain n'est pas incluse : les données DVF importées sur ce site ne conservent que la surface habitable. Une commune n'apparaît dans le classement que si son échantillon global de ventes retenues est suffisant.

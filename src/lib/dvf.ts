@@ -59,7 +59,7 @@ const DVF_BIEN_TYPES: DvfBienType[] = ["Maison", "Appartement"];
 const OUTLIER_LOWER_PERCENTILE = 0.01;
 const OUTLIER_UPPER_PERCENTILE = 0.99;
 /** En dessous de ce nombre de ventes retenues, on affiche « données insuffisantes » plutôt qu'un chiffre fragile. */
-const MIN_RETAINED_SAMPLE = 5;
+export const MIN_RETAINED_SAMPLE = 5;
 
 /** Bornes [percentile bas, percentile haut] d'un tableau de nombres déjà trié. Pure — testée sans base. */
 export function computePercentileBounds(
@@ -76,14 +76,16 @@ export function computePercentileBounds(
   return { min: sortedValues[lowerIndex], max: sortedValues[upperIndex] };
 }
 
-function median(sortedValues: number[]): number {
+/** Médiane d'un tableau de nombres déjà trié. Pure — réutilisée par budget-brackets.ts. */
+export function median(sortedValues: number[]): number {
   const mid = Math.floor(sortedValues.length / 2);
   return sortedValues.length % 2 === 0
     ? Math.round((sortedValues[mid - 1] + sortedValues[mid]) / 2)
     : sortedValues[mid];
 }
 
-function average(values: number[]): number {
+/** Moyenne arrondie d'un tableau de nombres. Pure — réutilisée par budget-brackets.ts. */
+export function average(values: number[]): number {
   return Math.round(values.reduce((sum, v) => sum + v, 0) / values.length);
 }
 

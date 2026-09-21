@@ -5,6 +5,7 @@ import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageAmenities } from "@/data/village-amenities";
 import { getPublicListingsByVillage } from "@/lib/listings";
 import { getDvfMarketStatsForVillage } from "@/lib/dvf";
+import { getGuidesForVillage } from "@/lib/guides";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import { getSession, isParticulierSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
@@ -44,10 +45,11 @@ export default async function VillagePage({
   const village = getVillageBySlug(slug);
   if (!village) notFound();
 
-  const [villageListings, dvfStats, session] = await Promise.all([
+  const [villageListings, dvfStats, session, guides] = await Promise.all([
     getPublicListingsByVillage(village.slug),
     getDvfMarketStatsForVillage(village.slug, "Maison"),
     getSession(),
+    getGuidesForVillage(village.slug),
   ]);
   const favoriteIds = session
     ? await getFavoriteListingIds(session.userId)
@@ -260,6 +262,23 @@ export default async function VillagePage({
         Source : OpenStreetMap (commerces, transports) et annuaire de l&apos;Éducation nationale
         (écoles).
       </p>
+
+      {guides.length > 0 ? (
+        <div className="mt-9">
+          <h2 className="m-0 font-display text-xl text-ink">Guides utiles</h2>
+          <div className="mt-4 flex flex-col gap-3">
+            {guides.map(({ slug: guideSlug, metadata }) => (
+              <Link
+                key={guideSlug}
+                href={`/guides/${guideSlug}`}
+                className="rounded-2xl border border-line bg-white p-4 text-[13.5px] font-semibold text-ink shadow-sm transition hover:shadow-md"
+              >
+                {metadata.title}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

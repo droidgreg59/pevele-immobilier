@@ -1,0 +1,35 @@
+import VillageComparison from "@/components/VillageComparison";
+import VillageAmenitiesSummary from "@/components/VillageAmenitiesSummary";
+
+export const metadata = {
+  title: "Cysoing ou Templeuve-en-Pévèle : comparaison immobilière et cadre de vie",
+  description:
+    "Prix médian des maisons, gare SNCF, commerces et écoles : Cysoing et Templeuve-en-Pévèle comparées point par point, à partir des données DVF et de l'Observatoire Pévèle-Immobilier.fr.",
+  publishedAt: "2026-09-21",
+  updatedAt: "2026-09-21",
+  author: "Rédaction Pévèle-Immobilier.fr",
+  scopeVillages: ["cysoing", "templeuve-en-pevele"],
+  relatedVillages: ["cysoing", "templeuve-en-pevele"],
+  type: "comparatif",
+};
+
+Cysoing et Templeuve-en-Pévèle sont deux communes voisines, souvent comparées par les personnes qui cherchent où acheter en Pévèle. Voici ce que disent les données.
+
+## Prix de l'immobilier
+
+<VillageComparison a={props.a} b={props.b} />
+
+## Commerces et écoles recensés
+
+<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+  <VillageAmenitiesSummary nom={props.a.nom} amenities={props.amenitiesA} />
+  <VillageAmenitiesSummary nom={props.b.nom} amenities={props.amenitiesB} />
+</div>
+
+## À retenir : quel profil pour quelle commune ?
+
+Les prix médians des maisons sont proches entre les deux communes — pas d'écart massif qui trancherait la question à lui seul. La différence la plus nette porte sur les transports : Templeuve-en-Pévèle dispose de gares sur son territoire, Cysoing n'en a pas. Les équipements recensés (commerces, écoles) diffèrent aussi d'une commune à l'autre, dans le détail ci-dessus. Pour approfondir, les fiches [Cysoing](/villages/cysoing) et [Templeuve-en-Pévèle](/villages/templeuve-en-pevele) détaillent chacune son marché et ses annonces en cours.
+
+## Méthode
+
+Médiane des maisons, valeurs atypiques exclues — voir la [méthodologie](/methodologie). Commerces, écoles et gares : OpenStreetMap et annuaire de l'Éducation nationale, recensement factuel sans jugement de qualité de vie.

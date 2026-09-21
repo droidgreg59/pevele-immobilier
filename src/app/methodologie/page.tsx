@@ -173,6 +173,12 @@ export default function MethodologiePage() {
             cette fraîcheur d&apos;import est distincte de la fraîcheur des annonces en ligne, qui
             dépend elle des flux de chaque agence partenaire.
           </p>
+          <p className="mt-3">
+            <b>Commerces, écoles et transports</b> (affichés sur les fiches village et certains guides) :
+            recensés depuis OpenStreetMap et l&apos;annuaire officiel de l&apos;Éducation nationale, au{" "}
+            17 septembre 2026. Ces jeux de données sont descriptifs — un nombre de commerces ou
+            d&apos;écoles recensés n&apos;est jamais traduit en jugement de qualité de vie.
+          </p>
         </section>
 
         <p className="mt-2 text-[12px] text-muted-2">

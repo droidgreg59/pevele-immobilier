@@ -4,6 +4,7 @@ import { getPublicListings } from "@/lib/listings";
 import { getAgencies } from "@/lib/agencies";
 import { getArtisans } from "@/lib/artisans";
 import { getDvfStatsForAllVillages } from "@/lib/dvf";
+import { getAllGuidesMetadata } from "@/lib/guides";
 import { SITE_URL } from "@/lib/seo";
 
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
@@ -16,18 +17,20 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/villages", priority: 0.9, changeFrequency: "weekly" },
   { path: "/prix", priority: 0.9, changeFrequency: "weekly" },
   { path: "/methodologie", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/guides", priority: 0.7, changeFrequency: "monthly" },
   { path: "/artisans", priority: 0.7, changeFrequency: "weekly" },
   { path: "/professionnels", priority: 0.7, changeFrequency: "weekly" },
   { path: "/espace-professionnel", priority: 0.5, changeFrequency: "monthly" },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [ventes, locations, agencies, artisans, dvfStats] = await Promise.all([
+  const [ventes, locations, agencies, artisans, dvfStats, guides] = await Promise.all([
     getPublicListings("VENTE"),
     getPublicListings("LOCATION"),
     getAgencies(),
     getArtisans(),
     getDvfStatsForAllVillages(),
+    getAllGuidesMetadata(),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
@@ -97,6 +100,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
+  const guideEntries: MetadataRoute.Sitemap = guides.map((g) => ({
+    url: `${SITE_URL}/guides/${g.slug}`,
+    lastModified: g.metadata.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
   return [
     ...staticEntries,
     ...villageEntries,
@@ -106,5 +116,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...locationEntries,
     ...agencyEntries,
     ...artisanEntries,
+    ...guideEntries,
   ];
 }
