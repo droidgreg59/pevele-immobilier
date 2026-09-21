@@ -122,12 +122,16 @@ export async function recordXmlSyncResult(
   userId: string,
   result: { count: number } | { error: string }
 ): Promise<void> {
+  const now = new Date();
   await prisma.user.update({
     where: { id: userId },
     data: {
-      xmlLastSyncAt: new Date(),
+      xmlLastSyncAt: now,
       xmlLastSyncCount: "count" in result ? result.count : null,
       xmlLastSyncError: "error" in result ? result.error : null,
+      // Uniquement sur un succès — jamais écrasé par un échec, contrairement
+      // à xmlLastSyncAt (voir le commentaire du champ dans schema.prisma).
+      ...("count" in result ? { xmlLastSuccessAt: now } : {}),
     },
   });
 }

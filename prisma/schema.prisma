@@ -26,9 +26,17 @@ model User {
   googleAvisUrl       String?
   logoUrl             String?
   xmlImportUrl        String?
+  /// Horodatage de la dernière TENTATIVE de synchro (succès ou échec) —
+  /// écrasé à chaque passage, y compris en échec (voir recordXmlSyncResult).
+  /// Ne pas utiliser seul pour une affirmation de fraîcheur publique : un
+  /// échec le met quand même à jour. Utiliser `xmlLastSuccessAt` pour ça.
   xmlLastSyncAt       DateTime?
   xmlLastSyncCount    Int?
   xmlLastSyncError    String?
+  /// Horodatage de la dernière synchro RÉUSSIE uniquement — jamais écrasé par
+  /// un échec, contrairement à `xmlLastSyncAt`. Source de vérité pour les
+  /// affirmations de fraîcheur des annonces (voir src/lib/freshness.ts).
+  xmlLastSuccessAt    DateTime?
   isAdmin             Boolean             @default(false)
   /// Vérification de l'agence (loi Hoguet) : SIRET + numéro de carte
   /// professionnelle (carte T) + CCI émettrice, validés à la main depuis le

@@ -6,16 +6,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: [
-        "/compte",
-        "/compte/",
-        "/connexion",
-        "/inscription",
-        "/admin",
-        "/admin/",
-        "/api/",
-        "/vendre/deposer",
-      ],
+      // /connexion, /inscription et /vendre/deposer sont en `noindex` (voir
+      // leurs metadata) mais volontairement PAS ici : un moteur ne peut lire
+      // une directive noindex que s'il est autorisé à crawler la page — les
+      // bloquer ici l'empêcherait de découvrir le noindex et pourrait laisser
+      // l'URL indexée nue (juste l'URL, sans titre ni description) à partir
+      // d'un lien externe. Seules les zones réellement privées (données de
+      // compte, back-office) ou non-HTML (API) restent bloquées.
+      disallow: ["/compte", "/compte/", "/admin", "/admin/", "/api/"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

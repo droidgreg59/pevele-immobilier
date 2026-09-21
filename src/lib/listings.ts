@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 import { prisma } from "./prisma";
 import { saveRemotePhotos, deletePhotoFilesByUrl } from "./photo-upload";
+import { listingRevivalFields } from "./listing-revival";
 
 export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
   include: {
@@ -388,7 +389,7 @@ export async function upsertImportedListing(
         // Une annonce RETIREE qui réapparaît dans le flux (republiée côté
         // agence) redevient active automatiquement — jamais l'inverse : on ne
         // déduit jamais un retrait ici, seulement dans retireStaleImportedListings.
-        ...(existing.statut === "RETIREE" ? { statut: "PUBLIEE", retiredAt: null } : {}),
+        ...listingRevivalFields(existing.statut),
       },
     });
     if (fields.prix !== existing.prix) {
