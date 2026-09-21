@@ -380,6 +380,7 @@ export async function upsertImportedListing(
     return { id: created.id, created: true };
   }
 
+  const isRevival = existing.statut === "RETIREE";
   await prisma.$transaction(async (tx) => {
     await tx.listing.update({
       where: { id: existing.id },
@@ -394,6 +395,14 @@ export async function upsertImportedListing(
     });
     if (fields.prix !== existing.prix) {
       await tx.priceHistory.create({ data: { listingId: existing.id, prix: fields.prix } });
+    }
+    // Historise l'épisode de republication (voir ListingLifecycleEvent) —
+    // permet de reconstruire plus tard les périodes exactes d'exposition,
+    // ce que le seul statut courant ne permet pas.
+    if (isRevival) {
+      await tx.listingLifecycleEvent.create({
+        data: { listingId: existing.id, type: "REPUBLISHED" },
+      });
     }
   });
 
@@ -442,10 +451,17 @@ export async function retireStaleImportedListings(
     select: { id: true },
   });
   if (stale.length === 0) return [];
-  await prisma.listing.updateMany({
-    where: { id: { in: stale.map((l) => l.id) } },
-    data: { statut: "RETIREE", retiredAt: new Date() },
-  });
+  await prisma.$transaction([
+    prisma.listing.updateMany({
+      where: { id: { in: stale.map((l) => l.id) } },
+      data: { statut: "RETIREE", retiredAt: new Date() },
+    }),
+    // Historise l'épisode de retrait (voir ListingLifecycleEvent) — voir le
+    // commentaire de la republication ci-dessus dans upsertImportedListing.
+    prisma.listingLifecycleEvent.createMany({
+      data: stale.map((l) => ({ listingId: l.id, type: "RETIRED" as const })),
+    }),
+  ]);
   return stale;
 }
 

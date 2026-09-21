@@ -121,6 +121,49 @@ export default function MethodologiePage() {
         </section>
 
         <section>
+          <h2 className="m-0 font-display text-xl text-ink">Marché proposé (annonces) : principes</h2>
+          <p className="mt-3">
+            Tout ce qui précède décrit le <b>marché vendu</b> (DVF) : des prix réellement payés. Le
+            site suit séparément le <b>marché proposé</b> : les annonces publiées sur{" "}
+            {SITE_NAME}, c&apos;est-à-dire des prix <i>demandés</i>, pas encore vendus. Les deux
+            univers ne sont jamais fusionnés en une seule statistique, et un écart entre les deux
+            n&apos;est jamais présenté comme une « marge de négociation » — ce site n&apos;observe
+            aucune négociation, seulement deux populations différentes. Une annonce publiée un mois
+            donné peut correspondre à une vente DVF enregistrée plusieurs mois plus tard (délai
+            compromis → acte → publication des données) : comparer les deux suppose une méthode de
+            rapprochement des périodes qui reste à définir précisément, une fois assez de données
+            réunies des deux côtés.
+          </p>
+          <p className="mt-3">
+            <b>Durée d&apos;exposition observée</b> : le site sait depuis quand une annonce est
+            visible (première apparition) et, le cas échéant, depuis quand elle ne l&apos;est plus.
+            Cette durée mesure uniquement le temps pendant lequel {SITE_NAME} a observé
+            l&apos;annonce — jamais un « délai de vente » ni une « durée de commercialisation », des
+            notions que le site ne peut pas connaître (une annonce retirée du site n&apos;est pas
+            forcément vendue). Une annonce peut aussi être retirée puis republiée plusieurs fois ; la
+            durée totale d&apos;exposition observée additionne alors chaque période de présence,
+            plutôt que de mesurer simplement du premier jour au dernier en ignorant les interruptions.
+          </p>
+          <p className="mt-3">
+            <b>Stock et population ne se confondent pas</b> : l&apos;instantané quotidien du nombre
+            d&apos;annonces actives sert à mesurer une évolution dans le temps (combien d&apos;annonces
+            aujourd&apos;hui, combien il y a un mois), pas à constituer l&apos;échantillon d&apos;une
+            statistique de prix. Une annonce active 30 jours ne doit jamais compter comme 30
+            observations dans un prix médian — pour analyser des prix sur une période, la population
+            est constituée d&apos;annonces distinctes, dédupliquées selon une règle explicite, jamais
+            d&apos;instantanés quotidiens cumulés.
+          </p>
+          <p className="mt-3">
+            <b>Diversité des sources</b> : {SITE_NAME} agrège les annonces de plusieurs agences et de
+            particuliers. Tant qu&apos;une seule agence est active sur le portail, toute statistique
+            future sur les annonces sera présentée avec une formulation prudente (« parmi les annonces
+            observées sur {SITE_NAME}… ») plutôt que comme une affirmation générale sur « le marché de
+            la Pévèle » — cette dernière formulation suppose une diversité de sources que le site
+            n&apos;a pas encore.
+          </p>
+        </section>
+
+        <section>
           <h2 className="m-0 font-display text-xl text-ink">Fraîcheur des données</h2>
           <p className="mt-3">
             Les DVF sont mises à jour par l&apos;administration fiscale avec plusieurs mois de décalage

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 
-  const { rows } = await runListingSnapshot();
-  await recordCronRun("listing-snapshot", `${rows} lignes`);
-  return NextResponse.json({ success: true, rows });
+  const { rows, sourceRows } = await runListingSnapshot();
+  await recordCronRun("listing-snapshot", `${rows} lignes, ${sourceRows} sources`);
+  return NextResponse.json({ success: true, rows, sourceRows });
 }

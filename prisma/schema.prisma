@@ -181,6 +181,7 @@ model Listing {
   importSource       String?
   photos             ListingPhoto[]
   priceHistory       PriceHistory[]
+  lifecycleEvents    ListingLifecycleEvent[]
   favorites          Favorite[]
   proposals          ListingProposal[]
   visitRequests      VisitRequest[]
@@ -232,7 +233,12 @@ model PriceHistory {
 /// ambigu : panne du cron ou stock réellement nul ?). Alimenté par le cron
 /// /api/cron/listing-snapshot (voir src/lib/listing-snapshot.ts). Fondation de
 /// l'historisation du stock (Sprint 3) — aucune exploitation publique tant
-/// qu'on n'a pas plusieurs mois de recul.
+/// qu'on n'a pas plusieurs mois de recul. Donnée BRUTE : jamais réécrite
+/// rétroactivement une fois le jour passé (seul le jour courant est
+/// ré-upserté par un second passage du cron le même jour). Une future
+/// métrique dédupliquée (multi-agences) vivra dans un modèle séparé,
+/// référençant la même clé (villageSlug, transaction, date) — jamais en
+/// remplaçant ces colonnes.
 model ListingSnapshot {
   id                String          @id @default(cuid())
   villageSlug       String
@@ -249,10 +255,73 @@ model ListingSnapshot {
   surfaceMoyenne    Int?
   /// Annonces dont `createdAt` tombe dans les 24h précédant le snapshot.
   nouvellesAnnonces Int
+  /// Nombre d'agences distinctes (User.type = AGENCE) ayant au moins une
+  /// annonce active dans cette commune/transaction ce jour-là — jamais
+  /// calculé sur un simple ownerId, qui peut aussi être un particulier.
+  /// Vaut 0 quand totalCount = 0. Champ interne : sans valeur d'affichage
+  /// tant qu'une seule agence est active sur le portail (voir /methodologie).
+  agencyCount       Int             @default(0)
   createdAt         DateTime        @default(now())
 
   @@unique([villageSlug, transaction, date])
   @@index([villageSlug])
+}
+
+enum SnapshotSourceType {
+  AGENCY
+  DIRECT
+}
+
+/// Répartition, par source, du stock compté dans ListingSnapshot le même
+/// jour — une ligne par commune × transaction × jour × source. AGENCY a un
+/// sourceId = User.id de l'agence ; DIRECT agrège TOUS les dépôts non-agence
+/// (particuliers, artisans) sous un sourceId constant ("direct") plutôt
+/// qu'un identifiant par personne, pour ne jamais exposer de volumétrie
+/// individuelle. `sourceFreshAt` reprend `User.xmlLastSuccessAt` de l'agence
+/// au moment du calcul (null pour DIRECT, pas de notion de synchro) — permet
+/// de savoir plus tard qu'un snapshot calculé un jour donné agrège des
+/// sources dont la fraîcheur réelle diffère, sans bloquer le calcul.
+/// Donnée BRUTE au même titre que ListingSnapshot : jamais réécrite
+/// rétroactivement.
+model ListingSnapshotSource {
+  id            String             @id @default(cuid())
+  villageSlug   String
+  transaction   TransactionType
+  date          DateTime           @db.Date
+  sourceType    SnapshotSourceType
+  sourceId      String
+  count         Int
+  sourceFreshAt DateTime?
+  createdAt     DateTime           @default(now())
+
+  @@unique([villageSlug, transaction, date, sourceType, sourceId])
+  @@index([villageSlug])
+}
+
+enum ListingLifecycleEventType {
+  RETIRED
+  REPUBLISHED
+}
+
+/// Historique événementiel du cycle de vie d'une annonce — complète
+/// `Listing.statut`/`retiredAt` (qui ne donnent que l'état COURANT) pour
+/// pouvoir reconstruire les épisodes successifs d'exposition (publication →
+/// retrait → republication → retrait...). Pas d'événement CREATED : la
+/// première apparition est déjà capturée de façon fiable par
+/// `Listing.createdAt` (jamais réécrit), un événement dupliquerait cette
+/// donnée sans rien apporter. RETIRED est émis par
+/// `retireStaleImportedListings`, REPUBLISHED par `upsertImportedListing`
+/// quand une annonce RETIREE réapparaît dans le flux. Jamais réécrit ni
+/// supprimé une fois créé — voir /methodologie, « durée d'exposition
+/// observée ».
+model ListingLifecycleEvent {
+  id        String                    @id @default(cuid())
+  listing   Listing                   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  type      ListingLifecycleEventType
+  createdAt DateTime                  @default(now())
+
+  @@index([listingId])
 }
 
 /// Horodatage du dernier passage réussi de chaque tâche cron — source unique

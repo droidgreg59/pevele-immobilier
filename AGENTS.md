@@ -62,6 +62,32 @@ numéro de carte professionnelle (carte T), et un administrateur valide à la ma
 `/admin/verifications` (`User.verifStatut`). La raison sociale officielle est récupérée en best-effort
 sur `recherche-entreprises.api.gouv.fr` mais ne fait pas foi.
 
+### Vocabulaire — marché vendu (DVF) vs marché proposé (annonces)
+
+Deux univers statistiques distincts, jamais fusionnés en une seule métrique ni présentés comme
+interchangeables (voir `/methodologie`) : **marché vendu** = DVF, prix réellement payés ; **marché
+proposé** = annonces du site, prix demandés. Un écart entre les deux n'est jamais nommé « marge de
+négociation ». Pour la durée pendant laquelle une annonce a été visible sur le site, utiliser
+uniquement « durée d'exposition observée » (ou « annonce observée pendant X jours ») — jamais « délai
+de vente », « durée de commercialisation » ni « vendu en X jours » : `RETIREE` (voir `ListingStatus`)
+ne signifie jamais `VENDUE`, cette dernière n'existe pas dans le modèle et ne doit jamais être déduite.
+
+Le cycle de vie d'une annonce (retraits/republications) est historisé événement par événement dans
+`ListingLifecycleEvent` (`RETIRED`/`REPUBLISHED`, pas de `CREATED` — `Listing.createdAt` fait déjà foi
+pour la première apparition, jamais réécrit) depuis le Sprint 3 — `Listing.statut`/`retiredAt` restent
+la source pour l'état courant (requêtes simples), `ListingLifecycleEvent` sert à reconstruire les
+épisodes successifs d'exposition (une annonce retirée puis republiée a une durée totale d'exposition
+observée = somme de ses épisodes, jamais premier jour → dernier jour en ignorant les interruptions).
+
+`ListingSnapshot` (stock quotidien par commune/transaction) et `ListingSnapshotSource` (répartition du
+même stock par source — `AGENCY`/`sourceId` = `User.id` de l'agence, `DIRECT`/`"direct"` agrégeant tous
+les dépôts non-agence sans jamais exposer un identifiant par personne) sont des données **brutes**,
+jamais réécrites rétroactivement une fois le jour passé. Un stock d'annonces actives cumulé sur
+plusieurs jours (ex. moyenne glissante) n'est **pas** directement une population pour une statistique de
+prix — une annonce active 30 jours ne doit jamais compter comme 30 observations ; la population d'une
+statistique de prix sur une période est faite d'annonces distinctes (dédupliquées), jamais d'instantanés
+quotidiens cumulés.
+
 ### Observabilité
 
 Trois briques distinctes, à ne pas confondre :
