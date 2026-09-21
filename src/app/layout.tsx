@@ -28,8 +28,21 @@ export const metadata: Metadata = {
   },
   description:
     "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 44 communes, agences et particuliers réunis.",
-  alternates: {
-    canonical: "/",
+  // Pas de `alternates.canonical` ici : Next.js hérite silencieusement le
+  // canonical du layout parent sur toute page qui ne redéfinit pas le sien —
+  // le mettre à "/" ici faisait donc canonicaliser vers l'accueil n'importe
+  // quelle page oubliée (constaté en prod sur /connexion et /mon-projet).
+  // Chaque page publique déclare maintenant son propre `alternates.canonical`
+  // (src/app/page.tsx pour l'accueil) ; une page qui l'oublie n'a désormais
+  // aucun canonical plutôt qu'un canonical erroné.
+  // Balises meta de vérification Search Console / Bing Webmaster Tools —
+  // no-op tant que ces variables sont absentes (voir .env.example et le
+  // rapport de fin de sprint pour la procédure d'obtention des jetons).
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+      : undefined,
   },
   openGraph: {
     type: "website",

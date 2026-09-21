@@ -17,7 +17,7 @@ const LISTING_SUMMARY_SELECT = {
 export type ListingSummary = {
   id: string;
   titre: string;
-  statut: "EN_VERIFICATION" | "PUBLIEE" | "REFUSEE";
+  statut: "EN_VERIFICATION" | "PUBLIEE" | "REFUSEE" | "RETIREE";
   statutRaison: string | null;
   transaction: "VENTE" | "LOCATION";
   typeBien: string;

@@ -12,14 +12,25 @@ import { getSession, isParticulierSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Louer en Pévèle — Annonces de location",
-  description:
-    "Toutes les annonces de maisons et appartements à louer dans les 44 communes de la Pévèle, agences et particuliers.",
-  alternates: {
-    canonical: "/louer",
-  },
-};
+const TITLE = "Louer en Pévèle — Annonces de location";
+const DESCRIPTION =
+  "Toutes les annonces de maisons et appartements à louer dans les 44 communes de la Pévèle, agences et particuliers.";
+
+// Voir le commentaire équivalent dans src/app/acheter/page.tsx : canonical
+// dynamique par page plutôt que statique vers la page 1.
+export async function generateMetadata({
+  searchParams,
+}: PageProps<"/louer">): Promise<Metadata> {
+  const params = await searchParams;
+  const { page } = parseBrowseSearchParams(params);
+  return {
+    title: TITLE,
+    description: DESCRIPTION,
+    alternates: {
+      canonical: page > 1 ? `/louer?page=${page}` : "/louer",
+    },
+  };
+}
 
 export default async function LouerPage({ searchParams }: PageProps<"/louer">) {
   const params = await searchParams;

@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: "Créer un compte",
   description:
     "Créez votre compte particulier ou agence sur Pévèle Immobilier.",
+  alternates: { canonical: "/inscription" },
+  robots: { index: false, follow: true },
 };
 
 const VALID_TYPES = ["PARTICULIER", "AGENCE", "ARTISAN"] as const;

@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Définir mon projet",
   description:
     "Décrivez votre projet immobilier en quelques clics pour retrouver les annonces qui vous correspondent.",
+  alternates: { canonical: "/mon-projet" },
 };
 
 export default async function MonProjetPage() {

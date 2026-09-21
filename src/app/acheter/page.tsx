@@ -12,14 +12,30 @@ import { getSession, isParticulierSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Acheter en Pévèle — Annonces et prix immobiliers",
-  description:
-    "Toutes les annonces de maisons, appartements et terrains à vendre dans les 44 communes de la Pévèle, agences et particuliers, avec le prix moyen au m² de chaque village.",
-  alternates: {
-    canonical: "/acheter",
-  },
-};
+const TITLE = "Acheter en Pévèle — Annonces et prix immobiliers";
+const DESCRIPTION =
+  "Toutes les annonces de maisons, appartements et terrains à vendre dans les 44 communes de la Pévèle, agences et particuliers, avec le prix moyen au m² de chaque village.";
+
+// generateMetadata (plutôt qu'un objet metadata statique) pour que le
+// canonical suive la page réelle : ?page=2, ?page=3… ont leur propre
+// canonical au lieu de canonicaliser vers la page 1 (ce qui les faisait
+// disparaître de l'index dès que le catalogue dépasse une page). Les autres
+// paramètres de recherche (villages, budget, type…) restent volontairement
+// hors du canonical — seules les combinaisons choisies au cas par cas sont
+// destinées à être indexées séparément, pas toutes les variantes de filtre.
+export async function generateMetadata({
+  searchParams,
+}: PageProps<"/acheter">): Promise<Metadata> {
+  const params = await searchParams;
+  const { page } = parseBrowseSearchParams(params);
+  return {
+    title: TITLE,
+    description: DESCRIPTION,
+    alternates: {
+      canonical: page > 1 ? `/acheter?page=${page}` : "/acheter",
+    },
+  };
+}
 
 export default async function AcheterPage({ searchParams }: PageProps<"/acheter">) {
   const params = await searchParams;

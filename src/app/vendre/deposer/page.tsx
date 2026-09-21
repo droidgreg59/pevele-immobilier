@@ -9,6 +9,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Déposer une annonce",
   description: "Publiez votre annonce immobilière en Pévèle.",
+  alternates: { canonical: "/vendre/deposer" },
+  // Déjà bloquée à l'exploration par robots.txt (formulaire authentifié, sans
+  // valeur d'indexation) — canonical explicite ajouté par cohérence.
+  robots: { index: false, follow: true },
 };
 
 export default async function DeposerPage() {

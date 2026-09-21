@@ -1,8 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { fetchAc3Feed, parseAc3Feed } from "./ac3-import";
-import { upsertImportedListing, pruneStaleImportedListings } from "./listings";
-import { deleteListingUploadDir } from "./photo-upload";
+import { upsertImportedListing, retireStaleImportedListings } from "./listings";
 import { recordXmlSyncResult } from "./agencies";
 
 /**
@@ -32,16 +31,16 @@ export async function syncAgencyFeed(
     }
 
     // Biens vendus/loués ou retirés côté CRM depuis la dernière synchro : plus
-    // dans le flux, donc à retirer du site (cf. pruneStaleImportedListings).
-    const removedListings = await pruneStaleImportedListings(
+    // dans le flux, donc passés en RETIREE (cf. retireStaleImportedListings —
+    // soft-delete, plus de suppression définitive ni de purge de photos ici).
+    const retiredListings = await retireStaleImportedListings(
       agencyId,
       "AC3",
       imported.map((bien) => bien.externalRef)
     );
-    await Promise.all(removedListings.map((l) => deleteListingUploadDir(l.id)));
 
     await recordXmlSyncResult(agencyId, { count: imported.length });
-    return { created, updated, removed: removedListings.length, skipped: skipped.length };
+    return { created, updated, removed: retiredListings.length, skipped: skipped.length };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Échec de la synchronisation.";
     await recordXmlSyncResult(agencyId, { error: message });

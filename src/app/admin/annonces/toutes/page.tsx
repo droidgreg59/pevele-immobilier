@@ -20,12 +20,14 @@ const STATUT_LABEL: Record<string, string> = {
   EN_VERIFICATION: "En attente",
   PUBLIEE: "Publiée",
   REFUSEE: "Refusée",
+  RETIREE: "Retirée",
 };
 
 const STATUT_STYLE: Record<string, { bg: string; color: string }> = {
   EN_VERIFICATION: { bg: "#FBF3DC", color: "var(--pvl-gold)" },
   PUBLIEE: { bg: "#EAF3E8", color: "var(--pvl-green)" },
   REFUSEE: { bg: "var(--pvl-surface)", color: "var(--pvl-muted)" },
+  RETIREE: { bg: "var(--pvl-surface)", color: "var(--pvl-muted)" },
 };
 
 export default async function AdminToutesAnnoncesPage({
@@ -53,6 +55,7 @@ export default async function AdminToutesAnnoncesPage({
           { label: "En attente", value: "EN_VERIFICATION" },
           { label: "Publiées", value: "PUBLIEE" },
           { label: "Refusées", value: "REFUSEE" },
+          { label: "Retirées", value: "RETIREE" },
         ].map((f) => (
           <Link
             key={f.label}

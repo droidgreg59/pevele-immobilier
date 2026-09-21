@@ -178,6 +178,16 @@ model Listing {
   visitRequests      VisitRequest[]
   openHouse          OpenHouse?
   createdAt          DateTime          @default(now())
+  /// Date de passage à RETIREE (soft-delete) — null tant que l'annonce est active.
+  retiredAt          DateTime?
+  /// Dernière confirmation de présence dans le flux agence, mise à jour à
+  /// chaque synchro XML où la référence est encore vue (création ou mise à
+  /// jour). Reste tel quel pour une annonce déposée manuellement (pas de
+  /// flux à reconfirmer) — pas un signal fiable dans ce cas, uniquement pour
+  /// les annonces importées. `createdAt` sert déjà de date de première
+  /// apparition fiable (jamais réécrit par upsertImportedListing) : pas de
+  /// champ `firstSeenAt` séparé.
+  lastSeenAt         DateTime?
 
   @@unique([ownerId, externalRef])
   @@index([ownerId])
@@ -205,6 +215,46 @@ model PriceHistory {
   changedAt DateTime @default(now())
 
   @@index([listingId])
+}
+
+/// Instantané quotidien du marché des annonces actives, par commune et par
+/// transaction — vente et location ne sont jamais mélangées (échelles de prix
+/// incompatibles). Une ligne par commune × transaction × jour, y compris à 0
+/// annonce, pour garder une série temporelle continue (un jour manquant serait
+/// ambigu : panne du cron ou stock réellement nul ?). Alimenté par le cron
+/// /api/cron/listing-snapshot (voir src/lib/listing-snapshot.ts). Fondation de
+/// l'historisation du stock (Sprint 3) — aucune exploitation publique tant
+/// qu'on n'a pas plusieurs mois de recul.
+model ListingSnapshot {
+  id                String          @id @default(cuid())
+  villageSlug       String
+  transaction       TransactionType
+  date              DateTime        @db.Date
+  totalCount        Int
+  maisonCount       Int
+  appartementCount  Int
+  terrainCount      Int
+  /// Moyenne/médiane/prix au m²/surface : null quand totalCount = 0 (rien à moyenner).
+  avgPrix           Int?
+  medianPrix        Int?
+  avgPrixM2         Int?
+  surfaceMoyenne    Int?
+  /// Annonces dont `createdAt` tombe dans les 24h précédant le snapshot.
+  nouvellesAnnonces Int
+  createdAt         DateTime        @default(now())
+
+  @@unique([villageSlug, transaction, date])
+  @@index([villageSlug])
+}
+
+/// Horodatage du dernier passage réussi de chaque tâche cron — source unique
+/// et fiable pour les mentions de fraîcheur affichées publiquement (ex.
+/// « DVF actualisé le... »), plutôt que de deviner à partir d'une donnée
+/// métier annexe. Une ligne par job, réécrite à chaque exécution réussie.
+model CronRun {
+  job   String   @id
+  ranAt DateTime @default(now())
+  meta  String?
 }
 
 model Favorite {
@@ -462,6 +512,13 @@ enum ListingStatus {
   EN_VERIFICATION
   PUBLIEE
   REFUSEE
+  /// Disparue du flux agence (vendue ou retirée côté CRM — on ne sait pas
+  /// laquelle des deux sans information explicite, donc on ne le déduit
+  /// jamais) — anciennement supprimée définitivement, désormais conservée en
+  /// soft-delete pour ne pas perdre PriceHistory ni les statistiques
+  /// d'historisation. Exclue de toutes les vues publiques et du sitemap
+  /// (tous les filtres existants ciblent explicitement `PUBLIEE`).
+  RETIREE
 }
 
 enum TypeBien {

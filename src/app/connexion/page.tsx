@@ -5,6 +5,8 @@ import LoginForm from "@/components/LoginForm";
 export const metadata: Metadata = {
   title: "Se connecter",
   description: "Connectez-vous à votre compte Pévèle Immobilier.",
+  alternates: { canonical: "/connexion" },
+  robots: { index: false, follow: true },
 };
 
 export default async function ConnexionPage({

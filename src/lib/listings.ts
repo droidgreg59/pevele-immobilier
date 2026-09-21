@@ -369,6 +369,7 @@ export async function upsertImportedListing(
         statut: "PUBLIEE",
         externalRef,
         importSource,
+        lastSeenAt: new Date(),
         owner: { connect: { id: ownerId } },
         priceHistory: { create: [{ prix: fields.prix }] },
       },
@@ -379,7 +380,17 @@ export async function upsertImportedListing(
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.listing.update({ where: { id: existing.id }, data: fieldsData });
+    await tx.listing.update({
+      where: { id: existing.id },
+      data: {
+        ...fieldsData,
+        lastSeenAt: new Date(),
+        // Une annonce RETIREE qui réapparaît dans le flux (republiée côté
+        // agence) redevient active automatiquement — jamais l'inverse : on ne
+        // déduit jamais un retrait ici, seulement dans retireStaleImportedListings.
+        ...(existing.statut === "RETIREE" ? { statut: "PUBLIEE", retiredAt: null } : {}),
+      },
+    });
     if (fields.prix !== existing.prix) {
       await tx.priceHistory.create({ data: { listingId: existing.id, prix: fields.prix } });
     }
@@ -397,32 +408,43 @@ export async function upsertImportedListing(
 }
 
 /**
- * Supprime les annonces importées (`importSource`) d'une agence dont la
- * référence n'apparaît plus dans le flux courant (bien vendu/loué ou retiré
- * côté CRM) — sans quoi une synchro n'ajoute/actualise que les biens présents
- * et laisse en ligne indéfiniment ceux qui ont disparu du flux. Renvoie les
- * annonces supprimées (pour que l'appelant nettoie aussi leurs photos R2,
- * comme pour deleteListing/adminDeleteListing).
+ * Passe en RETIREE (soft-delete) les annonces importées (`importSource`)
+ * d'une agence dont la référence n'apparaît plus dans le flux courant (bien
+ * vendu/loué ou retiré côté CRM — on ne sait pas laquelle des deux sans
+ * information explicite, donc le statut reste générique) — sans quoi une
+ * synchro n'ajoute/actualise que les biens présents et laisse en ligne
+ * indéfiniment ceux qui ont disparu du flux. N'efface plus rien : jusqu'au
+ * 2026-09-21 cette fonction supprimait la ligne (et en cascade son
+ * PriceHistory) via `deleteMany`, détruisant définitivement l'historique dont
+ * dépendent les statistiques de durée d'exposition / taux de vente. Les
+ * photos R2 ne sont pas purgées ici (elles restent tant qu'une purge
+ * différée n'est pas explicitement décidée). Si la référence réapparaît plus
+ * tard dans le flux, `upsertImportedListing` la republie automatiquement.
+ * Renvoie les annonces retirées (compteur de la synchro).
  */
-export async function pruneStaleImportedListings(
+export async function retireStaleImportedListings(
   ownerId: string,
   importSource: string,
   currentExternalRefs: string[]
 ) {
   // Garde-fou : un flux vide (panne, réponse tronquée...) ne doit jamais se
-  // traduire par la suppression de toutes les annonces déjà importées.
+  // traduire par le retrait de toutes les annonces déjà importées.
   if (currentExternalRefs.length === 0) return [];
 
   const stale = await prisma.listing.findMany({
     where: {
       ownerId,
       importSource,
+      statut: "PUBLIEE",
       externalRef: { notIn: currentExternalRefs },
     },
     select: { id: true },
   });
   if (stale.length === 0) return [];
-  await prisma.listing.deleteMany({ where: { id: { in: stale.map((l) => l.id) } } });
+  await prisma.listing.updateMany({
+    where: { id: { in: stale.map((l) => l.id) } },
+    data: { statut: "RETIREE", retiredAt: new Date() },
+  });
   return stale;
 }
 

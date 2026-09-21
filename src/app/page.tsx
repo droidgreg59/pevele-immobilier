@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Home as HomeIcon, TrendingUp, LayoutGrid } from "lucide-react";
 import { villages } from "@/data/villages";
@@ -5,6 +6,10 @@ import { getPublicListings } from "@/lib/listings";
 import { formatPrix } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const FEATURED_VILLAGE_SLUGS = [
   "cysoing",

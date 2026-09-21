@@ -40,6 +40,13 @@ export default async function CompteAgenceAnnoncesPage() {
                   Refusée{listing.statutRaison ? ` — ${listing.statutRaison}` : ""}
                 </p>
               ) : null}
+              {listing.statut === "RETIREE" ? (
+                <p className="m-0 text-[12.5px] text-muted">
+                  Retirée du site
+                  {listing.retiredAt ? ` le ${listing.retiredAt.toLocaleDateString("fr-FR")}` : ""} —
+                  disparue du flux de synchronisation.
+                </p>
+              ) : null}
               <Link
                 href={`/compte/annonces/${listing.id}`}
                 className="self-start text-[12.5px] font-semibold text-blue"
