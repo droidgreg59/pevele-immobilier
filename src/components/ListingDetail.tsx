@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import {
   Heart,
   Thermometer,
@@ -492,6 +493,18 @@ export default function ListingDetail({
   viewerNom?: string;
 }) {
   const [visitSheetOpen, setVisitSheetOpen] = useState(false);
+  // La barre d'action mobile est en `position: fixed` : elle doit être
+  // portée hors du conteneur `animate-fade-up` (transform en keyframe, qui
+  // deviendrait son containing block) pour rester ancrée au viewport plutôt
+  // qu'au bas du contenu. Le portail vers document.body ne peut s'exécuter
+  // qu'après le montage côté client (`document` n'existe pas au SSR) —
+  // useSyncExternalStore plutôt qu'un useState+useEffect pour éviter un
+  // second rendu synchrone déclenché depuis un effet.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
     markListingViewed(listing.id);
@@ -533,7 +546,7 @@ export default function ListingDetail({
         : null;
 
   return (
-    <div className="animate-fade-up max-w-[1200px] px-9 pb-28 pt-8 md:pb-8">
+    <div className="animate-fade-up mx-auto max-w-[1200px] px-9 pb-28 pt-8 md:pb-8">
       <div className="flex flex-wrap items-center gap-4">
         <Link href={listHref} className="text-[13px] font-semibold text-blue">
           ← {listing.transaction === "VENTE" ? "Toutes les annonces" : "Toutes les locations"}
@@ -990,44 +1003,47 @@ export default function ListingDetail({
         </section>
       ) : null}
 
-      {!isOwner && isParticulier ? (
-        <div
-          className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-white/97 px-4 py-3 backdrop-blur md:hidden"
-          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-        >
-          <FavoriteButton
-            listingId={listing.id}
-            initialFavorited={isFavorited}
-            size={48}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-white text-[20px] leading-none text-blue"
-          />
-          {listing.visitesIndividuelles ? (
-            isLoggedIn ? (
-              <button
-                type="button"
-                onClick={() => setVisitSheetOpen(true)}
-                className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
-              >
-                Demander une visite
-              </button>
-            ) : (
-              <Link
-                href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
-                className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
-              >
-                Se connecter pour visiter
-              </Link>
-            )
-          ) : listing.visitesGroupees ? (
-            <a
-              href="#portes-ouvertes"
-              className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+      {!isOwner && isParticulier && mounted
+        ? createPortal(
+            <div
+              className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-white/97 px-4 py-3 backdrop-blur md:hidden"
+              style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
             >
-              Voir les portes ouvertes
-            </a>
-          ) : null}
-        </div>
-      ) : null}
+              <FavoriteButton
+                listingId={listing.id}
+                initialFavorited={isFavorited}
+                size={48}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-white text-[20px] leading-none text-blue"
+              />
+              {listing.visitesIndividuelles ? (
+                isLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => setVisitSheetOpen(true)}
+                    className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+                  >
+                    Demander une visite
+                  </button>
+                ) : (
+                  <Link
+                    href={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                    className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+                  >
+                    Se connecter pour visiter
+                  </Link>
+                )
+              ) : listing.visitesGroupees ? (
+                <a
+                  href="#portes-ouvertes"
+                  className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
+                >
+                  Voir les portes ouvertes
+                </a>
+              ) : null}
+            </div>,
+            document.body
+          )
+        : null}
 
       <BottomSheet
         open={visitSheetOpen}

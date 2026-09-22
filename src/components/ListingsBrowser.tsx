@@ -249,7 +249,7 @@ export default function ListingsBrowser({
     ) : null;
 
   return (
-    <div className="animate-fade-up max-w-[1400px] px-9 py-8">
+    <div className="animate-fade-up mx-auto max-w-[1400px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
         <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-blue">
           {pieceBadge}

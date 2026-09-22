@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 
@@ -72,59 +73,67 @@ export default function PhotoGallery({
         </div>
       ) : null}
 
-      {lightboxOpen && current ? (
-        <div
-          className="animate-fade-up fixed inset-0 z-[70] flex items-center justify-center bg-ink/95 px-4"
-          onClick={() => setLightboxOpen(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setLightboxOpen(false)}
-            aria-label="Fermer"
-            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-          >
-            <X className="h-5 w-5" strokeWidth={1.75} />
-          </button>
-
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={current.url}
-            alt={alt}
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[85vh] max-w-[92vw] object-contain"
-          />
-
-          {photos.length > 1 ? (
-            <>
+      {lightboxOpen && current
+        ? createPortal(
+            // Portail vers document.body : un ancestor avec la classe
+            // animate-fade-up (transform en keyframe) devient un containing
+            // block pour tout descendant `fixed`, ce qui décale cette
+            // lightbox hors de l'écran au lieu de la centrer sur le
+            // viewport. Le portail sort du sous-arbre transformé.
+            <div
+              className="animate-fade-up fixed inset-0 z-[70] flex items-center justify-center bg-ink/95 px-4"
+              onClick={() => setLightboxOpen(false)}
+            >
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prev();
-                }}
-                aria-label="Photo précédente"
-                className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+                onClick={() => setLightboxOpen(false)}
+                aria-label="Fermer"
+                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
               >
-                <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />
+                <X className="h-5 w-5" strokeWidth={1.75} />
               </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  next();
-                }}
-                aria-label="Photo suivante"
-                className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-              >
-                <ChevronRight className="h-5 w-5" strokeWidth={1.75} />
-              </button>
-              <span className="absolute bottom-6 rounded-full bg-white/10 px-3 py-1.5 text-[12.5px] font-semibold text-white">
-                {active + 1} / {photos.length}
-              </span>
-            </>
-          ) : null}
-        </div>
-      ) : null}
+
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={current.url}
+                alt={alt}
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[85vh] max-w-[92vw] object-contain"
+              />
+
+              {photos.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prev();
+                    }}
+                    aria-label="Photo précédente"
+                    className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+                  >
+                    <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      next();
+                    }}
+                    aria-label="Photo suivante"
+                    className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+                  >
+                    <ChevronRight className="h-5 w-5" strokeWidth={1.75} />
+                  </button>
+                  <span className="absolute bottom-6 rounded-full bg-white/10 px-3 py-1.5 text-[12.5px] font-semibold text-white">
+                    {active + 1} / {photos.length}
+                  </span>
+                </>
+              ) : null}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

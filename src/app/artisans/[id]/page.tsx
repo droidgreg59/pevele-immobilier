@@ -44,7 +44,7 @@ export default async function ArtisanPage({
     .filter((v): v is NonNullable<typeof v> => Boolean(v));
 
   return (
-    <div className="animate-fade-up max-w-[1000px] px-9 py-8">
+    <div className="animate-fade-up mx-auto max-w-[1000px] px-9 py-8">
       <JsonLd
         data={localBusinessJsonLd({
           id: artisan.id,

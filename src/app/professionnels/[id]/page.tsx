@@ -124,7 +124,7 @@ export default async function AgencyPage({
   const adresseLine = [agency.codePostal, agency.ville].filter(Boolean).join(" ");
 
   return (
-    <div className="animate-fade-up max-w-[1200px] px-9 py-8">
+    <div className="animate-fade-up mx-auto max-w-[1200px] px-9 py-8">
       <JsonLd
         data={localBusinessJsonLd({
           id: agency.id,

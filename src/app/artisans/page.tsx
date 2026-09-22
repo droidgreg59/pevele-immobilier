@@ -22,7 +22,7 @@ export default async function ArtisansPage({
   const artisans = await getArtisans(categorie || undefined);
 
   return (
-    <div className="animate-fade-up max-w-[1100px] px-9 py-8">
+    <div className="animate-fade-up mx-auto max-w-[1100px] px-9 py-8">
       <div className="mb-2 flex flex-wrap items-baseline gap-4.5">
         <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-gold">
           Artisans

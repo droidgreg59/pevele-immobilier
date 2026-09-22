@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 /**
@@ -51,7 +52,11 @@ export default function BottomSheet({
     dragStartY.current = null;
   }
 
-  return (
+  // Portail vers document.body : les pages qui l'utilisent sont enveloppées
+  // dans un conteneur animate-fade-up (transform en keyframe), qui devient
+  // un containing block pour tout descendant `fixed` et décalerait la
+  // feuille hors de l'écran au lieu de l'ancrer en bas du viewport.
+  return createPortal(
     <div className="fixed inset-0 z-[60]">
       <div
         className="absolute inset-0 bg-ink/40"
@@ -86,6 +91,7 @@ export default function BottomSheet({
         </div>
         <div className="overflow-y-auto px-5 pb-8">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

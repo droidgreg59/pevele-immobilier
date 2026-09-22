@@ -71,7 +71,7 @@ export default async function VillagePage({
   const voisines = nearestVillages(village.slug, 4);
 
   return (
-    <div className="animate-fade-up max-w-[1200px] px-9 py-8">
+    <div className="animate-fade-up mx-auto max-w-[1200px] px-9 py-8">
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Accueil", url: "/" },

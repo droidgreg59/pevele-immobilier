@@ -45,7 +45,7 @@ export default async function CompteFavorisPage() {
   });
 
   return (
-    <div className="animate-fade-up max-w-[1000px] px-9 py-8">
+    <div className="animate-fade-up mx-auto max-w-[1000px] px-9 py-8">
       <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
         Mon compte
       </span>
