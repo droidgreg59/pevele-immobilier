@@ -15,6 +15,21 @@ export async function syncAgencyFeed(
 ): Promise<
   { created: number; updated: number; removed: number; skipped: number } | { error: string }
 > {
+  // Une agence non encore validée par un administrateur ne doit publier
+  // aucune annonce, même via son flux automatisé — upsertImportedListing()
+  // publie directement (statut PUBLIEE) sur l'hypothèse que l'agence est
+  // déjà vérifiée ; ce garde-fou la rend vraie au lieu de la supposer.
+  const agency = await prisma.user.findUnique({
+    where: { id: agencyId },
+    select: { verifStatut: true },
+  });
+  if (agency?.verifStatut !== "VERIFIEE") {
+    return {
+      error:
+        "Cette agence doit d'abord être validée par un administrateur avant toute synchronisation automatisée.",
+    };
+  }
+
   try {
     const xml = await fetchAc3Feed(xmlImportUrl);
     const { imported, skipped } = parseAc3Feed(xml);

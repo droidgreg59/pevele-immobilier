@@ -92,9 +92,14 @@ export default async function AgencyPage({
   const agency = await getAgencyById(id);
   if (!agency) notFound();
 
-  const [listings, session, reviews, reviewStats, serviceAreaSlugs] = await Promise.all([
+  const session = await getSession();
+  // Une agence non encore validée par un administrateur ne doit pas avoir de
+  // fiche publique consultable — sauf par elle-même, qui doit pouvoir
+  // prévisualiser sa page pendant que la vérification est en cours.
+  if (agency.verifStatut !== "VERIFIEE" && session?.userId !== agency.id) notFound();
+
+  const [listings, reviews, reviewStats, serviceAreaSlugs] = await Promise.all([
     getPublicListingsByOwner(agency.id),
-    getSession(),
     getAgencyReviews(agency.id),
     getAgencyReviewStats(agency.id),
     getAgencyServiceAreas(agency.id),

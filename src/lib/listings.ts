@@ -19,11 +19,25 @@ export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
 
 export type ListingWithOwner = Prisma.ListingGetPayload<typeof listingWithOwner>;
 
+/**
+ * Une agence non encore validée par un administrateur (voir
+ * /admin/verifications, `User.verifStatut`) ne doit apparaître nulle part
+ * publiquement tant que la vérification n'a pas eu lieu — ni annuaire, ni
+ * fiche annonce, ni flux de syndication. Les particuliers n'ont pas ce
+ * concept de vérification : seul `statut: "PUBLIEE"` s'applique pour eux.
+ * À combiner avec `statut: "PUBLIEE"` dans toute requête qui montre des
+ * annonces à un visiteur — jamais dans les vues admin/back-office, qui
+ * doivent voir l'ensemble pour pouvoir modérer.
+ */
+export const PUBLIC_OWNER_WHERE: Prisma.ListingWhereInput["owner"] = {
+  OR: [{ type: { not: "AGENCE" } }, { verifStatut: "VERIFIEE" }],
+};
+
 export async function getPublicListings(
   transaction: TransactionType
 ): Promise<ListingWithOwner[]> {
   return prisma.listing.findMany({
-    where: { transaction, statut: "PUBLIEE" },
+    where: { transaction, statut: "PUBLIEE", owner: PUBLIC_OWNER_WHERE },
     orderBy: { createdAt: "desc" },
     ...listingWithOwner,
   });
@@ -33,7 +47,7 @@ export async function getPublicListingsByVillage(
   villageSlug: string
 ): Promise<ListingWithOwner[]> {
   return prisma.listing.findMany({
-    where: { villageSlug, statut: "PUBLIEE" },
+    where: { villageSlug, statut: "PUBLIEE", owner: PUBLIC_OWNER_WHERE },
     orderBy: { createdAt: "desc" },
     ...listingWithOwner,
   });
@@ -46,7 +60,7 @@ export async function getListingsForIntent(
   transaction: TransactionType
 ): Promise<ListingWithOwner[]> {
   return prisma.listing.findMany({
-    where: { villageSlug, typeBien, transaction, statut: "PUBLIEE" },
+    where: { villageSlug, typeBien, transaction, statut: "PUBLIEE", owner: PUBLIC_OWNER_WHERE },
     orderBy: { createdAt: "desc" },
     ...listingWithOwner,
   });
@@ -75,6 +89,7 @@ export async function getSimilarListings(
     where: {
       id: { not: listing.id },
       statut: "PUBLIEE",
+      owner: PUBLIC_OWNER_WHERE,
       transaction: listing.transaction,
       typeBien: listing.typeBien,
       villageSlug: { in: [listing.villageSlug, ...nearbySlugs] },
@@ -113,7 +128,7 @@ export async function getPublicListingsByOwner(
   ownerId: string
 ): Promise<ListingWithOwner[]> {
   return prisma.listing.findMany({
-    where: { ownerId, statut: "PUBLIEE" },
+    where: { ownerId, statut: "PUBLIEE", owner: PUBLIC_OWNER_WHERE },
     orderBy: { createdAt: "desc" },
     ...listingWithOwner,
   });

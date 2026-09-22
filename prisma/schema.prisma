@@ -25,6 +25,20 @@ model User {
   siteWeb             String?
   googleAvisUrl       String?
   logoUrl             String?
+  /// Mode de diffusion déclaré à l'inscription (agence uniquement) — MANUEL :
+  /// saisie à la main depuis /vendre/deposer, comme un particulier.
+  /// AUTOMATISE : l'agence a indiqué vouloir connecter son logiciel métier
+  /// (voir logicielMetier). Ce n'est jamais un simple champ en libre-service :
+  /// c'est ensuite Pévèle Immobilier qui contacte l'agence pour effectuer le
+  /// branchement, et configure `xmlImportUrl` une fois cela fait — voir
+  /// syncAgencyFeed() dans ac3-sync.ts, qui refuse toute synchro tant que
+  /// l'agence n'est pas VERIFIEE. Null pour les comptes non-agence.
+  modeAnnonces        AgencyListingMode?
+  /// Nom du logiciel métier de diffusion (AC3, Immofacile, Netty...) déclaré
+  /// à l'inscription si modeAnnonces = AUTOMATISE — texte libre, affiché en
+  /// interne sur /admin/verifications pour que l'admin sache quoi demander
+  /// en contactant l'agence.
+  logicielMetier      String?
   xmlImportUrl        String?
   /// Horodatage de la dernière TENTATIVE de synchro (succès ou échec) —
   /// écrasé à chaque passage, y compris en échec (voir recordXmlSyncResult).
@@ -105,6 +119,11 @@ enum AgencyVerificationStatus {
   EN_ATTENTE
   VERIFIEE
   REFUSEE
+}
+
+enum AgencyListingMode {
+  MANUEL
+  AUTOMATISE
 }
 
 model Listing {

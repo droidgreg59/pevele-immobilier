@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { slugify } from "./slugify";
 import { getVillageBySlug } from "@/data/villages";
+import { PUBLIC_OWNER_WHERE } from "./listings";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 
 /** Champs d'une recherche sauvegardée qui définissent les critères de filtre. */
@@ -36,6 +37,7 @@ export function savedSearchListingWhere(
   return {
     transaction: s.transaction,
     statut: "PUBLIEE",
+    owner: PUBLIC_OWNER_WHERE,
     ...(since ? { createdAt: { gt: since } } : {}),
     ...(villageSlugList.length > 0
       ? { villageSlug: { in: villageSlugList } }

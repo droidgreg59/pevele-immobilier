@@ -83,11 +83,19 @@ describe("browseListingWhere", () => {
   });
 
   it("filtre par type de propriétaire", () => {
-    expect(browseListingWhere("VENTE", { filtre: "agence" }).owner).toEqual({ type: "AGENCE" });
+    expect(browseListingWhere("VENTE", { filtre: "agence" }).owner).toEqual({
+      type: "AGENCE",
+      verifStatut: "VERIFIEE",
+    });
     expect(browseListingWhere("VENTE", { filtre: "particulier" }).owner).toEqual({
       type: "PARTICULIER",
     });
-    expect(browseListingWhere("VENTE", { filtre: "tout" }).owner).toBeUndefined();
+  });
+
+  it("exclut toujours les annonces d'agences non vérifiées, même sans filtre de type de propriétaire", () => {
+    expect(browseListingWhere("VENTE", { filtre: "tout" }).owner).toEqual({
+      OR: [{ type: { not: "AGENCE" } }, { verifStatut: "VERIFIEE" }],
+    });
   });
 });
 

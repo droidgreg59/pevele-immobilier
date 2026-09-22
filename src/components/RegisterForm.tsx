@@ -20,12 +20,14 @@ export default function RegisterForm({
     initialState
   );
   const [type, setType] = useState<AccountType>(initialType ?? "PARTICULIER");
+  const [modeAnnonces, setModeAnnonces] = useState<"MANUEL" | "AUTOMATISE">("MANUEL");
   const isPro = type === "AGENCE" || type === "ARTISAN";
 
   return (
     <form action={formAction} className="flex max-w-[520px] flex-col gap-4">
       <input type="hidden" name="type" value={type} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
+      {type === "AGENCE" ? <input type="hidden" name="modeAnnonces" value={modeAnnonces} /> : null}
 
       <div className="grid grid-cols-3 gap-3">
         <button
@@ -97,6 +99,64 @@ export default function RegisterForm({
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
+      ) : null}
+
+      {type === "AGENCE" ? (
+        <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-surface p-4">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Comment diffusez-vous vos annonces ?
+          </span>
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setModeAnnonces("MANUEL")}
+              className="rounded-xl px-3 py-3 text-left text-[13.5px] font-semibold text-ink transition-colors"
+              style={{
+                background: modeAnnonces === "MANUEL" ? "var(--pvl-blue-soft)" : "#fff",
+                border: `1px solid ${modeAnnonces === "MANUEL" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
+              }}
+            >
+              Saisie manuelle
+              <span className="mt-0.5 block text-[12px] font-normal text-muted">
+                Vous déposez vos annonces vous-même sur le site.
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setModeAnnonces("AUTOMATISE")}
+              className="rounded-xl px-3 py-3 text-left text-[13.5px] font-semibold text-ink transition-colors"
+              style={{
+                background: modeAnnonces === "AUTOMATISE" ? "var(--pvl-blue-soft)" : "#fff",
+                border: `1px solid ${modeAnnonces === "AUTOMATISE" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
+              }}
+            >
+              Diffusion automatisée
+              <span className="mt-0.5 block text-[12px] font-normal text-muted">
+                Vos annonces sont synchronisées depuis votre logiciel métier.
+              </span>
+            </button>
+          </div>
+
+          {modeAnnonces === "AUTOMATISE" ? (
+            <>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                  Quel logiciel métier utilisez-vous ?
+                </span>
+                <input
+                  name="logicielMetier"
+                  required
+                  placeholder="ex. AC3, Immofacile, Netty…"
+                  className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+                />
+              </label>
+              <p className="m-0 text-[12.5px] leading-[1.5] text-muted">
+                Nous vous contacterons pour effectuer le branchement automatisé de vos
+                annonces une fois votre compte validé.
+              </p>
+            </>
+          ) : null}
+        </div>
       ) : null}
 
       <label className="flex flex-col gap-1.5">

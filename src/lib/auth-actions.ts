@@ -59,6 +59,14 @@ export async function registerAction(
     .trim()
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const rawModeAnnonces = String(formData.get("modeAnnonces") ?? "");
+  const modeAnnonces: "MANUEL" | "AUTOMATISE" | null =
+    type === "AGENCE" && rawModeAnnonces === "AUTOMATISE"
+      ? "AUTOMATISE"
+      : type === "AGENCE"
+        ? "MANUEL"
+        : null;
+  const logicielMetier = String(formData.get("logicielMetier") ?? "").trim();
 
   if (!prenom) return { error: "Merci d'indiquer votre prénom." };
   if (!nom) return { error: "Merci d'indiquer votre nom." };
@@ -74,6 +82,9 @@ export async function registerAction(
   }
   if (type === "ARTISAN" && !entreprise) {
     return { error: "Merci d'indiquer le nom de votre entreprise." };
+  }
+  if (modeAnnonces === "AUTOMATISE" && !logicielMetier) {
+    return { error: "Merci d'indiquer le logiciel métier utilisé pour vos annonces." };
   }
 
   if (!(await verifyTurnstile(formData, "register"))) {
@@ -93,6 +104,8 @@ export async function registerAction(
       telephone,
       entreprise: type === "PARTICULIER" ? null : entreprise,
       type,
+      modeAnnonces,
+      logicielMetier: modeAnnonces === "AUTOMATISE" ? logicielMetier : null,
     },
   });
 

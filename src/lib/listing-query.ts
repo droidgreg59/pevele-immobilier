@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import type { TransactionType, TypeBien } from "@prisma/client";
 import { prisma } from "./prisma";
 import { slugify } from "./slugify";
-import { listingWithOwner, type ListingWithOwner } from "./listings";
+import { listingWithOwner, PUBLIC_OWNER_WHERE, type ListingWithOwner } from "./listings";
 import type {
   ListingFilterCriteria,
   ListingSort,
@@ -90,10 +90,10 @@ export function browseListingWhere(
     transaction,
     statut: "PUBLIEE",
     ...(c.filtre === "agence"
-      ? { owner: { type: "AGENCE" } }
+      ? { owner: { type: "AGENCE", verifStatut: "VERIFIEE" } }
       : c.filtre === "particulier"
         ? { owner: { type: "PARTICULIER" } }
-        : {}),
+        : { owner: PUBLIC_OWNER_WHERE }),
     ...(c.typeBien && c.typeBien !== "TOUS" ? { typeBien: c.typeBien } : {}),
     ...(c.typeMaison && c.typeMaison !== "TOUS" ? { typeMaison: c.typeMaison } : {}),
     ...(villageSlugs.length > 0
@@ -191,7 +191,11 @@ export type BrowseFacets = {
  * l'ancien filtrage en mémoire.
  */
 export async function getBrowseFacets(transaction: TransactionType): Promise<BrowseFacets> {
-  const base: Prisma.ListingWhereInput = { transaction, statut: "PUBLIEE" };
+  const base: Prisma.ListingWhereInput = {
+    transaction,
+    statut: "PUBLIEE",
+    owner: PUBLIC_OWNER_WHERE,
+  };
 
   const [byType, byMaison, total, agence, particulier] = await Promise.all([
     prisma.listing.groupBy({ by: ["typeBien"], where: base, _count: { _all: true } }),
@@ -201,7 +205,7 @@ export async function getBrowseFacets(transaction: TransactionType): Promise<Bro
       _count: { _all: true },
     }),
     prisma.listing.count({ where: base }),
-    prisma.listing.count({ where: { ...base, owner: { type: "AGENCE" } } }),
+    prisma.listing.count({ where: { ...base, owner: { type: "AGENCE", verifStatut: "VERIFIEE" } } }),
     prisma.listing.count({ where: { ...base, owner: { type: "PARTICULIER" } } }),
   ]);
 

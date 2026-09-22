@@ -13,9 +13,15 @@ export type AgencySummary = {
   verified: boolean;
 };
 
+/**
+ * N'affiche que les agences validées par un administrateur (voir
+ * /admin/verifications, `User.verifStatut`) — une agence non encore validée
+ * ne doit apparaître ni dans l'annuaire ni avoir ses annonces visibles
+ * publiquement, quel que soit l'état de ses annonces individuelles.
+ */
 export async function getAgencies(): Promise<AgencySummary[]> {
   const agencies = await prisma.user.findMany({
-    where: { type: "AGENCE" },
+    where: { type: "AGENCE", verifStatut: "VERIFIEE" },
     select: {
       id: true,
       nom: true,
@@ -58,6 +64,8 @@ const AGENCY_PROFILE_SELECT = {
   xmlLastSyncCount: true,
   xmlLastSyncError: true,
   verifStatut: true,
+  modeAnnonces: true,
+  logicielMetier: true,
   createdAt: true,
 } as const;
 
@@ -78,6 +86,8 @@ export type AgencyProfile = {
   xmlLastSyncCount: number | null;
   xmlLastSyncError: string | null;
   verifStatut: "NON_SOUMISE" | "EN_ATTENTE" | "VERIFIEE" | "REFUSEE";
+  modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
+  logicielMetier: string | null;
   createdAt: Date;
 };
 
@@ -183,10 +193,10 @@ export type AgencyVillageSummary = {
   logoUrl: string | null;
 };
 
-/** Agences ayant déclaré intervenir dans cette commune — tri alphabétique déterministe. */
+/** Agences validées ayant déclaré intervenir dans cette commune — tri alphabétique déterministe. */
 export async function getAgenciesForVillage(villageSlug: string): Promise<AgencyVillageSummary[]> {
   return prisma.user.findMany({
-    where: { type: "AGENCE", serviceAreas: { some: { villageSlug } } },
+    where: { type: "AGENCE", verifStatut: "VERIFIEE", serviceAreas: { some: { villageSlug } } },
     select: { id: true, nom: true, entreprise: true, logoUrl: true },
     orderBy: [{ entreprise: { sort: "asc", nulls: "last" } }, { nom: "asc" }],
   });
@@ -200,5 +210,5 @@ export async function getAgenciesForVillage(villageSlug: string): Promise<Agency
  * à l'opposé du positionnement de portail multi-agences indépendant.
  */
 export async function getActiveAgencyCount(): Promise<number> {
-  return prisma.user.count({ where: { type: "AGENCE" } });
+  return prisma.user.count({ where: { type: "AGENCE", verifStatut: "VERIFIEE" } });
 }

@@ -57,6 +57,12 @@ export default async function AdminVerificationsPage() {
               )}
               {a.zoneCouverte ? <span className="text-muted">Zone : {a.zoneCouverte}</span> : null}
               <span className="text-muted">Contact : {a.email}</span>
+              <span className="text-muted">
+                Diffusion :{" "}
+                {a.modeAnnonces === "AUTOMATISE"
+                  ? `automatisée (${a.logicielMetier ?? "logiciel non précisé"}) — à recontacter pour le branchement`
+                  : "manuelle"}
+              </span>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-[12.5px] font-semibold text-blue">
               {a.siret ? (

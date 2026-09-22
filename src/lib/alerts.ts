@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
 import { listingDetailPath } from "./open-house";
+import { PUBLIC_OWNER_WHERE } from "./listings";
 import {
   savedSearchListingWhere,
   savedSearchLabel,
@@ -104,7 +105,7 @@ export type PriceDropAlertResult = {
  */
 export async function runPriceDropAlerts(): Promise<PriceDropAlertResult[]> {
   const favorites = await prisma.favorite.findMany({
-    where: { surveillePrix: true, listing: { statut: "PUBLIEE" } },
+    where: { surveillePrix: true, listing: { statut: "PUBLIEE", owner: PUBLIC_OWNER_WHERE } },
     include: {
       user: { select: { email: true } },
       listing: {

@@ -70,6 +70,8 @@ export type PendingVerification = {
   carteProCci: string | null;
   zoneCouverte: string | null;
   verifSoumiseLe: Date | null;
+  modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
+  logicielMetier: string | null;
 };
 
 export async function getPendingVerifications(): Promise<PendingVerification[]> {
@@ -87,6 +89,8 @@ export async function getPendingVerifications(): Promise<PendingVerification[]> 
       carteProCci: true,
       zoneCouverte: true,
       verifSoumiseLe: true,
+      modeAnnonces: true,
+      logicielMetier: true,
     },
   });
 }
