@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { feedNodeForListing } from "./listing-feed";
+import { SITE_URL } from "./seo";
 import type { ListingWithOwner } from "./listings";
 
 function make(overrides: Partial<ListingWithOwner> = {}): ListingWithOwner {
@@ -75,7 +76,7 @@ describe("feedNodeForListing", () => {
   it("mappe les champs de base et l'URL absolue de la fiche", () => {
     const n = feedNodeForListing(make());
     expect(n.ref).toBe("abc123");
-    expect(n.url).toBe("https://pevele-immobilier.fr/acheter/abc123");
+    expect(n.url).toBe(`${SITE_URL}/acheter/abc123`);
     expect(n.transaction).toBe("vente");
     expect(n.type).toBe("maison");
     expect(n.typeMaison).toBe("individuelle");
@@ -94,7 +95,7 @@ describe("feedNodeForListing", () => {
   it("rend les photos en URL absolues (relatives préfixées, absolues intactes)", () => {
     const n = feedNodeForListing(make()) as { photos: { photo: string[] } };
     expect(n.photos.photo).toEqual([
-      "https://pevele-immobilier.fr/uploads/listings/abc123/1.jpg",
+      `${SITE_URL}/uploads/listings/abc123/1.jpg`,
       "https://cdn.example/x.jpg",
     ]);
   });
@@ -123,7 +124,7 @@ describe("feedNodeForListing", () => {
         meuble: true,
       })
     );
-    expect(n.url).toBe("https://pevele-immobilier.fr/louer/abc123");
+    expect(n.url).toBe(`${SITE_URL}/louer/abc123`);
     expect(n.transaction).toBe("location");
     expect(n.type).toBe("appartement");
     expect(n.typeMaison).toBeUndefined();

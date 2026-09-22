@@ -90,7 +90,7 @@ export function listingOgImage(listing: {
           >
             {formatPrix(listing.prix, listing.transaction)}
           </div>
-          <div style={{ display: "flex", fontSize: 24, color: "#c9d3f2" }}>pevele-immobilier.fr</div>
+          <div style={{ display: "flex", fontSize: 24, color: "#c9d3f2" }}>www.pevele-immobilier.fr</div>
         </div>
       </div>
     ),

@@ -1,8 +1,17 @@
 import { getVillageBySlug } from "@/data/villages";
 import { villageCoords } from "@/data/village-coords";
 
-export const SITE_URL = "https://pevele-immobilier.fr";
+// www est l'URL réellement servie (l'apex fait une redirection 308 vers
+// celle-ci, configurée au niveau du domaine/Vercel — jamais l'inverse) :
+// canonical, sitemap, JSON-LD et OpenGraph doivent tous pointer directement
+// vers la version finale, sans demander aux robots un saut de redirection
+// supplémentaire (audité et aligné le 2026-09-22).
+export const SITE_URL = "https://www.pevele-immobilier.fr";
 export const SITE_NAME = "Pévèle Immobilier";
+/** Nom d'organisation dans les données structurées (JSON-LD) uniquement —
+ * forme alignée sur le domaine, distincte du nom d'affichage SITE_NAME
+ * (titres de page, en-tête, pied de page), qui reste "Pévèle Immobilier". */
+export const SITE_NAME_STRUCTURED_DATA = "Pévèle-Immobilier.fr";
 
 export type BreadcrumbItem = { name: string; url: string };
 
@@ -37,7 +46,7 @@ export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: SITE_NAME,
+    name: SITE_NAME_STRUCTURED_DATA,
     url: SITE_URL,
     description:
       "Le portail local des annonces et des prix immobiliers de la Pévèle : agences, particuliers et artisans réunis pour les 44 communes.",
@@ -75,8 +84,8 @@ export function articleJsonLd(article: {
     },
     datePublished: article.publishedAt,
     dateModified: article.updatedAt,
-    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
-    publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    author: { "@type": "Organization", name: SITE_NAME_STRUCTURED_DATA, url: SITE_URL },
+    publisher: { "@type": "Organization", name: SITE_NAME_STRUCTURED_DATA, url: SITE_URL },
   };
 }
 
@@ -99,7 +108,7 @@ export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: SITE_NAME,
+    name: SITE_NAME_STRUCTURED_DATA,
     url: SITE_URL,
     potentialAction: {
       "@type": "SearchAction",
