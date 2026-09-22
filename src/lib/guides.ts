@@ -25,6 +25,15 @@ export type GuideMetadata = {
    * pas automatique sur toutes les communes citées). */
   relatedVillages: string[];
   type: GuideType;
+  /**
+   * Pour type "comparatif" uniquement : les deux communes dont ce guide est
+   * LE contenu éditorial canonique (Sprint 5, src/lib/comparateur.ts). Champ
+   * explicite plutôt que déduit de scopeVillages — un comparatif peut citer
+   * d'autres communes en passant sans perdre son identité de comparaison
+   * Cysoing/Templeuve, et scopeVillages ne devrait pas avoir à rester figé à
+   * exactement 2 éléments pour que la relation guide↔paire reste détectée.
+   */
+  comparisonPair?: [string, string];
 };
 
 /** Identité éditoriale constante des guides — jamais une personne physique (voir AGENTS.md). */

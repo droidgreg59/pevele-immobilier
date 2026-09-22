@@ -80,6 +80,21 @@ export function articleJsonLd(article: {
   };
 }
 
+/**
+ * WebPage générique — pour un outil généré (comparateur, Sprint 5) qui n'a
+ * ni auteur ni dates éditoriales réelles, donc pas un Article. Pas de type
+ * schema.org exotique pour une simple page de comparaison.
+ */
+export function webPageJsonLd(page: { title: string; description: string; url: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: page.title,
+    description: page.description,
+    url: `${SITE_URL}${page.url}`,
+  };
+}
+
 export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",

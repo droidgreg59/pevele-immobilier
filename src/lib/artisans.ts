@@ -35,7 +35,9 @@ export async function getArtisansForVillage(
   const artisans = await prisma.user.findMany({
     where: { type: "ARTISAN", communesDesservies: { contains: villageSlug } },
     select: { id: true, nom: true, entreprise: true, ville: true, categories: true },
-    orderBy: { createdAt: "asc" },
+    // Alphabétique, jamais createdAt (favoriserait structurellement le
+    // premier artisan inscrit) — même correctif que getAgencies() (Sprint 5).
+    orderBy: [{ entreprise: { sort: "asc", nulls: "last" } }, { nom: "asc" }],
     take: limit,
   });
 

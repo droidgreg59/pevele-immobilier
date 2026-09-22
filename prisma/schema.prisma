@@ -45,6 +45,11 @@ model User {
   siret               String?
   carteProfessionnelle String?
   carteProCci         String?
+  /// Texte libre saisi à la demande de vérification (voir agency-verification.ts),
+  /// affiché uniquement en interne sur /admin/verifications. Déprécié depuis le
+  /// Sprint 5 pour tout usage public : remplacé par AgencyServiceArea, structuré
+  /// et validé. Conservé tel quel pour compatibilité avec les demandes déjà
+  /// soumises — jamais lu par une nouvelle fonctionnalité publique.
   zoneCouverte        String?
   siretDenomination   String?
   verifStatut         AgencyVerificationStatus @default(NON_SOUMISE)
@@ -84,6 +89,7 @@ model User {
   estimationsEnvoyees EstimationRequest[] @relation("AuthorEstimations")
   openHouseRegistrations OpenHouseRegistration[]
   pushSubscriptions   PushSubscription[]
+  serviceAreas        AgencyServiceArea[]
 
   @@index([emailVerifyToken])
 }
@@ -322,6 +328,24 @@ model ListingLifecycleEvent {
   createdAt DateTime                  @default(now())
 
   @@index([listingId])
+}
+
+/// Zone d'intervention déclarée par une agence (Sprint 5) — une ligne par
+/// commune cochée dans son profil, remplace le texte libre zoneCouverte pour
+/// tout usage public. Table normalisée plutôt qu'un CSV (comme
+/// communesDesservies côté artisans) : jointure directe, contrainte
+/// d'unicité, comptage par commune possibles. villageSlug n'est pas une
+/// clé étrangère vers un modèle Village (les communes suivies vivent dans
+/// src/data/villages.ts, pas en base) — toujours validé applicativement
+/// contre cette liste avant écriture, jamais fait confiance côté client.
+model AgencyServiceArea {
+  id          String @id @default(cuid())
+  agency      User   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agencyId    String
+  villageSlug String
+
+  @@unique([agencyId, villageSlug])
+  @@index([villageSlug])
 }
 
 /// Horodatage du dernier passage réussi de chaque tâche cron — source unique

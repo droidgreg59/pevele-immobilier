@@ -11,6 +11,9 @@ export default function Footer() {
         <Link href="/guides" className="text-blue">
           Guides
         </Link>
+        <Link href="/comparer" className="text-blue">
+          Comparateur
+        </Link>
         <Link href="/methodologie" className="text-blue">
           Méthodologie
         </Link>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, Mail, Globe, ExternalLink, Send, Calculator } from "lucide-react";
-import { getAgencyById } from "@/lib/agencies";
+import { getAgencyById, getAgencyServiceAreas } from "@/lib/agencies";
 import { getPublicListingsByOwner } from "@/lib/listings";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import { getAgencyReviews, getAgencyReviewStats, getUserReviewForAgency } from "@/lib/reviews";
@@ -92,12 +92,17 @@ export default async function AgencyPage({
   const agency = await getAgencyById(id);
   if (!agency) notFound();
 
-  const [listings, session, reviews, reviewStats] = await Promise.all([
+  const [listings, session, reviews, reviewStats, serviceAreaSlugs] = await Promise.all([
     getPublicListingsByOwner(agency.id),
     getSession(),
     getAgencyReviews(agency.id),
     getAgencyReviewStats(agency.id),
+    getAgencyServiceAreas(agency.id),
   ]);
+  const serviceAreaVillages = serviceAreaSlugs
+    .map((slug) => getVillageBySlug(slug))
+    .filter((v): v is NonNullable<typeof v> => Boolean(v))
+    .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   const favoriteIds = session
     ? await getFavoriteListingIds(session.userId)
     : new Set<string>();
@@ -243,6 +248,25 @@ export default async function AgencyPage({
       <p className="mt-4 text-[12px] text-muted-2">
         Sur Pévèle Immobilier depuis {agency.createdAt.getFullYear()}.
       </p>
+
+      {serviceAreaVillages.length > 0 ? (
+        <div className="mt-6 rounded-2xl border border-line bg-white p-5 shadow-sm">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Communes dans lesquelles l&apos;agence déclare intervenir
+          </span>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {serviceAreaVillages.map((v) => (
+              <Link
+                key={v.slug}
+                href={`/villages/${v.slug}`}
+                className="rounded-full border border-line bg-surface px-3 py-1.5 text-[12.5px] font-semibold text-ink transition hover:bg-white"
+              >
+                {v.nom}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {!isOwner ? (
         <div className="mt-8 rounded-2xl border border-line bg-blue-soft p-6">

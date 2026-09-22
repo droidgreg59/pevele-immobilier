@@ -6,6 +6,8 @@ import { villageAmenities } from "@/data/village-amenities";
 import { getPublicListingsByVillage } from "@/lib/listings";
 import { getDvfMarketStatsForVillage } from "@/lib/dvf";
 import { getGuidesForVillage } from "@/lib/guides";
+import { getAgenciesForVillage, getActiveAgencyCount } from "@/lib/agencies";
+import { getIndexableComparateursForVillage } from "@/lib/comparateur";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import { getSession, isParticulierSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
@@ -45,12 +47,19 @@ export default async function VillagePage({
   const village = getVillageBySlug(slug);
   if (!village) notFound();
 
-  const [villageListings, dvfStats, session, guides] = await Promise.all([
+  const [villageListings, dvfStats, session, guides, activeAgencyCount, comparateurs] = await Promise.all([
     getPublicListingsByVillage(village.slug),
     getDvfMarketStatsForVillage(village.slug, "Maison"),
     getSession(),
     getGuidesForVillage(village.slug),
+    getActiveAgencyCount(),
+    getIndexableComparateursForVillage(village.slug),
   ]);
+  // Le bloc "Agences intervenant à ..." reste construit et prêt, mais n'est
+  // affiché publiquement qu'une fois le portail réellement multi-agences —
+  // sinon les 44 pages village ne montreraient que PVL, ce qui donnerait
+  // l'impression d'un site satellite d'une seule agence (voir Sprint 5).
+  const villageAgencies = activeAgencyCount >= 2 ? await getAgenciesForVillage(village.slug) : [];
   const favoriteIds = session
     ? await getFavoriteListingIds(session.userId)
     : new Set<string>();
@@ -277,6 +286,48 @@ export default async function VillagePage({
               </Link>
             ))}
           </div>
+        </div>
+      ) : null}
+
+      {comparateurs.length > 0 ? (
+        <div className="mt-9">
+          <h2 className="m-0 font-display text-xl text-ink">Comparer {village.nom}</h2>
+          <div className="mt-4 flex flex-col gap-3">
+            {comparateurs.map(({ a, b, otherSlug }) => {
+              const other = getVillageBySlug(otherSlug);
+              return (
+                <Link
+                  key={`${a}-${b}`}
+                  href={`/comparer/${a}/${b}`}
+                  className="rounded-2xl border border-line bg-white p-4 text-[13.5px] font-semibold text-ink shadow-sm transition hover:shadow-md"
+                >
+                  {village.nom} ou {other?.nom ?? otherSlug} : comparer →
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {villageAgencies.length > 0 ? (
+        <div className="mt-9">
+          <h2 className="m-0 font-display text-xl text-ink">
+            Agences immobilières intervenant à {village.nom}
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {villageAgencies.map((a) => (
+              <Link
+                key={a.id}
+                href={`/professionnels/${a.id}`}
+                className="rounded-full border border-line bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+              >
+                {a.entreprise ?? a.nom}
+              </Link>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] text-muted-2">
+            Zones d&apos;intervention déclarées par les agences.
+          </p>
         </div>
       ) : null}
     </div>

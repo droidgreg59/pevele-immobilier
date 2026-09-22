@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { getAgencyById } from "@/lib/agencies";
+import { getAgencyById, getAgencyServiceAreas } from "@/lib/agencies";
 import { getAgencyVerification } from "@/lib/agency-verification";
 import AgencyProfileForm from "@/components/AgencyProfileForm";
+import AgencyServiceAreaForm from "@/components/AgencyServiceAreaForm";
 import AgencyVerificationCard from "@/components/AgencyVerificationCard";
 import XmlImportPanel from "@/components/XmlImportPanel";
 
@@ -18,9 +19,10 @@ export default async function CompteAgenceProfilPage() {
   if (!session) redirect("/connexion?next=/compte/agence/profil");
   if (session.type !== "AGENCE") redirect("/compte");
 
-  const [agency, verification] = await Promise.all([
+  const [agency, verification, serviceAreas] = await Promise.all([
     getAgencyById(session.userId),
     getAgencyVerification(session.userId),
+    getAgencyServiceAreas(session.userId),
   ]);
   if (!agency || !verification) redirect("/compte");
 
@@ -34,6 +36,10 @@ export default async function CompteAgenceProfilPage() {
 
       <div className="mt-6">
         <AgencyProfileForm agency={agency} />
+      </div>
+
+      <div className="mt-8">
+        <AgencyServiceAreaForm serviceAreas={serviceAreas} />
       </div>
 
       <div className="mt-8">

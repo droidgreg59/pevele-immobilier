@@ -5,6 +5,8 @@ import { getAgencies } from "@/lib/agencies";
 import { getArtisans } from "@/lib/artisans";
 import { getDvfStatsForAllVillages } from "@/lib/dvf";
 import { getAllGuidesMetadata } from "@/lib/guides";
+import { LAUNCH_PAIRS, isIndexablePair } from "@/lib/comparateur";
+import { getCronLastRun } from "@/lib/freshness";
 import { SITE_URL } from "@/lib/seo";
 
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
@@ -18,19 +20,21 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/prix", priority: 0.9, changeFrequency: "weekly" },
   { path: "/methodologie", priority: 0.5, changeFrequency: "monthly" },
   { path: "/guides", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/comparer", priority: 0.6, changeFrequency: "monthly" },
   { path: "/artisans", priority: 0.7, changeFrequency: "weekly" },
   { path: "/professionnels", priority: 0.7, changeFrequency: "weekly" },
   { path: "/espace-professionnel", priority: 0.5, changeFrequency: "monthly" },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [ventes, locations, agencies, artisans, dvfStats, guides] = await Promise.all([
+  const [ventes, locations, agencies, artisans, dvfStats, guides, dvfUpdatedAt] = await Promise.all([
     getPublicListings("VENTE"),
     getPublicListings("LOCATION"),
     getAgencies(),
     getArtisans(),
     getDvfStatsForAllVillages(),
     getAllGuidesMetadata(),
+    getCronLastRun("dvf-import"),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
@@ -107,6 +111,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // Comparateur : uniquement les paires réellement indexables (jamais les
+  // 946 combinaisons possibles, voir src/lib/comparateur.ts) — lastModified
+  // reflète la vraie fraîcheur des données DVF utilisées, pas la date du
+  // build (voir getCronLastRun, Sprint 1/3).
+  const indexablePairs = (
+    await Promise.all(LAUNCH_PAIRS.map(async ([a, b]) => ((await isIndexablePair(a, b)) ? [a, b] : null)))
+  ).filter((p): p is [string, string] => p !== null);
+  const comparateurEntries: MetadataRoute.Sitemap = indexablePairs.map(([a, b]) => ({
+    url: `${SITE_URL}/comparer/${a}/${b}`,
+    lastModified: dvfUpdatedAt ?? undefined,
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
   return [
     ...staticEntries,
     ...villageEntries,
@@ -117,5 +135,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...agencyEntries,
     ...artisanEntries,
     ...guideEntries,
+    ...comparateurEntries,
   ];
 }

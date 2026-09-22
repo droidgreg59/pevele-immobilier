@@ -1,5 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { villages } from "@/data/villages";
+import { filterValidVillageSlugs } from "./agency-service-area";
 
 export type AgencySummary = {
   id: string;
@@ -23,7 +25,9 @@ export async function getAgencies(): Promise<AgencySummary[]> {
       verifStatut: true,
       _count: { select: { listings: { where: { statut: "PUBLIEE" } } } },
     },
-    orderBy: { createdAt: "asc" },
+    // Alphabétique, jamais createdAt (favoriserait structurellement la
+    // première agence inscrite) ni aléatoire (rendu instable, cache/SEO).
+    orderBy: [{ entreprise: { sort: "asc", nulls: "last" } }, { nom: "asc" }],
   });
 
   return agencies.map((a) => ({
@@ -134,4 +138,67 @@ export async function recordXmlSyncResult(
       ...("count" in result ? { xmlLastSuccessAt: now } : {}),
     },
   });
+}
+
+/** Communes déclarées par une agence comme zone d'intervention (slugs). */
+export async function getAgencyServiceAreas(agencyId: string): Promise<string[]> {
+  const rows = await prisma.agencyServiceArea.findMany({
+    where: { agencyId },
+    select: { villageSlug: true },
+  });
+  return rows.map((r) => r.villageSlug);
+}
+
+/**
+ * Remplace intégralement les zones déclarées par une agence. `agencyId` doit
+ * toujours venir de la session serveur (jamais d'un champ de formulaire) —
+ * vérifié par l'appelant (agency-actions.ts). Chaque slug est revalidé ici
+ * contre la liste réelle des communes, même si l'appelant a déjà filtré :
+ * cette fonction ne fait jamais confiance à son entrée par construction.
+ */
+export async function updateAgencyServiceAreas(
+  agencyId: string,
+  villageSlugs: string[]
+): Promise<void> {
+  const valid = filterValidVillageSlugs(
+    villageSlugs,
+    villages.map((v) => v.slug)
+  );
+  await prisma.$transaction([
+    prisma.agencyServiceArea.deleteMany({ where: { agencyId } }),
+    ...(valid.length > 0
+      ? [
+          prisma.agencyServiceArea.createMany({
+            data: valid.map((villageSlug) => ({ agencyId, villageSlug })),
+          }),
+        ]
+      : []),
+  ]);
+}
+
+export type AgencyVillageSummary = {
+  id: string;
+  nom: string;
+  entreprise: string | null;
+  logoUrl: string | null;
+};
+
+/** Agences ayant déclaré intervenir dans cette commune — tri alphabétique déterministe. */
+export async function getAgenciesForVillage(villageSlug: string): Promise<AgencyVillageSummary[]> {
+  return prisma.user.findMany({
+    where: { type: "AGENCE", serviceAreas: { some: { villageSlug } } },
+    select: { id: true, nom: true, entreprise: true, logoUrl: true },
+    orderBy: [{ entreprise: { sort: "asc", nulls: "last" } }, { nom: "asc" }],
+  });
+}
+
+/**
+ * Nombre total d'agences actives sur le portail — sert à décider si le bloc
+ * « Agences intervenant à {commune} » doit apparaître sur les pages village
+ * (voir villages/[slug]/page.tsx) : avec une seule agence, l'afficher sur les
+ * 44 communes donnerait l'impression que le site n'est qu'une vitrine PVL,
+ * à l'opposé du positionnement de portail multi-agences indépendant.
+ */
+export async function getActiveAgencyCount(): Promise<number> {
+  return prisma.user.count({ where: { type: "AGENCE" } });
 }

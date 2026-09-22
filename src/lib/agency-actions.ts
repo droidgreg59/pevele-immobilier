@@ -4,15 +4,17 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
-import { updateAgencyProfile, getAgencyById } from "./agencies";
+import { updateAgencyProfile, getAgencyById, updateAgencyServiceAreas } from "./agencies";
 import { lookupSiretDenomination } from "./agency-verification";
 import { isValidSiret, normalizeSiret } from "./validation";
+import { canManageServiceAreas } from "./agency-service-area";
 import { logEvent } from "./events";
 import { pickLogoFile, validateLogoFile, saveLogoFile, deleteLogoFile } from "./photo-upload";
 import { normalizeUrl, isValidHttpUrl } from "./validation";
 
 export type AgencyProfileFormState = { error?: string };
 export type AgencyVerificationFormState = { error?: string; success?: boolean };
+export type AgencyServiceAreasFormState = { error?: string; success?: boolean };
 
 export async function updateAgencyProfileAction(
   _prevState: AgencyProfileFormState,
@@ -119,5 +121,29 @@ export async function submitAgencyVerificationAction(
 
   revalidatePath("/compte/agence");
   revalidatePath("/compte");
+  return { success: true };
+}
+
+/**
+ * Remplace les zones d'intervention déclarées par l'agence connectée.
+ * agencyId vient TOUJOURS de la session serveur, jamais d'un champ du
+ * formulaire — canManageServiceAreas()/updateAgencyServiceAreas() (testées
+ * sans base dans agency-service-area.test.ts) garantissent qu'on ne peut ni
+ * usurper une autre agence, ni écrire un slug de commune inventé.
+ */
+export async function updateServiceAreasAction(
+  _prevState: AgencyServiceAreasFormState,
+  formData: FormData
+): Promise<AgencyServiceAreasFormState> {
+  const session = await getSession();
+  if (!session || !canManageServiceAreas(session)) {
+    return { error: "Réservé aux comptes agence." };
+  }
+
+  const villageSlugs = formData.getAll("villageSlugs").map(String);
+  await updateAgencyServiceAreas(session.userId, villageSlugs);
+
+  revalidatePath("/compte/agence");
+  revalidatePath("/professionnels");
   return { success: true };
 }
