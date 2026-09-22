@@ -343,6 +343,39 @@ export function agencyVerificationReviewedEmail(opts: {
   };
 }
 
+/**
+ * Notification interne (contact@pevele-immobilier.fr, jamais envoyée à
+ * l'agence) à l'inscription d'un nouveau compte agence — rappelle qu'elle
+ * reste invisible publiquement (annuaire, annonces) tant qu'elle n'est pas
+ * vérifiée depuis /admin/verifications, et transmet le logiciel métier
+ * déclaré si l'agence a choisi la diffusion automatisée (voir
+ * RegisterForm.tsx) pour savoir quoi préparer avant de la recontacter.
+ */
+export function newAgencySignupEmail(opts: {
+  agencyNom: string;
+  email: string;
+  telephone: string;
+  modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
+  logicielMetier: string | null;
+}): { subject: string; html: string } {
+  return {
+    subject: `Nouvelle agence inscrite : ${opts.agencyNom}`,
+    html: layout(
+      "Nouvelle agence à vérifier",
+      p(
+        `<b>${opts.agencyNom}</b> vient de créer un compte agence — elle reste invisible dans l'annuaire et pour ses annonces tant qu'elle n'est pas vérifiée.`
+      ) +
+        p(`Contact : ${opts.email} · ${opts.telephone}`) +
+        (opts.modeAnnonces === "AUTOMATISE"
+          ? p(
+              `Diffusion souhaitée : <b>automatisée</b>, via <b>${opts.logicielMetier ?? "logiciel non précisé"}</b> — à recontacter pour effectuer le branchement une fois vérifiée.`
+            )
+          : p("Diffusion souhaitée : saisie manuelle.")),
+      { label: "Voir les comptes agence", href: `${SITE_URL}/admin/comptes?type=AGENCE` }
+    ),
+  };
+}
+
 export function emailVerificationEmail(opts: { verifyUrl: string }): {
   subject: string;
   html: string;

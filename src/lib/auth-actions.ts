@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { getSession, setSessionCookie, clearSessionCookie } from "./session";
 import { sendEmail } from "./email";
-import { emailVerificationEmail, passwordResetEmail } from "./email-templates";
+import { emailVerificationEmail, passwordResetEmail, newAgencySignupEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
 import { verifyTurnstile } from "./turnstile";
 import { isValidPhoneNumber } from "./validation";
@@ -118,6 +118,17 @@ export async function registerAction(
 
   await sendEmailVerification(user.id, user.email);
   await logEvent("signup_completed", { userId: user.id, meta: { type } });
+
+  if (type === "AGENCE") {
+    const { subject, html } = newAgencySignupEmail({
+      agencyNom: entreprise,
+      email,
+      telephone,
+      modeAnnonces,
+      logicielMetier: modeAnnonces === "AUTOMATISE" ? logicielMetier : null,
+    });
+    await sendEmail({ to: "contact@pevele-immobilier.fr", subject, html });
+  }
 
   if (type === "AGENCE" || type === "ARTISAN") {
     redirect("/bienvenue");
