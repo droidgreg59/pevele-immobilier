@@ -20,7 +20,7 @@ export type ParticulierNavCounts = {
 const ITEMS = [
   { href: "/compte/particulier", label: "Tableau de bord", icon: LayoutDashboard, key: null },
   { href: "/compte/particulier/recherches", label: "Mes recherches", icon: Search, key: "recherches" },
-  { href: "/compte/favoris", label: "Mes favoris", icon: Heart, key: null },
+  { href: "/compte/particulier/favoris", label: "Mes favoris", icon: Heart, key: null },
   { href: "/compte/particulier/annonces", label: "Mes annonces", icon: Building2, key: null },
   { href: "/compte/particulier/demandes", label: "Demandes reçues", icon: Inbox, key: "demandes" },
   { href: "/compte/particulier/mes-demarches", label: "Mes démarches", icon: ListChecks, key: null },

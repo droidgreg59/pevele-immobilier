@@ -16,7 +16,7 @@ const BASE_TABS = [
 // Réservés aux particuliers — masqués pour les comptes pro (agence, artisan).
 const PARTICULIER_TABS = [
   { label: "Projet", href: "/mon-projet", icon: Sparkles },
-  { label: "Favoris", href: "/compte/favoris", icon: Heart },
+  { label: "Favoris", href: "/compte/particulier/favoris", icon: Heart },
 ];
 
 // Ces pages ont leur propre barre d'action sticky mobile — pas de double barre.

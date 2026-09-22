@@ -14,9 +14,9 @@ export const dynamic = "force-dynamic";
  * Coquille de l'espace particulier (/compte/particulier/*), sur le modèle de
  * l'espace agence (/compte/agence/*) : identité, bannière de vérification
  * email, navigation latérale type CRM au lieu de l'ancien /compte unique tout
- * empilé. « Mes favoris » reste à son adresse historique (/compte/favoris,
- * aussi liée depuis la barre de nav mobile globale BottomNav.tsx) plutôt que
- * déplacée ici, pour ne pas casser ce lien.
+ * empilé. « Mes favoris » vit ici (/compte/particulier/favoris) comme les
+ * autres sections — l'ancienne adresse /compte/favoris redirige vers cette
+ * page plutôt que de casser les liens déjà enregistrés.
  */
 export default async function ParticulierLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();

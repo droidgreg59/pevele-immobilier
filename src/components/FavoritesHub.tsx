@@ -156,7 +156,7 @@ function FavoriteHubCard({
             onClick={() => {
               onRemove();
               startTransition(async () => {
-                await toggleFavoriteAction(item.listingId, "/compte/favoris");
+                await toggleFavoriteAction(item.listingId, "/compte/particulier/favoris");
               });
             }}
             className="ml-auto text-[12.5px] font-semibold text-muted hover:text-ink"

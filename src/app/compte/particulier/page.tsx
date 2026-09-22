@@ -120,7 +120,7 @@ export default async function CompteParticulierDashboardPage() {
           Mon activité
         </span>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard value={String(favoriteCount)} label="Favoris" href="/compte/favoris" />
+          <StatCard value={String(favoriteCount)} label="Favoris" href="/compte/particulier/favoris" />
           <StatCard
             value={String(mesRecherches.length)}
             label="Recherches sauvegardées"
