@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ClipboardCheck, ShieldCheck, Users, Star } from "lucide-react";
 import { getAgencies } from "@/lib/agencies";
 
 export const dynamic = "force-dynamic";
@@ -14,25 +13,6 @@ export const metadata: Metadata = {
     canonical: "/professionnels",
   },
 };
-
-const AVANTAGES = [
-  {
-    icon: ClipboardCheck,
-    text: "Une page agence publique, avec vos annonces réunies au même endroit que celles des particuliers",
-  },
-  {
-    icon: ShieldCheck,
-    text: "Le même processus de vérification que pour les particuliers — pas de passe-droit",
-  },
-  {
-    icon: Users,
-    text: "Un hub clients : recherches confiées par des particuliers, propositions et statistiques d'activité",
-  },
-  {
-    icon: Star,
-    text: "Des avis publiés directement par vos clients sur votre page",
-  },
-];
 
 export default async function ProfessionnelsPage() {
   const agencies = await getAgencies();
@@ -112,32 +92,12 @@ export default async function ProfessionnelsPage() {
         )}
       </div>
 
-      <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {AVANTAGES.map(({ icon: Icon, text }) => (
-          <div
-            key={text}
-            className="flex items-start gap-3 rounded-xl bg-surface px-4 py-3.5"
-          >
-            <Icon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-blue" strokeWidth={1.75} />
-            <span className="text-[14px] leading-[1.5] text-ink">{text}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-8 rounded-2xl border border-dashed border-line bg-surface p-7">
-        <span className="text-[13px] font-semibold text-blue">
-          Import XML AC3 / Immofacile
-        </span>
-        <p className="m-0 mt-2 max-w-[60ch] text-[14px] leading-[1.6] text-muted">
-          Votre logiciel de transaction exporte déjà vos biens au format AC3 ?
-          Connectez le flux depuis votre compte agence et synchronisez votre
-          catalogue en un clic, sans ressaisie. Vous êtes une agence en
-          Pévèle ?{" "}
-          <Link href="/inscription" className="text-blue">
-            Créez votre compte professionnel →
-          </Link>
-        </p>
-      </div>
+      <p className="mt-9 text-[13px] text-muted">
+        Vous êtes une agence en Pévèle ?{" "}
+        <Link href="/inscription" className="font-semibold text-blue">
+          Créez votre compte professionnel →
+        </Link>
+      </p>
     </div>
   );
 }
