@@ -138,6 +138,12 @@ export default async function EstimerPage({
                       >
                         Voir {village!.nom} →
                       </Link>
+                      <Link
+                        href="/professionnels"
+                        className="rounded-full border border-line px-4 py-3 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+                      >
+                        Demander une estimation à une agence →
+                      </Link>
                     </div>
                   </>
                 ) : (
