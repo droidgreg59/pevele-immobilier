@@ -154,14 +154,14 @@ export default async function GuidePage({ params }: PageProps<"/guides/[slug]">)
         })}
       />
       <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
-        {metadata.type === "comparatif" ? "Comparatif" : "Guide"}
+        {metadata.type === "bilan" ? "Bilan" : metadata.type === "comparatif" ? "Comparatif" : "Guide"}
       </span>
       <h1 className="mt-3 font-display text-[32px] text-ink sm:text-[40px]">{metadata.title}</h1>
       <Link href="/guides" className="text-[13px] font-semibold text-blue">
         ← Tous les guides
       </Link>
       <GuideByline author={metadata.author} publishedAt={metadata.publishedAt} updatedAt={metadata.updatedAt} />
-      <DataFreshnessNote />
+      {metadata.type !== "bilan" && <DataFreshnessNote />}
 
       <div className="mt-6 font-sans">
         <GuideContent {...contentProps} />

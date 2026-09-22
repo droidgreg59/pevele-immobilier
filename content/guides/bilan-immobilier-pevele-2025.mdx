@@ -1,0 +1,151 @@
+import Link from "next/link";
+import AllVillagesPriceTable from "@/components/AllVillagesPriceTable";
+import DvfMetric from "@/components/DvfMetric";
+import { villages, getVillageBySlug } from "@/data/villages";
+import { bilan2025 } from "../bilan/bilan-2025-data";
+
+export const nom = (slug) => getVillageBySlug(slug)?.nom ?? slug;
+export const fmtDate = (iso) => new Date(iso).toLocaleDateString("fr-FR", { dateStyle: "long" });
+
+export const metadata = {
+  title: "Bilan immobilier de la Pévèle 2025",
+  description:
+    "Prix médian des maisons et appartements en Pévèle en 2025, évolution depuis 2023, écarts entre les 44 communes et budgets d'achat, à partir des transactions DVF disponibles — chiffres figés et sourcés, jamais recalculés au fil de l'eau.",
+  publishedAt: "2026-09-22",
+  updatedAt: "2026-09-22",
+  author: "Rédaction Pévèle-Immobilier.fr",
+  scopeVillages: villages.map((v) => v.slug),
+  relatedVillages: [
+    "gruson",
+    "chereng",
+    "merignies",
+    "marchiennes",
+    "flines-lez-raches",
+    "aix-en-pevele",
+    "thumeries",
+    "orchies",
+    "baisieux",
+    "pont-a-marcq",
+    "coutiches",
+    "templeuve-en-pevele",
+    "cysoing",
+  ],
+  type: "bilan",
+  dataPeriod: bilan2025.dataPeriod,
+  dataComputedAt: bilan2025.dataComputedAt,
+};
+
+Ce bilan rassemble, pour l'ensemble de la Pévèle, les transactions 2025 présentes dans le jeu de données DVF disponible au {fmtDate(bilan2025.dataComputedAt)} (millésimes 2023 à 2025), selon la même méthode que le reste du site : médiane par typologie, valeurs atypiques exclues (1er et 99e centile du prix au m², Pévèle entière — voir la [méthodologie](/methodologie)). C'est un instantané figé : les chiffres ci-dessous ne bougeront pas au gré des prochains imports DVF ; toute mise à jour donnera lieu à une nouvelle version datée de ce document.
+
+## Le marché immobilier en Pévèle en 2025
+
+Sur les {bilan2025.maison.totalCount} ventes de maisons enregistrées en 2025 dans le jeu DVF disponible, {bilan2025.maison.retainedCount} sont retenues pour le calcul des médianes (valeurs atypiques exclues). Le prix médian s'établit à <DvfMetric value={bilan2025.maison.medianPrixM2} unit="eur" /> / m², soit <DvfMetric value={bilan2025.maison.medianPrixTotal} unit="eur" /> pour une maison type, sur une surface habitable médiane de <DvfMetric value={bilan2025.maison.medianSurfaceBati} unit="m2" />.
+
+La surface de terrain médiane s'établit à <DvfMetric value={bilan2025.maison.medianSurfaceTerrain} unit="m2" />, calculée sur les {bilan2025.maison.terrainSampleCount} ventes de cet échantillon dont la surface de terrain est renseignée dans DVF (champ non garanti sur 100 % des ventes).
+
+## 2025 par rapport à 2024
+
+La médiane du prix au m² des maisons passe de <DvfMetric value={bilan2025.comparaisonAnnuelle["2024"].medianPrixM2} unit="eur" /> en 2024 ({bilan2025.comparaisonAnnuelle["2024"].retainedCount} ventes retenues) à <DvfMetric value={bilan2025.comparaisonAnnuelle["2025"].medianPrixM2} unit="eur" /> en 2025 ({bilan2025.comparaisonAnnuelle["2025"].retainedCount} ventes retenues), soit une variation observée de la médiane de <DvfMetric value={bilan2025.variationPctM2.y2024to2025} unit="pct" />.
+
+Cette variation porte sur la médiane des ventes retenues chaque année, pas sur un panier de biens identiques suivis dans le temps : la composition des transactions (localisation, surface, état des biens vendus) peut différer d'une année à l'autre, ce qui peut à lui seul expliquer une partie de l'écart.
+
+## Évolution depuis 2023
+
+Sur trois ans, la médiane du prix au m² des maisons passe de <DvfMetric value={bilan2025.comparaisonAnnuelle["2023"].medianPrixM2} unit="eur" /> en 2023 ({bilan2025.comparaisonAnnuelle["2023"].retainedCount} ventes retenues) à <DvfMetric value={bilan2025.comparaisonAnnuelle["2025"].medianPrixM2} unit="eur" /> en 2025, soit une variation observée de <DvfMetric value={bilan2025.variationPctM2.y2023to2025} unit="pct" />. Même réserve que ci-dessus : cet écart reflète la médiane des ventes de chaque millésime, pas l'évolution d'un même panier de biens.
+
+## Les différences entre les communes
+
+Le tableau complet ci-dessous couvre les {bilan2025.communes2025.length} communes ayant au moins 5 ventes de maisons retenues en 2025 — en dessous de ce seuil, une médiane serait trop instable pour être publiée.
+
+<AllVillagesPriceTable
+  rows={bilan2025.communes2025.map((c) => ({
+    slug: c.slug,
+    nom: nom(c.slug),
+    medianPrixM2: c.medianPrixM2,
+    retainedCount: c.retainedCount,
+  }))}
+/>
+
+### Communes où le prix médian des maisons au m² est le plus élevé en 2025
+
+Parmi les communes disposant d'un échantillon d'au moins {bilan2025.communesMiseEnAvant.seuilMinimum} ventes retenues en 2025 — un seuil plus strict que le tableau complet, retenu après avoir comparé plusieurs seuils pour ne conserver que les classements qui ne changent pas selon le seuil choisi :
+
+{bilan2025.communesMiseEnAvant.plusEleve.map((c) => (
+  <p key={c.slug}>
+    <Link href={`/prix/${c.slug}`}>{nom(c.slug)}</Link> — <DvfMetric value={c.medianPrixM2} unit="eur" /> / m² ({c.retainedCount} ventes retenues)
+  </p>
+))}
+
+### Communes où le prix médian des maisons au m² est le plus bas en 2025
+
+{bilan2025.communesMiseEnAvant.plusBas.map((c) => (
+  <p key={c.slug}>
+    <Link href={`/prix/${c.slug}`}>{nom(c.slug)}</Link> — <DvfMetric value={c.medianPrixM2} unit="eur" /> / m² ({c.retainedCount} ventes retenues)
+  </p>
+))}
+
+### Variation observée par commune depuis 2023
+
+Calculer une variation par commune exige un échantillon suffisant à la fois en 2023 et en 2025 : en dessous de {bilan2025.communesVariation.seuilMinimum} ventes retenues sur une année, l'écart mesuré peut dépasser 50 % d'un millésime à l'autre sans que cela reflète un mouvement réel du marché local — un simple effet de petit échantillon. Les {bilan2025.communesVariation.paires2023to2025.length} communes ci-dessous sont celles qui atteignent ce seuil les deux années.
+
+<div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm">
+  <table className="w-full min-w-[560px] border-collapse text-[13.5px]">
+    <thead>
+      <tr className="border-b border-line bg-surface text-left">
+        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Commune</th>
+        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Variation 2023 → 2025</th>
+        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Ventes retenues (2023 / 2025)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {bilan2025.communesVariation.paires2023to2025.map((c) => (
+        <tr key={c.slug} className="border-b border-line last:border-b-0">
+          <td className="px-4 py-3">
+            <Link href={`/prix/${c.slug}`} className="font-semibold text-blue">{nom(c.slug)}</Link>
+          </td>
+          <td className="px-4 py-3 text-ink">{c.pct2023to2025.toLocaleString("fr-FR")} %</td>
+          <td className="px-4 py-3 text-muted">{c.n2023} / {c.n2025}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+Les communes qui n'apparaissent pas dans ce tableau ne disposent pas d'un échantillon suffisant en 2023 et/ou en 2025 pour publier une variation défendable — leur absence ne signifie pas une absence de mouvement de marché, seulement une donnée insuffisante pour le mesurer de façon fiable.
+
+## Quel budget pour acheter en Pévèle en 2025 ?
+
+<div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm">
+  <table className="w-full min-w-[560px] border-collapse text-[13.5px]">
+    <thead>
+      <tr className="border-b border-line bg-surface text-left">
+        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Budget</th>
+        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Part des ventes ≤ budget</th>
+        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Surface habitable médiane</th>
+      </tr>
+    </thead>
+    <tbody>
+      {bilan2025.budgetPaliers.map((p) => (
+        <tr key={p.budget} className="border-b border-line last:border-b-0">
+          <td className="px-4 py-3 font-semibold text-ink">{p.budget.toLocaleString("fr-FR")} €</td>
+          <td className="px-4 py-3 text-ink">{p.pct.toLocaleString("fr-FR")} % ({p.count} sur {bilan2025.maison.retainedCount})</td>
+          <td className="px-4 py-3 text-muted">{p.medianSurface !== null ? `${p.medianSurface} m²` : "données insuffisantes"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+Pour une analyse par commune et par palier de budget, voir le guide [Quel budget pour acheter une maison en Pévèle ?](/guides/quel-budget-pour-acheter-en-pevele), qui reste calculé en continu (données non figées), contrairement à ce bilan.
+
+## Maisons et appartements
+
+Le marché des appartements est nettement plus restreint en Pévèle : {bilan2025.appartement.totalCount} ventes enregistrées en 2025, {bilan2025.appartement.retainedCount} retenues, pour un prix médian de <DvfMetric value={bilan2025.appartement.medianPrixM2} unit="eur" /> / m² (<DvfMetric value={bilan2025.appartement.medianPrixTotal} unit="eur" /> pour un appartement type).
+
+Cet échantillon reste géographiquement concentré : 60,4 % des ventes d'appartements de la Pévèle se situent dans seulement 5 communes (Orchies, Templeuve-en-Pévèle, Cysoing, Pont-à-Marcq, Avelin). Le prix médian « Pévèle » des appartements reflète donc surtout ces communes, pas une moyenne représentative des 44.
+
+## Comment lire ces chiffres
+
+Ce bilan est un instantané, pas un baromètre en temps réel : il a été calculé le {fmtDate(bilan2025.dataComputedAt)} à partir du jeu DVF disponible à cette date (dernière mise à jour du jeu de données : {fmtDate(bilan2025.sourceDatasetDate)}), selon la méthode {bilan2025.methodologyVersion} (voir la [méthodologie](/methodologie)). Les pages [/prix](/prix) et les guides évolutifs du site restent recalculés en continu à chaque import DVF — pour un chiffre à jour sur une commune précise, ce sont elles qu'il faut consulter, pas ce bilan.
+
+Aucune médiane de ce document n'est republiée si l'échantillon sous-jacent est insuffisant : c'est pourquoi certaines communes ou certains croisements (variation par commune, notamment) n'apparaissent pas ici.

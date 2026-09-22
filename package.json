@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "dvf:import": "tsx scripts/import-dvf.ts",
+    "bilan:generate": "tsx scripts/generate-bilan-2025.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

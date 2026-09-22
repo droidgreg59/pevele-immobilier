@@ -61,6 +61,12 @@ export default async function PrixPage() {
         </p>
       ) : null}
 
+      <p className="mt-4 text-[13px] text-muted">
+        <Link href="/guides/bilan-immobilier-pevele-2025" className="font-semibold text-blue">
+          Lire le Bilan immobilier de la Pévèle 2025 →
+        </Link>
+      </p>
+
       <div className="mt-7 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm">
         <table className="w-full min-w-[560px] border-collapse text-[13.5px]">
           <thead>

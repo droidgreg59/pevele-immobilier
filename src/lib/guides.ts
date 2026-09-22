@@ -8,7 +8,7 @@ import "server-only";
  * @next/mdx ne le supporte pas nativement).
  */
 
-export type GuideType = "guide" | "comparatif";
+export type GuideType = "guide" | "comparatif" | "bilan";
 
 export type GuideMetadata = {
   title: string;
@@ -34,6 +34,16 @@ export type GuideMetadata = {
    * exactement 2 éléments pour que la relation guide↔paire reste détectée.
    */
   comparisonPair?: [string, string];
+  /**
+   * Pour type "bilan" uniquement : période couverte par les données figées
+   * (ex. "2025") et date à laquelle le snapshot a été calculé — distinctes
+   * de publishedAt/updatedAt, qui décrivent l'état ÉDITORIAL du texte, pas
+   * celui des données. Un bilan n'a pas de DataFreshnessNote (contradictoire
+   * avec un contenu figé) : ces deux champs remplacent cet affichage par une
+   * mention statique écrite dans le contenu lui-même.
+   */
+  dataPeriod?: string;
+  dataComputedAt?: string;
 };
 
 /** Identité éditoriale constante des guides — jamais une personne physique (voir AGENTS.md). */
@@ -44,6 +54,7 @@ export const GUIDE_SLUGS = [
   "quel-budget-pour-acheter-en-pevele",
   "communes-pevele-avec-gare",
   "cysoing-ou-templeuve-en-pevele",
+  "bilan-immobilier-pevele-2025",
 ] as const;
 
 export type GuideSlug = (typeof GUIDE_SLUGS)[number];
