@@ -130,7 +130,7 @@ export default function MapPanel({
                 >
                   dès {Math.round((s.minPrix ?? 0) / 1000)}k€
                 </text>
-              ) : hovered || !s.isSmall ? (
+              ) : !hovered && !s.isSmall ? (
                 <text
                   x={s.cx}
                   y={s.cy}
@@ -140,7 +140,7 @@ export default function MapPanel({
                   fontWeight={600}
                   fill="var(--pvl-muted-2)"
                   className="pointer-events-none select-none"
-                  style={{ opacity: hovered ? 0.9 : 0.65 }}
+                  style={{ opacity: 0.65 }}
                 >
                   {s.labelCourt}
                 </text>
@@ -148,6 +148,34 @@ export default function MapPanel({
             </g>
           );
         })}
+        {/* Nom complet de la commune sans annonce survolée, agrandi et
+            haloté de blanc — remplace l'abrégé labelCourt (« CAPPELLE-EN-
+            PÉV. », « AUCHY-LEZ-ORCH. »...) qui restait tronqué au survol.
+            Rendu en dernier pour ne jamais être masqué par une commune
+            voisine quand le texte déborde du polygone. Les communes avec
+            annonces gardent leur prix affiché ci-dessus, inchangé. */}
+        {(() => {
+          const s = shapes.find((s) => s.slug === hoveredVillageSlug);
+          if (!s || s.count > 0) return null;
+          return (
+            <text
+              x={s.cx}
+              y={s.cy}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={9}
+              fontWeight={700}
+              fill="var(--pvl-ink)"
+              stroke="#fff"
+              strokeWidth={3}
+              strokeLinejoin="round"
+              paintOrder="stroke"
+              className="pointer-events-none select-none"
+            >
+              {s.nom}
+            </text>
+          );
+        })()}
       </svg>
       {!hasAnyMatch ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] text-muted">
