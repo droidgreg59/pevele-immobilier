@@ -52,10 +52,9 @@ export default function VendrePage() {
       </Link>
 
       <p className="mt-5 max-w-[70ch] text-[15px] leading-[1.6] text-muted">
-        Au lieu de choisir entre vendre seul ou confier entièrement votre bien
-        à une agence, composez votre accompagnement : uniquement les services
-        dont vous avez besoin, pas de commission imposée sur ce que vous ne
-        voulez pas.
+        Estimez votre bien, publiez votre annonce vous-même, ou confiez la
+        vente à une agence de la Pévèle : à vous de choisir ce qui correspond
+        à votre situation.
       </p>
 
       <div className="mt-7 grid grid-cols-1 gap-3.5 sm:grid-cols-3">
