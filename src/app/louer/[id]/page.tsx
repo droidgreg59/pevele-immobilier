@@ -5,6 +5,7 @@ import { getSession, isParticulierSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
 import { getOpenHouseForListing } from "@/lib/open-house";
+import { getVisitFormContext } from "@/lib/visits";
 import { getCommuneRisques } from "@/lib/georisques";
 import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageCoords } from "@/data/village-coords";
@@ -53,13 +54,19 @@ export default async function LouerListingPage({
       ? getCommuneRisques(village.insee, villageCoords[village.insee] ?? null)
       : Promise.resolve(null),
   ]);
-  const [isFavorited, openHouse, similar] = await Promise.all([
+  // Contexte du formulaire de visite (téléphone à pré-remplir, demande déjà
+  // envoyée) — inutile pour le propriétaire lui-même ou un compte pro,
+  // qui ne voient de toute façon jamais ce formulaire.
+  const eligibleForVisitForm =
+    session !== null && isParticulierSession(session) && session.userId !== listing.ownerId;
+  const [isFavorited, openHouse, similar, visitFormContext] = await Promise.all([
     session ? isListingFavorited(session.userId, listing.id) : Promise.resolve(false),
     getOpenHouseForListing(listing.id, session?.userId),
     getSimilarListings(
       listing,
       nearestVillages(listing.villageSlug, 4).map((v) => v.slug)
     ),
+    eligibleForVisitForm && session ? getVisitFormContext(session.userId, listing.id) : Promise.resolve(null),
   ]);
 
   return (
@@ -88,6 +95,12 @@ export default async function LouerListingPage({
         amenities={village ? villageAmenities[village.insee] ?? null : null}
         similar={similar}
         viewerNom={session?.nom ?? ""}
+        defaultTelephone={visitFormContext?.telephone ?? null}
+        existingVisitRequest={
+          visitFormContext?.existingRequest
+            ? { ...visitFormContext.existingRequest, ownerIsAgency: listing.owner.type === "AGENCE" }
+            : null
+        }
       />
     </>
   );

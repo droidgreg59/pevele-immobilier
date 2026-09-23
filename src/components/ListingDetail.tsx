@@ -38,7 +38,7 @@ import FavoriteButton from "./FavoriteButton";
 import ListingCard from "./ListingCard";
 import CommuneMiniMap from "./CommuneMiniMap";
 import PhotoGallery from "./PhotoGallery";
-import VisitRequestForm from "./VisitRequestForm";
+import VisitRequestForm, { type ExistingVisitRequestInfo } from "./VisitRequestForm";
 import OpenHouseSignupForm from "./OpenHouseSignupForm";
 import PurchaseCostBlock from "./PurchaseCostBlock";
 import BottomSheet from "./BottomSheet";
@@ -475,6 +475,8 @@ export default function ListingDetail({
   amenities,
   similar = [],
   viewerNom = "",
+  defaultTelephone = null,
+  existingVisitRequest = null,
 }: {
   listing: ListingWithOwner;
   dvfStats: DvfVillageStats | null;
@@ -491,6 +493,10 @@ export default function ListingDetail({
   amenities: VillageAmenities | null;
   similar?: ListingWithOwner[];
   viewerNom?: string;
+  /** Téléphone du compte connecté, pour pré-remplir la demande de visite. */
+  defaultTelephone?: string | null;
+  /** Dernière demande de visite déjà envoyée par le visiteur pour ce bien, s'il y en a une. */
+  existingVisitRequest?: ExistingVisitRequestInfo | null;
 }) {
   const [visitSheetOpen, setVisitSheetOpen] = useState(false);
   // La barre d'action mobile est en `position: fixed` : elle doit être
@@ -835,7 +841,7 @@ export default function ListingDetail({
               isLoggedIn ? (
                 isParticulier ? (
                   <div className="hidden md:block">
-                    <VisitRequestForm listingId={listing.id} />
+                    <VisitRequestForm listingId={listing.id} defaultTelephone={defaultTelephone} existingRequest={existingVisitRequest} />
                   </div>
                 ) : null
               ) : (
@@ -1022,7 +1028,7 @@ export default function ListingDetail({
                     onClick={() => setVisitSheetOpen(true)}
                     className="flex-1 rounded-full bg-yellow px-5 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm"
                   >
-                    Demander une visite
+                    {existingVisitRequest ? "Ma demande de visite" : "Demander une visite"}
                   </button>
                 ) : (
                   <Link
@@ -1048,13 +1054,13 @@ export default function ListingDetail({
       <BottomSheet
         open={visitSheetOpen}
         onClose={() => setVisitSheetOpen(false)}
-        title="Demander une visite"
+        title={existingVisitRequest ? "Ma demande de visite" : "Demander une visite"}
       >
         <span className="mb-1 flex items-center gap-1.5 text-[12.5px] text-muted">
           <Heart className="h-3.5 w-3.5" strokeWidth={1.75} />
           {listing.titre}
         </span>
-        <VisitRequestForm listingId={listing.id} />
+        <VisitRequestForm listingId={listing.id} defaultTelephone={defaultTelephone} existingRequest={existingVisitRequest} />
       </BottomSheet>
     </div>
   );

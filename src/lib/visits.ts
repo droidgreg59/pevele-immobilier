@@ -56,3 +56,37 @@ export async function getVisitRequestsByUser(authorId: string): Promise<VisitReq
     },
   });
 }
+
+export type ExistingVisitRequest = {
+  createdAt: Date;
+  preferredDate: Date | null;
+  traite: boolean;
+};
+
+export type VisitFormContext = {
+  /** Téléphone déjà connu du compte, pour pré-remplir le formulaire — reste modifiable. */
+  telephone: string | null;
+  /** Dernière demande déjà envoyée par ce visiteur pour ce bien, s'il y en a une — le
+   * formulaire est alors remplacé par un état de suivi plutôt que rouvert. */
+  existingRequest: ExistingVisitRequest | null;
+};
+
+/**
+ * Contexte pour pré-remplir/masquer le formulaire de demande de visite d'une
+ * fiche annonce — jamais appelé pour le propriétaire de l'annonce ni un
+ * visiteur non connecté (voir acheter/[id]/page.tsx et louer/[id]/page.tsx).
+ */
+export async function getVisitFormContext(
+  userId: string,
+  listingId: string
+): Promise<VisitFormContext> {
+  const [user, existingRequest] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { telephone: true } }),
+    prisma.visitRequest.findFirst({
+      where: { listingId, authorId: userId },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true, preferredDate: true, traite: true },
+    }),
+  ]);
+  return { telephone: user?.telephone ?? null, existingRequest };
+}
