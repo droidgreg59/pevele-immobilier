@@ -852,7 +852,8 @@ export default function ListingDetail({
                   >
                     Connectez-vous
                   </Link>{" "}
-                  pour contacter le propriétaire et demander une visite.
+                  pour contacter {particulier ? "le propriétaire" : "l'agence"} et demander une
+                  visite.
                 </p>
               )
             ) : listing.visitesGroupees ? (
