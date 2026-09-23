@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
-import { getPendingVerifications } from "@/lib/agency-verification";
+import { getPendingVerifications, getUnsubmittedAgencies } from "@/lib/agency-verification";
 import { reviewAgencyVerificationAction } from "@/lib/admin-users-actions";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,10 @@ export const metadata: Metadata = {
 
 export default async function AdminVerificationsPage() {
   await requireAdmin();
-  const pending = await getPendingVerifications();
+  const [pending, unsubmitted] = await Promise.all([
+    getPendingVerifications(),
+    getUnsubmittedAgencies(),
+  ]);
 
   return (
     <div className="animate-fade-up mx-auto max-w-[900px] px-9 py-8">
@@ -29,7 +32,7 @@ export default async function AdminVerificationsPage() {
       <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
         {pending.length > 0
           ? `${pending.length} demande${pending.length > 1 ? "s" : ""} en attente. Contrôlez le SIRET et le numéro de carte professionnelle (carte T) avant de valider.`
-          : "Aucune demande de vérification en attente."}
+          : "Aucune demande de vérification soumise."}
       </p>
 
       <div className="mt-7 flex flex-col gap-5">
@@ -112,6 +115,75 @@ export default async function AdminVerificationsPage() {
           </div>
         ))}
       </div>
+
+      <h2 className="m-0 mt-10 font-display text-xl text-ink">
+        Agences inscrites, non soumises ({unsubmitted.length})
+      </h2>
+      <p className="mt-2 max-w-[64ch] text-[13.5px] leading-[1.6] text-muted">
+        Elles n&apos;ont pas (encore) soumis leur SIRET et leur carte professionnelle
+        depuis leur compte — mais restent invisibles dans l&apos;annuaire et sur leurs
+        annonces tant que vous ne les validez pas, avec ou sans cette étape.
+      </p>
+
+      {unsubmitted.length === 0 ? (
+        <p className="mt-3 text-[14px] text-muted">Aucune agence en attente.</p>
+      ) : (
+        <div className="mt-5 flex flex-col gap-4">
+          {unsubmitted.map((a) => (
+            <div key={a.id} className="flex flex-col gap-3 rounded-2xl border border-dashed border-line bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-[16px] font-bold text-ink">{a.entreprise ?? a.nom}</span>
+                <span className="text-[12px] text-muted-2">
+                  Inscrite le {a.createdAt.toLocaleDateString("fr-FR")}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-1.5 text-[13px] text-ink sm:grid-cols-2">
+                <span className="text-muted">Contact : {a.email}{a.telephone ? ` · ${a.telephone}` : ""}</span>
+                <span className="text-muted">
+                  Diffusion :{" "}
+                  {a.modeAnnonces === "AUTOMATISE"
+                    ? `automatisée (${a.logicielMetier ?? "logiciel non précisé"}) — à recontacter pour le branchement`
+                    : "manuelle"}
+                </span>
+              </div>
+
+              <div className="mt-1 flex flex-wrap items-start gap-3">
+                <form action={reviewAgencyVerificationAction}>
+                  <input type="hidden" name="userId" value={a.id} />
+                  <input type="hidden" name="decision" value="verifier" />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-yellow px-5 py-2.5 text-[12.5px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
+                  >
+                    Valider quand même →
+                  </button>
+                </form>
+                <details className="flex-1">
+                  <summary className="cursor-pointer text-[12.5px] font-semibold text-muted hover:text-ink">
+                    Refuser…
+                  </summary>
+                  <form action={reviewAgencyVerificationAction} className="mt-2 flex flex-col gap-2">
+                    <input type="hidden" name="userId" value={a.id} />
+                    <input type="hidden" name="decision" value="refuser" />
+                    <textarea
+                      name="raison"
+                      rows={2}
+                      placeholder="Motif communiqué à l'agence"
+                      className="rounded-xl border border-line bg-white px-3 py-2 text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+                    />
+                    <button
+                      type="submit"
+                      className="self-start rounded-full border border-line px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+                    >
+                      Confirmer le refus
+                    </button>
+                  </form>
+                </details>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

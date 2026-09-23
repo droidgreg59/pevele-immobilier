@@ -28,7 +28,14 @@ export async function deleteUserAction(
   return {};
 }
 
-/** L'admin valide ou refuse une demande de vérification d'agence. */
+/**
+ * L'admin valide ou refuse une agence — que ce soit une demande de
+ * vérification soumise (SIRET/carte T, `EN_ATTENTE`) ou une agence
+ * fraîchement inscrite qui n'a pas encore fait cette démarche
+ * (`NON_SOUMISE`, voir getUnsubmittedAgencies) : la vérification reste une
+ * décision manuelle de l'admin dans les deux cas, pas un contrôle
+ * automatisé conditionné à la soumission de justificatifs.
+ */
 export async function reviewAgencyVerificationAction(formData: FormData) {
   await requireAdmin();
   const userId = String(formData.get("userId") ?? "");
@@ -37,12 +44,12 @@ export async function reviewAgencyVerificationAction(formData: FormData) {
   if (decision !== "verifier" && decision !== "refuser") redirect("/admin/verifications");
 
   const agency = await prisma.user.findFirst({
-    where: { id: userId, type: "AGENCE", verifStatut: "EN_ATTENTE" },
+    where: { id: userId, type: "AGENCE", verifStatut: { in: ["EN_ATTENTE", "NON_SOUMISE"] } },
     select: { email: true, nom: true, entreprise: true },
   });
 
   await prisma.user.updateMany({
-    where: { id: userId, type: "AGENCE", verifStatut: "EN_ATTENTE" },
+    where: { id: userId, type: "AGENCE", verifStatut: { in: ["EN_ATTENTE", "NON_SOUMISE"] } },
     data: {
       verifStatut: decision === "verifier" ? "VERIFIEE" : "REFUSEE",
       verifTraiteeLe: new Date(),

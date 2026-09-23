@@ -95,6 +95,48 @@ export async function getPendingVerifications(): Promise<PendingVerification[]> 
   });
 }
 
+export type UnsubmittedAgency = {
+  id: string;
+  nom: string;
+  entreprise: string | null;
+  email: string;
+  telephone: string | null;
+  createdAt: Date;
+  modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
+  logicielMetier: string | null;
+};
+
+/**
+ * Agences inscrites mais qui n'ont pas (encore) soumis SIRET/carte
+ * professionnelle depuis /compte/agence/profil — sans quoi elles n'apparaissent
+ * jamais sur cette page : le badge « annonces en attente » ne portait que sur
+ * `EN_ATTENTE`, laissant les agences fraîchement inscrites invisibles pour
+ * l'admin (elles le restent aussi publiquement, voir PUBLIC_OWNER_WHERE dans
+ * listings.ts) sans aucune action possible. `reviewAgencyVerificationAction`
+ * permet de les valider directement depuis cette liste, sans attendre cette
+ * soumission — la vérification reste de toute façon une décision manuelle de
+ * l'admin, pas un contrôle automatisé.
+ */
+export async function getUnsubmittedAgencies(): Promise<UnsubmittedAgency[]> {
+  return prisma.user.findMany({
+    where: { type: "AGENCE", verifStatut: "NON_SOUMISE" },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      nom: true,
+      entreprise: true,
+      email: true,
+      telephone: true,
+      createdAt: true,
+      modeAnnonces: true,
+      logicielMetier: true,
+    },
+  });
+}
+
+/** Nombre total d'agences nécessitant une action admin (soumises ou non). */
 export async function getPendingVerificationCount(): Promise<number> {
-  return prisma.user.count({ where: { type: "AGENCE", verifStatut: "EN_ATTENTE" } });
+  return prisma.user.count({
+    where: { type: "AGENCE", verifStatut: { in: ["EN_ATTENTE", "NON_SOUMISE"] } },
+  });
 }
