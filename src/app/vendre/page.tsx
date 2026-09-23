@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Calculator, Home as HomeIcon, Users } from "lucide-react";
-import { packs } from "@/data/packs";
-import PackCard from "@/components/PackCard";
 
 export const metadata: Metadata = {
   title: "Vendre son bien en Pévèle",
@@ -85,19 +83,6 @@ export default function VendrePage() {
             </Link>
           );
         })}
-      </div>
-
-      <div className="mt-11">
-        <h2 className="m-0 font-display text-2xl text-ink">Composez votre accompagnement</h2>
-        <p className="mt-2 max-w-[70ch] text-[14.5px] leading-[1.6] text-muted">
-          Quatre formules, du simple dépôt d&apos;annonce à l&apos;accompagnement complet.
-          Choisissez, vous pourrez toujours ajuster ensuite.
-        </p>
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {packs.map((pack) => (
-            <PackCard key={pack.slug} pack={pack} />
-          ))}
-        </div>
       </div>
 
       <div className="mt-9 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-surface px-6 py-5">
