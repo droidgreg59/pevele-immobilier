@@ -133,12 +133,14 @@ export function visitRequestReceivedEmail(opts: {
   listingHref: string;
   authorNom: string;
   message: string;
+  preferredDateLabel?: string | null;
 }): { subject: string; html: string } {
   return {
     subject: `Nouvelle demande de visite — ${opts.listingTitre}`,
     html: layout(
       "Nouvelle demande de visite",
       p(`<b>${opts.authorNom}</b> souhaite visiter votre annonce « ${opts.listingTitre} ».`) +
+        (opts.preferredDateLabel ? p(`Créneau souhaité : <b>${opts.preferredDateLabel}</b>`) : "") +
         p(`Message : « ${opts.message} »`),
       { label: "Voir la demande", href: `${SITE_URL}${opts.listingHref}` }
     ),

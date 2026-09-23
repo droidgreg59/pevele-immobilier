@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { getEstimationRequestsByUser } from "@/lib/estimations";
 import { getOpenHouseRegistrationsByUser } from "@/lib/open-house";
 import { getVisitRequestsByUser } from "@/lib/visits";
+import { formatPreferredDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function CompteParticulierDemarchesPage() {
     id: v.id,
     message: v.message,
     traite: v.traite,
-    preferredDateLabel: v.preferredDate ? v.preferredDate.toLocaleDateString("fr-FR") : null,
+    preferredDateLabel: formatPreferredDateTime(v.preferredDate),
     listingTitre: v.listing.titre,
     listingHref: `/${v.listing.transaction === "VENTE" ? "acheter" : "louer"}/${v.listing.id}`,
   }));

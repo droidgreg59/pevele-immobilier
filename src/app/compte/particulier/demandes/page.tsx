@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getVisitRequestsForOwner } from "@/lib/visits";
 import { getPendingOpenHouseRegistrationsForOwner } from "@/lib/open-house";
-import { fullName } from "@/lib/format";
+import { fullName, formatPreferredDateTime } from "@/lib/format";
 import VisitRequestList from "@/components/VisitRequestList";
 import OpenHouseRegistrationList from "@/components/OpenHouseRegistrationList";
 
@@ -33,7 +33,7 @@ export default async function CompteParticulierDemandesPage() {
     id: v.id,
     message: v.message,
     telephone: v.telephone,
-    preferredDateLabel: v.preferredDate ? v.preferredDate.toLocaleDateString("fr-FR") : null,
+    preferredDateLabel: formatPreferredDateTime(v.preferredDate),
     traite: v.traite,
     createdLabel: v.createdAt.toLocaleDateString("fr-FR"),
     authorNom: fullName(v.author.prenom, v.author.nom),

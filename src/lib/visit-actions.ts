@@ -9,7 +9,7 @@ import { visitRequestReceivedEmail } from "./email-templates";
 import { sendPushNotification } from "./push";
 import { logEvent } from "./events";
 import { verifyTurnstile } from "./turnstile";
-import { fullName } from "./format";
+import { fullName, formatPreferredDateTime } from "./format";
 
 export type VisitFormState = { error?: string; success?: boolean; ownerIsAgency?: boolean };
 
@@ -42,6 +42,7 @@ export async function createVisitRequestAction(
   const message = String(formData.get("message") ?? "").trim();
   const telephone = String(formData.get("telephone") ?? "").trim();
   const preferredDateRaw = String(formData.get("preferredDate") ?? "").trim();
+  const preferredTimeRaw = String(formData.get("preferredTime") ?? "").trim();
 
   if (!message) {
     return { error: "Merci d'ajouter un message." };
@@ -52,13 +53,18 @@ export async function createVisitRequestAction(
   if (!isValidPhoneNumber(telephone)) {
     return { error: "Merci d'indiquer un numéro de téléphone valide." };
   }
+  // Date et heure vont ensemble ou pas du tout — une date sans heure (ou
+  // l'inverse) laisserait un créneau ambigu à l'agence/au propriétaire.
+  if (Boolean(preferredDateRaw) !== Boolean(preferredTimeRaw)) {
+    return { error: "Merci d'indiquer une date ET une heure, ou de laisser les deux champs vides." };
+  }
   if (preferredDateRaw && !isDateAfterToday(preferredDateRaw)) {
     return { error: "La date souhaitée doit être postérieure à aujourd'hui." };
   }
 
-  const preferredDate = preferredDateRaw ? new Date(preferredDateRaw) : null;
+  const preferredDate = preferredDateRaw ? new Date(`${preferredDateRaw}T${preferredTimeRaw}`) : null;
   if (preferredDate && Number.isNaN(preferredDate.getTime())) {
-    return { error: "Date souhaitée invalide." };
+    return { error: "Date ou heure souhaitée invalide." };
   }
 
   await prisma.visitRequest.create({
@@ -82,6 +88,7 @@ export async function createVisitRequestAction(
     listingHref: detailPath,
     authorNom,
     message,
+    preferredDateLabel: formatPreferredDateTime(preferredDate),
   });
   await sendEmail({ to: listing.owner.email, subject, html });
   await sendPushNotification(listing.ownerId, {

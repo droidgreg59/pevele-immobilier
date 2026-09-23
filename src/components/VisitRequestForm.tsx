@@ -54,17 +54,28 @@ export default function VisitRequestForm({ listingId }: { listingId: string }) {
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            Téléphone
+            Heure souhaitée
           </span>
           <input
-            name="telephone"
-            type="tel"
-            required
-            placeholder="ex. 06 00 00 00 00"
+            name="preferredTime"
+            type="time"
             className="rounded-xl border border-line bg-white px-3.5 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       </div>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Téléphone
+        </span>
+        <input
+          name="telephone"
+          type="tel"
+          required
+          placeholder="ex. 06 00 00 00 00"
+          className="rounded-xl border border-line bg-white px-3.5 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+        />
+      </label>
 
       <TurnstileWidget action="visit_request" resetKey={state.error} />
 
