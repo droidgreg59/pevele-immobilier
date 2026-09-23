@@ -53,14 +53,18 @@ export const metadata: Metadata = {
     title: "Pévèle Immobilier — Annonces et prix immobiliers dans toute la Pévèle",
     description:
       "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 44 communes.",
-    images: [{ url: "/images/camphin-en-pevele.png" }],
+    // Générée à la volée (voir opengraph-image.tsx + src/lib/og.tsx), jamais
+    // un fichier statique : l'ancienne image public/images/camphin-en-pevele.png
+    // s'est avérée corrompue (quasi entièrement noire au partage) sans qu'aucun
+    // outil ne le signale avant un partage réel du lien (iMessage, WhatsApp...).
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Pévèle Immobilier — Annonces et prix immobiliers dans toute la Pévèle",
     description:
       "Le portail de référence des annonces et des prix immobiliers de la Pévèle, agences et particuliers réunis.",
-    images: ["/images/camphin-en-pevele.png"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,

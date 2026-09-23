@@ -97,3 +97,54 @@ export function listingOgImage(listing: {
     OG_SIZE
   );
 }
+
+/**
+ * Carte OpenGraph par défaut du site (accueil, et toute page qui n'a pas sa
+ * propre image — voir metadata.openGraph.images dans layout.tsx). Même
+ * discipline que listingOgImage() : uniquement du texte généré, jamais de
+ * photo distante chargée, donc jamais en échec de rendu — remplace
+ * l'ancienne image statique public/images/camphin-en-pevele.png, dont le
+ * fichier s'est avéré corrompu (quasi entièrement noire) sans que rien ne le
+ * signale avant un partage réel du lien.
+ */
+export function siteOgImage(): ImageResponse {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: `linear-gradient(135deg, ${BLUE} 0%, #1b2f78 100%)`,
+          color: "#fff",
+          fontFamily: "sans-serif",
+        }}
+      >
+        <div style={{ display: "flex", fontSize: 88, fontWeight: 800 }}>
+          <span>Pévèle</span>
+          <span style={{ color: YELLOW, marginLeft: 20 }}>Immobilier</span>
+        </div>
+        <div style={{ display: "flex", fontSize: 32, fontWeight: 600, color: "#c9d3f2", marginTop: 24 }}>
+          Annonces et prix immobiliers dans toute la Pévèle
+        </div>
+        <div
+          style={{
+            display: "flex",
+            fontSize: 24,
+            fontWeight: 700,
+            padding: "10px 28px",
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.15)",
+            marginTop: 40,
+          }}
+        >
+          44 communes · agences et particuliers
+        </div>
+      </div>
+    ),
+    OG_SIZE
+  );
+}
