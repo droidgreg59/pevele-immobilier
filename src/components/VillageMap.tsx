@@ -127,17 +127,22 @@ export default function VillageMap({
                     filter={active ? "url(#village-shape-shadow)" : undefined}
                     className="transition-colors duration-150"
                   />
-                  {active || !v.isSmall ? (
+                  {/* Nom abrégé, seulement pour les communes non actives — le
+                      village survolé/sélectionné affiche son nom complet
+                      juste après, dans une passe à part rendue au-dessus de
+                      toutes les formes pour ne jamais être masqué par une
+                      commune voisine quand le texte déborde du polygone. */}
+                  {!active && !v.isSmall ? (
                     <text
                       x={v.boundary.cx}
                       y={v.boundary.cy}
                       textAnchor="middle"
                       dominantBaseline="middle"
-                      fontSize={active ? 8.5 : 7.5}
-                      fontWeight={active ? 700 : 600}
-                      fill={isSelected ? "#fff" : active ? "var(--pvl-blue)" : "var(--pvl-ink)"}
-                      className="pointer-events-none select-none transition-all duration-150"
-                      style={{ opacity: active ? 1 : 0.82 }}
+                      fontSize={7.5}
+                      fontWeight={600}
+                      fill="var(--pvl-ink)"
+                      className="pointer-events-none select-none"
+                      style={{ opacity: 0.82 }}
                     >
                       {v.labelCourt}
                     </text>
@@ -145,6 +150,32 @@ export default function VillageMap({
                 </g>
               );
             })}
+            {/* Nom complet de la commune survolée/sélectionnée, agrandi et
+                haloté de blanc pour rester lisible même quand il déborde du
+                (souvent minuscule) polygone — rendu en dernier, donc toujours
+                au-dessus des autres formes. */}
+            {(() => {
+              const v = shapes[activeIndex];
+              if (!v?.boundary) return null;
+              return (
+                <text
+                  x={v.boundary.cx}
+                  y={v.boundary.cy}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize={10}
+                  fontWeight={700}
+                  fill="var(--pvl-ink)"
+                  stroke="#fff"
+                  strokeWidth={3}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
+                  className="pointer-events-none select-none transition-all duration-150"
+                >
+                  {v.nom}
+                </text>
+              );
+            })()}
           </svg>
         </div>
 

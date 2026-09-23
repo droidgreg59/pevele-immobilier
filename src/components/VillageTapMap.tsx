@@ -126,12 +126,16 @@ export default function VillageTapMap({
                   y={v.b.cy}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize={7}
+                  fontSize={8}
                   fontWeight={700}
                   fill="var(--pvl-blue)"
+                  stroke="#fff"
+                  strokeWidth={2.5}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
                   className="pointer-events-none select-none"
                 >
-                  {v.labelCourt}
+                  {v.nom}
                 </text>
               ) : null}
             </g>
