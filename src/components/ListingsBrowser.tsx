@@ -163,6 +163,13 @@ export default function ListingsBrowser({
     setParams({ villages: slugs.join(",") || undefined, q: undefined });
   }
 
+  function toggleVillageOnMap(slug: string) {
+    const next = villageSlugs.includes(slug)
+      ? villageSlugs.filter((s) => s !== slug)
+      : [...villageSlugs, slug];
+    selectVillages(next);
+  }
+
   function handleSaveSearch() {
     setSaved(true);
     startTransition(async () => {
@@ -213,7 +220,8 @@ export default function ListingsBrowser({
       aggregates={mapAggregates}
       hoveredVillageSlug={hoveredVillageSlug}
       onHoverVillage={setHoveredVillageSlug}
-      onSelectVillage={(slug) => setParams({ villages: slug, q: undefined })}
+      onSelectVillage={toggleVillageOnMap}
+      selectedVillageSlugs={villageSlugs}
     />
   );
 
@@ -407,41 +415,66 @@ export default function ListingsBrowser({
         </div>
       </div>
 
-      {total === 0 ? (
-        <div className="mt-10 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-surface px-6 py-10 text-center">
-          <p className="m-0 text-[15px] font-semibold text-ink">
-            Aucune annonce ne correspond à ces critères pour le moment.
-          </p>
-          <p className="m-0 max-w-[46ch] text-[13.5px] leading-[1.6] text-muted">
-            Le marché de la Pévèle est petit — c&apos;est normal. Élargissez vos critères ou
-            enregistrez une alerte pour être prévenu dès qu&apos;un bien correspond.
-          </p>
-          {villageSlugs.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => setParams({ villages: undefined })}
-              className="text-[13px] font-semibold text-blue"
-            >
-              Voir toute la Pévèle →
-            </button>
-          ) : null}
-        </div>
-      ) : viewMode === "carte" ? (
-        <div className="mt-6">{mapPanel}</div>
-      ) : viewMode === "liste_carte" ? (
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
-          <div>
-            <div className="grid grid-cols-1 gap-6.5 sm:grid-cols-2">{cards}</div>
-            {pagination}
+      {(() => {
+        const emptyState = (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-surface px-6 py-10 text-center">
+            <p className="m-0 text-[15px] font-semibold text-ink">
+              Aucune annonce ne correspond à ces critères pour le moment.
+            </p>
+            <p className="m-0 max-w-[46ch] text-[13.5px] leading-[1.6] text-muted">
+              Le marché de la Pévèle est petit — c&apos;est normal. Élargissez vos critères ou
+              enregistrez une alerte pour être prévenu dès qu&apos;un bien correspond.
+            </p>
+            {villageSlugs.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setParams({ villages: undefined })}
+                className="text-[13px] font-semibold text-blue"
+              >
+                Voir toute la Pévèle →
+              </button>
+            ) : null}
           </div>
-          {mapPanel}
-        </div>
-      ) : (
-        <>
-          <div className="mt-6 grid grid-cols-1 gap-6.5 sm:grid-cols-2 lg:grid-cols-3">{cards}</div>
-          {pagination}
-        </>
-      )}
+        );
+
+        if (viewMode === "carte") {
+          return (
+            <div className="mt-6">
+              {total === 0 ? <div className="mb-4">{emptyState}</div> : null}
+              {mapPanel}
+            </div>
+          );
+        }
+
+        if (viewMode === "liste_carte") {
+          return (
+            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+              <div>
+                {total === 0 ? (
+                  emptyState
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 gap-6.5 sm:grid-cols-2">{cards}</div>
+                    {pagination}
+                  </>
+                )}
+              </div>
+              {mapPanel}
+            </div>
+          );
+        }
+
+        if (total === 0) {
+          return <div className="mt-10">{emptyState}</div>;
+        }
+
+        return (
+          <>
+            <div className="mt-6 grid grid-cols-1 gap-6.5 sm:grid-cols-2 lg:grid-cols-3">{cards}</div>
+            {pagination}
+          </>
+        );
+      })()}
 
       <div className="mt-7 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-surface px-6 py-5">
         <span className="text-[15px] text-ink">

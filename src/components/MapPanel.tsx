@@ -35,12 +35,16 @@ export default function MapPanel({
   hoveredVillageSlug,
   onHoverVillage,
   onSelectVillage,
+  selectedVillageSlugs = [],
 }: {
   aggregates: BrowseMapAggregate[];
   hoveredVillageSlug: string | null;
   onHoverVillage: (slug: string | null) => void;
+  /** Bascule (ajoute/retire) la commune dans la sélection — clic = multi-sélection, pas remplacement. */
   onSelectVillage: (slug: string) => void;
+  selectedVillageSlugs?: string[];
 }) {
+  const selectedSet = useMemo(() => new Set(selectedVillageSlugs), [selectedVillageSlugs]);
   const shapes = useMemo<VillageShape[]>(() => {
     const byVillage = new Map(aggregates.map((a) => [a.villageSlug, a]));
     return villages
@@ -94,6 +98,7 @@ export default function MapPanel({
         {shapes.map((s) => {
           const hovered = hoveredVillageSlug === s.slug;
           const active = s.count > 0;
+          const selected = selectedSet.has(s.slug);
           return (
             <g
               key={s.slug}
@@ -107,12 +112,12 @@ export default function MapPanel({
                 fill={
                   hovered
                     ? "var(--pvl-blue)"
-                    : active
+                    : active || selected
                       ? "var(--pvl-blue-soft)"
                       : "var(--pvl-surface)"
                 }
-                stroke="#fff"
-                strokeWidth={hovered ? 2 : 1.5}
+                stroke={selected ? "var(--pvl-blue)" : "#fff"}
+                strokeWidth={hovered || selected ? 2 : 1.5}
                 strokeLinejoin="round"
                 filter={hovered ? "url(#map-panel-shadow)" : undefined}
                 className="transition-colors duration-150"
@@ -130,6 +135,16 @@ export default function MapPanel({
                 >
                   dès {Math.round((s.minPrix ?? 0) / 1000)}k€
                 </text>
+              ) : selected ? (
+                <circle
+                  cx={s.cx}
+                  cy={s.cy}
+                  r={3.2}
+                  fill="var(--pvl-blue)"
+                  stroke="#fff"
+                  strokeWidth={1}
+                  className="pointer-events-none"
+                />
               ) : !hovered && !s.isSmall ? (
                 <text
                   x={s.cx}
