@@ -161,9 +161,12 @@ function MatchCounter({ count }: { count: number }) {
 export default function ProjectWizard({
   isLoggedIn,
   listings,
+  hasCourtiers = false,
 }: {
   isLoggedIn: boolean;
   listings: ListingWithOwner[];
+  /** Au moins un courtier vérifié est inscrit — sinon le CTA financement de l'étape finale reste masqué. */
+  hasCourtiers?: boolean;
 }) {
   const [hasStarted, setHasStarted] = useState(false);
   const [step, setStep] = useState<Step>("projet");
@@ -815,6 +818,21 @@ export default function ProjectWizard({
               Retour à mon compte →
             </Link>
           </div>
+
+          {hasCourtiers && transaction !== "LOCATION" ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/10 px-5 py-4">
+              <span className="max-w-[42ch] text-[13.5px] leading-[1.5] text-white/90">
+                Besoin d&apos;un financement ? Faites une demande d&apos;étude gratuite auprès
+                d&apos;un courtier de la Pévèle.
+              </span>
+              <Link
+                href="/courtiers"
+                className="shrink-0 rounded-full bg-white px-5 py-2.5 text-[12.5px] font-bold text-blue transition hover:brightness-95"
+              >
+                Voir les courtiers →
+              </Link>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

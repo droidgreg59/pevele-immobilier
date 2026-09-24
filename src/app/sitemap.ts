@@ -3,6 +3,7 @@ import { villages } from "@/data/villages";
 import { getPublicListings } from "@/lib/listings";
 import { getAgencies } from "@/lib/agencies";
 import { getArtisans } from "@/lib/artisans";
+import { getVerifiedCourtiers } from "@/lib/courtiers";
 import { getDvfStatsForAllVillages } from "@/lib/dvf";
 import { getAllGuidesMetadata } from "@/lib/guides";
 import { LAUNCH_PAIRS, isIndexablePair } from "@/lib/comparateur";
@@ -22,16 +23,18 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/guides", priority: 0.7, changeFrequency: "monthly" },
   { path: "/comparer", priority: 0.6, changeFrequency: "monthly" },
   { path: "/artisans", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/courtiers", priority: 0.7, changeFrequency: "weekly" },
   { path: "/professionnels", priority: 0.7, changeFrequency: "weekly" },
   { path: "/espace-professionnel", priority: 0.5, changeFrequency: "monthly" },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [ventes, locations, agencies, artisans, dvfStats, guides, dvfUpdatedAt] = await Promise.all([
+  const [ventes, locations, agencies, artisans, courtiers, dvfStats, guides, dvfUpdatedAt] = await Promise.all([
     getPublicListings("VENTE"),
     getPublicListings("LOCATION"),
     getAgencies(),
     getArtisans(),
+    getVerifiedCourtiers(),
     getDvfStatsForAllVillages(),
     getAllGuidesMetadata(),
     getCronLastRun("dvf-import"),
@@ -104,6 +107,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
+  const courtierEntries: MetadataRoute.Sitemap = courtiers.map((c) => ({
+    url: `${SITE_URL}/courtiers/${c.id}`,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
+
   const guideEntries: MetadataRoute.Sitemap = guides.map((g) => ({
     url: `${SITE_URL}/guides/${g.slug}`,
     lastModified: g.metadata.updatedAt,
@@ -134,6 +143,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...locationEntries,
     ...agencyEntries,
     ...artisanEntries,
+    ...courtierEntries,
     ...guideEntries,
     ...comparateurEntries,
   ];

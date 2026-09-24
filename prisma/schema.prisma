@@ -52,13 +52,19 @@ model User {
   /// affirmations de fraîcheur des annonces (voir src/lib/freshness.ts).
   xmlLastSuccessAt    DateTime?
   isAdmin             Boolean             @default(false)
-  /// Vérification de l'agence (loi Hoguet) : SIRET + numéro de carte
-  /// professionnelle (carte T) + CCI émettrice, validés à la main depuis le
-  /// back-office. `siretDenomination` = raison sociale officielle récupérée en
+  /// Vérification professionnelle — agence (loi Hoguet) : SIRET + numéro de
+  /// carte professionnelle (carte T) + CCI émettrice. Courtier (IOBSP) :
+  /// SIRET + `orias` (numéro ORIAS), `carteProfessionnelle`/`carteProCci`
+  /// restent alors vides. Validés à la main depuis le back-office dans les
+  /// deux cas. `siretDenomination` = raison sociale officielle récupérée en
   /// best-effort sur recherche-entreprises.api.gouv.fr à la soumission.
   siret               String?
   carteProfessionnelle String?
   carteProCci         String?
+  /// Numéro d'immatriculation ORIAS (courtier bancaire uniquement) —
+  /// obligatoire pour exercer en tant qu'IOBSP, contrôlé par un admin depuis
+  /// /admin/verifications avant que le compte n'apparaisse dans /courtiers.
+  orias               String?
   /// Texte libre saisi à la demande de vérification (voir agency-verification.ts),
   /// affiché uniquement en interne sur /admin/verifications. Déprécié depuis le
   /// Sprint 5 pour tout usage public : remplacé par AgencyServiceArea, structuré
@@ -66,6 +72,9 @@ model User {
   /// soumises — jamais lu par une nouvelle fonctionnalité publique.
   zoneCouverte        String?
   siretDenomination   String?
+  /// Statut de vérification professionnelle — partagé par AGENCE (Hoguet) et
+  /// COURTIER (ORIAS), malgré le nom de l'enum conservé pour ne pas risquer
+  /// un renommage de type sur la base partagée dev/prod.
   verifStatut         AgencyVerificationStatus @default(NON_SOUMISE)
   verifSoumiseLe      DateTime?
   verifTraiteeLe      DateTime?
@@ -104,6 +113,8 @@ model User {
   openHouseRegistrations OpenHouseRegistration[]
   pushSubscriptions   PushSubscription[]
   serviceAreas        AgencyServiceArea[]
+  financingRequestsRecues    FinancingRequest[] @relation("CourtierFinancingRequests")
+  financingRequestsEnvoyees  FinancingRequest[] @relation("AuthorFinancingRequests")
 
   @@index([emailVerifyToken])
 }
@@ -112,6 +123,7 @@ enum AccountType {
   PARTICULIER
   AGENCE
   ARTISAN
+  COURTIER
 }
 
 enum AgencyVerificationStatus {
@@ -210,6 +222,7 @@ model Listing {
   favorites          Favorite[]
   proposals          ListingProposal[]
   visitRequests      VisitRequest[]
+  financingRequests  FinancingRequest[]
   openHouse          OpenHouse?
   createdAt          DateTime          @default(now())
   /// Date de passage à RETIREE (soft-delete) — null tant que l'annonce est active.
@@ -506,6 +519,31 @@ model DevisRequest {
   createdAt DateTime @default(now())
 
   @@index([artisanId])
+}
+
+/// Demande d'étude de financement envoyée par un utilisateur à un courtier
+/// bancaire vérifié — depuis sa fiche publique (/courtiers/[id]), depuis le
+/// bloc « Besoin d'un financement ? » d'une fiche annonce (`listingId` alors
+/// renseigné pour donner du contexte au courtier), ou vers l'annuaire depuis
+/// le tunnel Mon projet. Email + push envoyés au courtier à la création (voir
+/// financing-actions.ts) — contrairement au commentaire historique équivalent
+/// sur DevisRequest, resté obsolète depuis que devis-actions.ts envoie
+/// effectivement un email.
+model FinancingRequest {
+  id         String   @id @default(cuid())
+  courtier   User     @relation("CourtierFinancingRequests", fields: [courtierId], references: [id], onDelete: Cascade)
+  courtierId String
+  author     User     @relation("AuthorFinancingRequests", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   String
+  listing    Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  listingId  String?
+  message    String
+  telephone  String?
+  traite     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([courtierId])
+  @@index([listingId])
 }
 
 /// Demande de visite envoyée par un utilisateur sur une annonce — pas de

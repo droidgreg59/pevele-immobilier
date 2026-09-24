@@ -5,6 +5,7 @@ import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
 import { getSession, isParticulierSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
+import { getVerifiedCourtiers } from "@/lib/courtiers";
 import { getOpenHouseForListing } from "@/lib/open-house";
 import { getVisitFormContext } from "@/lib/visits";
 import { getCommuneRisques } from "@/lib/georisques";
@@ -47,12 +48,15 @@ export default async function AcheterListingPage({
   if (!listing || listing.transaction !== "VENTE") notFound();
 
   const village = getVillageBySlug(listing.villageSlug);
-  const [dvfStats, dvfRecent, priceHistory, session, artisans, risques] = await Promise.all([
+  const [dvfStats, dvfRecent, priceHistory, session, artisans, courtiers, risques] = await Promise.all([
     getDvfStatsForVillage(listing.villageSlug),
     getRecentDvfTransactions(listing.villageSlug),
     getPriceHistory(listing.id),
     getSession(),
     getArtisansForVillage(listing.villageSlug),
+    // Achat = le cas d'usage typique du financement — jamais pour une
+    // location (voir louer/[id]/page.tsx, qui ne fait pas cet appel).
+    getVerifiedCourtiers(),
     village
       ? getCommuneRisques(village.insee, villageCoords[village.insee] ?? null)
       : Promise.resolve(null),
@@ -93,6 +97,7 @@ export default async function AcheterListingPage({
         isParticulier={isParticulierSession(session)}
         isFavorited={isFavorited}
         artisans={artisans}
+        courtiers={courtiers}
         openHouse={openHouse}
         risques={risques}
         amenities={village ? villageAmenities[village.insee] ?? null : null}

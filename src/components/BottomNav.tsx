@@ -44,7 +44,7 @@ export default function BottomNav() {
     };
   }, []);
 
-  const isPro = accountType === "AGENCE" || accountType === "ARTISAN";
+  const isPro = accountType === "AGENCE" || accountType === "ARTISAN" || accountType === "COURTIER";
   const TABS = isPro ? BASE_TABS : [...BASE_TABS, ...PARTICULIER_TABS];
 
   const isActive = (href: string) =>

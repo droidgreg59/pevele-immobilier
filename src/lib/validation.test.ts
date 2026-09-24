@@ -3,6 +3,8 @@ import {
   isValidPhoneNumber,
   isValidSiret,
   normalizeSiret,
+  isValidOrias,
+  normalizeOrias,
   normalizeUrl,
   isValidHttpUrl,
   todayDateString,
@@ -59,6 +61,28 @@ describe("normalizeSiret", () => {
   it("ne garde que les chiffres", () => {
     expect(normalizeSiret("356 0000 0000 048")).toBe("35600000000048");
     expect(normalizeSiret("siret: 123-456")).toBe("123456");
+  });
+});
+
+describe("isValidOrias", () => {
+  it("accepte 5 à 10 chiffres, espaces tolérés", () => {
+    expect(isValidOrias("12345")).toBe(true);
+    expect(isValidOrias("1234567890")).toBe(true);
+    expect(isValidOrias("12 345 678")).toBe(true);
+  });
+
+  it("refuse moins de 5 ou plus de 10 chiffres, ou des non-chiffres", () => {
+    expect(isValidOrias("1234")).toBe(false);
+    expect(isValidOrias("12345678901")).toBe(false);
+    expect(isValidOrias("ORIAS123")).toBe(false);
+    expect(isValidOrias("")).toBe(false);
+  });
+});
+
+describe("normalizeOrias", () => {
+  it("ne garde que les chiffres", () => {
+    expect(normalizeOrias("12 345 678")).toBe("12345678");
+    expect(normalizeOrias("ORIAS 12345")).toBe("12345");
   });
 });
 

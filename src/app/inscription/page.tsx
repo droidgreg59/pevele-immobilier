@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-const VALID_TYPES = ["PARTICULIER", "AGENCE", "ARTISAN"] as const;
+const VALID_TYPES = ["PARTICULIER", "AGENCE", "ARTISAN", "COURTIER"] as const;
 type AccountType = (typeof VALID_TYPES)[number];
 
 export default async function InscriptionPage({

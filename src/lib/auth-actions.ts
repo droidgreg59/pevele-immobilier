@@ -6,7 +6,12 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { getSession, setSessionCookie, clearSessionCookie } from "./session";
 import { sendEmail } from "./email";
-import { emailVerificationEmail, passwordResetEmail, newAgencySignupEmail } from "./email-templates";
+import {
+  emailVerificationEmail,
+  passwordResetEmail,
+  newAgencySignupEmail,
+  newCourtierSignupEmail,
+} from "./email-templates";
 import { SITE_URL } from "./seo";
 import { verifyTurnstile } from "./turnstile";
 import { isValidPhoneNumber } from "./validation";
@@ -50,7 +55,13 @@ export async function registerAction(
 ): Promise<AuthState> {
   const rawType = formData.get("type");
   const type: AccountType =
-    rawType === "AGENCE" ? "AGENCE" : rawType === "ARTISAN" ? "ARTISAN" : "PARTICULIER";
+    rawType === "AGENCE"
+      ? "AGENCE"
+      : rawType === "ARTISAN"
+        ? "ARTISAN"
+        : rawType === "COURTIER"
+          ? "COURTIER"
+          : "PARTICULIER";
   const prenom = String(formData.get("prenom") ?? "").trim();
   const nom = String(formData.get("nom") ?? "").trim();
   const entreprise = String(formData.get("entreprise") ?? "").trim();
@@ -82,6 +93,9 @@ export async function registerAction(
   }
   if (type === "ARTISAN" && !entreprise) {
     return { error: "Merci d'indiquer le nom de votre entreprise." };
+  }
+  if (type === "COURTIER" && !entreprise) {
+    return { error: "Merci d'indiquer le nom de votre société de courtage." };
   }
   if (modeAnnonces === "AUTOMATISE" && !logicielMetier) {
     return { error: "Merci d'indiquer le logiciel métier utilisé pour vos annonces." };
@@ -130,7 +144,16 @@ export async function registerAction(
     await sendEmail({ to: "contact@pevele-immobilier.fr", subject, html });
   }
 
-  if (type === "AGENCE" || type === "ARTISAN") {
+  if (type === "COURTIER") {
+    const { subject, html } = newCourtierSignupEmail({
+      courtierNom: entreprise,
+      email,
+      telephone,
+    });
+    await sendEmail({ to: "contact@pevele-immobilier.fr", subject, html });
+  }
+
+  if (type === "AGENCE" || type === "ARTISAN" || type === "COURTIER") {
     redirect("/bienvenue");
   }
 

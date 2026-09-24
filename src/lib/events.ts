@@ -28,7 +28,9 @@ export type EventName =
   | "favorite_added"
   | "review_submitted"
   | "mandate_created"
-  | "agency_verification_submitted";
+  | "agency_verification_submitted"
+  | "courtier_verification_submitted"
+  | "financing_requested";
 
 type LogEventData = {
   userId?: string | null;

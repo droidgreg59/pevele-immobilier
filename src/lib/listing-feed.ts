@@ -27,6 +27,9 @@ const CONTACT_LABEL: Record<ListingWithOwner["owner"]["type"], string> = {
   AGENCE: "agence",
   PARTICULIER: "particulier",
   ARTISAN: "artisan",
+  // Un courtier ne possède jamais d'annonce — présent uniquement pour
+  // satisfaire l'exhaustivité de AccountType.
+  COURTIER: "courtier",
 };
 
 const abs = (u: string) => (u.startsWith("http") ? u : `${SITE_URL}${u}`);

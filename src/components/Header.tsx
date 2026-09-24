@@ -20,6 +20,7 @@ const PEVELE_NAV = [
   { label: "Les villages", href: "/villages" },
   { label: "Prix de l'immobilier", href: "/prix" },
   { label: "Artisans & habitat", href: "/artisans" },
+  { label: "Courtiers", href: "/courtiers" },
   { label: "Professionnels", href: "/professionnels" },
 ];
 

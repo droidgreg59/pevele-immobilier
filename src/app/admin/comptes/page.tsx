@@ -14,6 +14,7 @@ const TYPE_LABEL: Record<string, string> = {
   PARTICULIER: "Particulier",
   AGENCE: "Agence",
   ARTISAN: "Artisan",
+  COURTIER: "Courtier",
 };
 
 export default async function AdminComptesPage({
@@ -42,6 +43,7 @@ export default async function AdminComptesPage({
           { label: "Particuliers", value: "PARTICULIER" },
           { label: "Agences", value: "AGENCE" },
           { label: "Artisans", value: "ARTISAN" },
+          { label: "Courtiers", value: "COURTIER" },
         ].map((f) => (
           <Link
             key={f.label}

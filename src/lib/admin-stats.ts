@@ -3,7 +3,7 @@ import { prisma } from "./prisma";
 import type { EventName } from "./events";
 
 export type AdminStats = {
-  usersByType: { PARTICULIER: number; AGENCE: number; ARTISAN: number };
+  usersByType: { PARTICULIER: number; AGENCE: number; ARTISAN: number; COURTIER: number };
   totalUsers: number;
   listingsByStatut: { EN_VERIFICATION: number; PUBLIEE: number; REFUSEE: number };
   totalListings: number;
@@ -16,6 +16,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     particuliers,
     agences,
     artisans,
+    courtiers,
     enVerification,
     publiees,
     refusees,
@@ -25,6 +26,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     prisma.user.count({ where: { type: "PARTICULIER" } }),
     prisma.user.count({ where: { type: "AGENCE" } }),
     prisma.user.count({ where: { type: "ARTISAN" } }),
+    prisma.user.count({ where: { type: "COURTIER" } }),
     prisma.listing.count({ where: { statut: "EN_VERIFICATION" } }),
     prisma.listing.count({ where: { statut: "PUBLIEE" } }),
     prisma.listing.count({ where: { statut: "REFUSEE" } }),
@@ -33,8 +35,8 @@ export async function getAdminStats(): Promise<AdminStats> {
   ]);
 
   return {
-    usersByType: { PARTICULIER: particuliers, AGENCE: agences, ARTISAN: artisans },
-    totalUsers: particuliers + agences + artisans,
+    usersByType: { PARTICULIER: particuliers, AGENCE: agences, ARTISAN: artisans, COURTIER: courtiers },
+    totalUsers: particuliers + agences + artisans + courtiers,
     listingsByStatut: { EN_VERIFICATION: enVerification, PUBLIEE: publiees, REFUSEE: refusees },
     totalListings: enVerification + publiees + refusees,
     totalReviews,
@@ -55,10 +57,12 @@ export const EVENT_LABELS: { name: EventName; label: string }[] = [
   { name: "estimation_requested", label: "Demandes d'estimation" },
   { name: "mandate_created", label: "Mandats de recherche confiés" },
   { name: "devis_requested", label: "Demandes de devis artisan" },
+  { name: "financing_requested", label: "Demandes d'étude de financement" },
   { name: "review_submitted", label: "Avis déposés" },
   { name: "listing_submitted", label: "Annonces déposées" },
   { name: "listing_published", label: "Annonces publiées (modération)" },
   { name: "agency_verification_submitted", label: "Vérifications agence soumises" },
+  { name: "courtier_verification_submitted", label: "Vérifications courtier soumises" },
 ];
 
 /**

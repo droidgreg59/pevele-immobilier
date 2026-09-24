@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getAgencyById } from "@/lib/agencies";
 import { getArtisanById } from "@/lib/artisans";
+import { getCourtierByIdOwner } from "@/lib/courtiers";
 import AgencyOnboardingWizard from "@/components/AgencyOnboardingWizard";
 import ArtisanOnboardingWizard from "@/components/ArtisanOnboardingWizard";
+import CourtierOnboardingWizard from "@/components/CourtierOnboardingWizard";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,12 @@ export default async function BienvenuePage() {
     const agency = await getAgencyById(session.userId);
     if (!agency) redirect("/compte");
     return <AgencyOnboardingWizard agency={agency} />;
+  }
+
+  if (session.type === "COURTIER") {
+    const courtier = await getCourtierByIdOwner(session.userId);
+    if (!courtier) redirect("/compte");
+    return <CourtierOnboardingWizard courtier={courtier} />;
   }
 
   const artisan = await getArtisanById(session.userId);

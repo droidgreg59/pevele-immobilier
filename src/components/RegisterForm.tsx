@@ -6,7 +6,7 @@ import TurnstileWidget from "./TurnstileWidget";
 
 const initialState: AuthState = {};
 
-type AccountType = "PARTICULIER" | "AGENCE" | "ARTISAN";
+type AccountType = "PARTICULIER" | "AGENCE" | "ARTISAN" | "COURTIER";
 
 export default function RegisterForm({
   next,
@@ -21,7 +21,7 @@ export default function RegisterForm({
   );
   const [type, setType] = useState<AccountType>(initialType ?? "PARTICULIER");
   const [modeAnnonces, setModeAnnonces] = useState<"MANUEL" | "AUTOMATISE">("MANUEL");
-  const isPro = type === "AGENCE" || type === "ARTISAN";
+  const isPro = type === "AGENCE" || type === "ARTISAN" || type === "COURTIER";
 
   return (
     <form action={formAction} className="flex max-w-[520px] flex-col gap-4">
@@ -29,7 +29,7 @@ export default function RegisterForm({
       {next ? <input type="hidden" name="next" value={next} /> : null}
       {type === "AGENCE" ? <input type="hidden" name="modeAnnonces" value={modeAnnonces} /> : null}
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <button
           type="button"
           onClick={() => setType("PARTICULIER")}
@@ -63,6 +63,17 @@ export default function RegisterForm({
         >
           Artisan
         </button>
+        <button
+          type="button"
+          onClick={() => setType("COURTIER")}
+          className="rounded-xl px-3 py-3.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-surface"
+          style={{
+            background: type === "COURTIER" ? "var(--pvl-blue-soft)" : "#fff",
+            border: `1px solid ${type === "COURTIER" ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
+          }}
+        >
+          Courtier
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -91,7 +102,11 @@ export default function RegisterForm({
       {isPro ? (
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            {type === "AGENCE" ? "Nom de l'agence" : "Nom de l'entreprise"}
+            {type === "AGENCE"
+              ? "Nom de l'agence"
+              : type === "COURTIER"
+                ? "Nom de la société de courtage"
+                : "Nom de l'entreprise"}
           </span>
           <input
             name="entreprise"

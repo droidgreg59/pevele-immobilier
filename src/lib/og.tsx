@@ -21,7 +21,7 @@ export function listingOgImage(listing: {
   commune: string;
   transaction: TransactionType;
   typeBien: "MAISON" | "APPARTEMENT" | "TERRAIN";
-  ownerType: "PARTICULIER" | "AGENCE" | "ARTISAN";
+  ownerType: "PARTICULIER" | "AGENCE" | "ARTISAN" | "COURTIER";
 }): ImageResponse {
   const typeBienLabel =
     listing.typeBien === "MAISON"

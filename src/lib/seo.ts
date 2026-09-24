@@ -134,7 +134,7 @@ export function listingJsonLd(listing: {
   chambres: number;
   createdAt: Date;
   photos: { url: string }[];
-  owner: { nom: string; entreprise: string | null; type: "PARTICULIER" | "AGENCE" | "ARTISAN" };
+  owner: { nom: string; entreprise: string | null; type: "PARTICULIER" | "AGENCE" | "ARTISAN" | "COURTIER" };
 }) {
   const path = listing.transaction === "VENTE" ? "acheter" : "louer";
   const village = getVillageBySlug(listing.villageSlug);
@@ -186,7 +186,7 @@ export function listingJsonLd(listing: {
 
 export function localBusinessJsonLd(entity: {
   id: string;
-  path: "professionnels" | "artisans";
+  path: "professionnels" | "artisans" | "courtiers";
   nom: string;
   description?: string | null;
   telephone?: string | null;

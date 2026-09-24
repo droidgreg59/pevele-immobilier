@@ -272,6 +272,21 @@ export function devisRequestReceivedEmail(opts: { authorNom: string; message: st
   };
 }
 
+export function financingRequestReceivedEmail(opts: { authorNom: string; message: string }): {
+  subject: string;
+  html: string;
+} {
+  return {
+    subject: "Nouvelle demande d'étude de financement",
+    html: layout(
+      "Nouvelle demande d'étude de financement",
+      p(`<b>${opts.authorNom}</b> vous a envoyé une demande d'étude de financement.`) +
+        p(`Message : « ${opts.message} »`),
+      { label: "Voir la demande", href: `${SITE_URL}/compte` }
+    ),
+  };
+}
+
 export function proposalReceivedEmail(opts: {
   agencyNom: string;
   listingTitre: string;
@@ -341,6 +356,52 @@ export function agencyVerificationReviewedEmail(opts: {
             (opts.raison ? p(`Motif : ${opts.raison}`) : "") +
             p("Corrigez les informations depuis « Coordonnées de mon agence » et resoumettez."),
       { label: "Ma page agence", href: `${SITE_URL}/compte/agence` }
+    ),
+  };
+}
+
+export function courtierVerificationReviewedEmail(opts: {
+  courtierNom: string;
+  verified: boolean;
+  raison?: string;
+}): { subject: string; html: string } {
+  return {
+    subject: opts.verified
+      ? "Votre compte courtier est vérifié sur Pévèle Immobilier"
+      : "Vérification de votre compte courtier — informations à revoir",
+    html: layout(
+      opts.verified ? "Courtier vérifié" : "Vérification non validée",
+      opts.verified
+        ? p(
+            `<b>${opts.courtierNom}</b> est désormais un courtier vérifié : le badge apparaît sur votre page publique et dans l'annuaire.`
+          )
+        : p(`La vérification de <b>${opts.courtierNom}</b> n'a pas pu être validée.`) +
+            (opts.raison ? p(`Motif : ${opts.raison}`) : "") +
+            p("Corrigez les informations depuis « Vérification » et resoumettez."),
+      { label: "Ma page courtier", href: `${SITE_URL}/compte/courtier` }
+    ),
+  };
+}
+
+/**
+ * Notification interne (contact@pevele-immobilier.fr, jamais envoyée au
+ * courtier) à l'inscription d'un nouveau compte courtier — même logique que
+ * newAgencySignupEmail : rappelle qu'il reste invisible publiquement tant
+ * qu'il n'est pas vérifié depuis /admin/verifications.
+ */
+export function newCourtierSignupEmail(opts: {
+  courtierNom: string;
+  email: string;
+  telephone: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `Nouveau courtier inscrit : ${opts.courtierNom}`,
+    html: layout(
+      "Nouveau courtier à vérifier",
+      p(
+        `<b>${opts.courtierNom}</b> vient de créer un compte courtier — il reste invisible dans l'annuaire tant qu'il n'est pas vérifié (numéro ORIAS).`
+      ) + p(`Contact : ${opts.email} · ${opts.telephone}`),
+      { label: "Voir les comptes courtier", href: `${SITE_URL}/admin/comptes?type=COURTIER` }
     ),
   };
 }

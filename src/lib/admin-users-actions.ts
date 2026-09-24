@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "./admin";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
-import { agencyVerificationReviewedEmail } from "./email-templates";
+import { agencyVerificationReviewedEmail, courtierVerificationReviewedEmail } from "./email-templates";
 import { deleteUserAccount, type DeleteUserResult } from "./admin-users";
 import { deleteListingUploadDir } from "./photo-upload";
 
@@ -64,6 +64,46 @@ export async function reviewAgencyVerificationAction(formData: FormData) {
       raison: decision === "refuser" ? raison : undefined,
     });
     await sendEmail({ to: agency.email, subject, html });
+  }
+
+  revalidatePath("/admin/verifications");
+  redirect("/admin/verifications");
+}
+
+/**
+ * Même logique que reviewAgencyVerificationAction, pour les courtiers
+ * bancaires (vérification ORIAS au lieu de SIRET/carte T) — action distincte
+ * plutôt qu'un paramètre partagé, pour ne pas toucher au flux agence déjà en
+ * production.
+ */
+export async function reviewCourtierVerificationAction(formData: FormData) {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+  const raison = String(formData.get("raison") ?? "").trim();
+  if (decision !== "verifier" && decision !== "refuser") redirect("/admin/verifications");
+
+  const courtier = await prisma.user.findFirst({
+    where: { id: userId, type: "COURTIER", verifStatut: { in: ["EN_ATTENTE", "NON_SOUMISE"] } },
+    select: { email: true, nom: true, entreprise: true },
+  });
+
+  await prisma.user.updateMany({
+    where: { id: userId, type: "COURTIER", verifStatut: { in: ["EN_ATTENTE", "NON_SOUMISE"] } },
+    data: {
+      verifStatut: decision === "verifier" ? "VERIFIEE" : "REFUSEE",
+      verifTraiteeLe: new Date(),
+      verifRaison: decision === "refuser" ? raison || "Justificatifs non conformes." : null,
+    },
+  });
+
+  if (courtier) {
+    const { subject, html } = courtierVerificationReviewedEmail({
+      courtierNom: courtier.entreprise ?? courtier.nom,
+      verified: decision === "verifier",
+      raison: decision === "refuser" ? raison : undefined,
+    });
+    await sendEmail({ to: courtier.email, subject, html });
   }
 
   revalidatePath("/admin/verifications");

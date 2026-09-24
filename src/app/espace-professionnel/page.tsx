@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Espace professionnel",
   description:
-    "Agences immobilières et artisans de la Pévèle : développez votre activité sur le portail local.",
+    "Agences immobilières, artisans et courtiers bancaires de la Pévèle : développez votre activité sur le portail local.",
   alternates: {
     canonical: "/espace-professionnel",
   },
@@ -42,9 +42,9 @@ export default function EspaceProfessionnelPage() {
           Développez votre activité en Pévèle
         </h1>
         <p className="mx-auto mt-1 max-w-[60ch] font-sans text-[15px] leading-[1.6] text-muted">
-          Agence immobilière ou artisan de l&apos;habitat : rejoignez le
-          portail local et connectez-vous directement avec les particuliers
-          de la région.
+          Agence immobilière, artisan de l&apos;habitat ou courtier bancaire :
+          rejoignez le portail local et connectez-vous directement avec les
+          particuliers de la région.
         </p>
       </div>
 
@@ -65,7 +65,7 @@ export default function EspaceProfessionnelPage() {
         ))}
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link
           href="/inscription?type=AGENCE"
           className="group flex flex-col items-start gap-2 rounded-2xl bg-blue p-7 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -91,6 +91,22 @@ export default function EspaceProfessionnelPage() {
           </span>
           <span className="text-[13.5px] leading-[1.5] text-white/80">
             Figurez dans l&apos;annuaire et recevez des demandes de devis.
+          </span>
+          <span className="mt-1 text-[13px] font-semibold">
+            Créer mon compte →
+          </span>
+        </Link>
+        <Link
+          href="/inscription?type=COURTIER"
+          className="group flex flex-col items-start gap-2 rounded-2xl bg-[var(--pvl-blue)] p-7 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <span className="text-[28px] leading-none">🏦</span>
+          <span className="font-display text-[18px] font-extrabold">
+            Je suis courtier bancaire
+          </span>
+          <span className="text-[13.5px] leading-[1.5] text-white/80">
+            Figurez dans l&apos;annuaire et recevez des demandes d&apos;étude
+            de financement.
           </span>
           <span className="mt-1 text-[13px] font-semibold">
             Créer mon compte →

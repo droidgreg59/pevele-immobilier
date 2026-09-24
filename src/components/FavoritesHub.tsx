@@ -8,6 +8,14 @@ import { formatPrix } from "@/lib/format";
 import { toggleFavoriteAction, updateFavoriteTagAction } from "@/lib/favorite-actions";
 import type { FavoriteTag } from "@/lib/favorite-actions";
 
+/** Un courtier ne possède jamais d'annonce en pratique — présent uniquement pour l'exhaustivité du type. */
+const OWNER_TYPE_LABEL: Record<FavoriteHubItem["ownerType"], string> = {
+  PARTICULIER: "Entre voisins",
+  AGENCE: "Agence",
+  ARTISAN: "Artisan",
+  COURTIER: "Courtier",
+};
+
 export type FavoriteHubItem = {
   id: string;
   listingId: string;
@@ -22,7 +30,7 @@ export type FavoriteHubItem = {
   prix: number;
   transaction: TransactionType;
   coverUrl?: string;
-  ownerType: "PARTICULIER" | "AGENCE" | "ARTISAN";
+  ownerType: "PARTICULIER" | "AGENCE" | "ARTISAN" | "COURTIER";
   pieces: number;
   surface: number;
   exterieur: string;
@@ -90,7 +98,7 @@ function FavoriteHubCard({
             color: particulier ? "var(--pvl-gold)" : "var(--pvl-blue)",
           }}
         >
-          {particulier ? "Entre voisins" : item.ownerType === "AGENCE" ? "Agence" : "Artisan"}
+          {OWNER_TYPE_LABEL[item.ownerType]}
         </span>
       </Link>
 

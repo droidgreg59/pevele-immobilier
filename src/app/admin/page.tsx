@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAdminStats } from "@/lib/admin-stats";
 import { getPendingVerificationCount } from "@/lib/agency-verification";
+import { getPendingCourtierVerificationCount } from "@/lib/courtier-verification";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,10 @@ function Tile({ label, value, href }: { label: string; value: number | string; h
 }
 
 export default async function AdminOverviewPage() {
-  const [stats, pendingVerifs] = await Promise.all([
+  const [stats, pendingVerifs, pendingCourtierVerifs] = await Promise.all([
     getAdminStats(),
     getPendingVerificationCount(),
+    getPendingCourtierVerificationCount(),
   ]);
 
   return (
@@ -41,16 +43,22 @@ export default async function AdminOverviewPage() {
           <Tile label="Particuliers" value={stats.usersByType.PARTICULIER} href="/admin/comptes?type=PARTICULIER" />
           <Tile label="Agences" value={stats.usersByType.AGENCE} href="/admin/comptes?type=AGENCE" />
           <Tile label="Artisans" value={stats.usersByType.ARTISAN} href="/admin/comptes?type=ARTISAN" />
+          <Tile label="Courtiers" value={stats.usersByType.COURTIER} href="/admin/comptes?type=COURTIER" />
           <Tile label="Tous les comptes" value={stats.totalUsers} href="/admin/comptes" />
         </div>
       </div>
 
       <div className="mt-7">
-        <span className="text-[11px] font-semibold text-muted">Agences</span>
+        <span className="text-[11px] font-semibold text-muted">Vérifications professionnelles</span>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Tile
-            label="Vérifications en attente"
+            label="Agences en attente"
             value={pendingVerifs}
+            href="/admin/verifications"
+          />
+          <Tile
+            label="Courtiers en attente"
+            value={pendingCourtierVerifs}
             href="/admin/verifications"
           />
         </div>

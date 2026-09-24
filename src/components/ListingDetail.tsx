@@ -20,6 +20,7 @@ import {
 import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import type { ArtisanSummary } from "@/lib/artisans";
+import type { CourtierSummary } from "@/lib/courtiers";
 import type { OpenHouseForListing } from "@/lib/open-house";
 import type { CommuneRisques } from "@/lib/georisques";
 import type { VillageAmenities } from "@/data/village-amenities";
@@ -470,6 +471,7 @@ export default function ListingDetail({
   isParticulier = true,
   isFavorited,
   artisans,
+  courtiers = [],
   openHouse,
   risques,
   amenities,
@@ -488,6 +490,8 @@ export default function ListingDetail({
   isParticulier?: boolean;
   isFavorited: boolean;
   artisans: ArtisanSummary[];
+  /** Absent (donc []) sur /louer — le financement n'a de sens que pour un achat. Bloc « Besoin d'un financement ? » masqué tant que ce tableau est vide (aucun courtier vérifié). */
+  courtiers?: CourtierSummary[];
   openHouse: OpenHouseForListing | null;
   risques: CommuneRisques | null;
   amenities: VillageAmenities | null;
@@ -991,6 +995,37 @@ export default function ListingDetail({
               </Link>
             </div>
           </div>
+
+          {courtiers.length > 0 ? (
+            <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+              <span className="text-[11px] font-semibold text-muted">
+                Besoin d&apos;un financement ?
+              </span>
+              <div className="mt-3 flex flex-col gap-2.5">
+                {courtiers.slice(0, 3).map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/courtiers/${c.id}`}
+                    className="flex flex-col gap-0.5 rounded-xl bg-surface px-3 py-2 transition hover:bg-blue-soft"
+                  >
+                    <span className="font-sans text-[13px] font-semibold text-ink">
+                      {c.entreprise ?? c.nom}
+                    </span>
+                    {c.categories.length > 0 ? (
+                      <span className="text-[11px] text-muted-2">
+                        {c.categories.join(" · ")}
+                      </span>
+                    ) : null}
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Link href="/courtiers" className="text-[12px] font-semibold text-blue">
+                  Tous les courtiers →
+                </Link>
+              </div>
+            </div>
+          ) : null}
         </aside>
       </div>
 

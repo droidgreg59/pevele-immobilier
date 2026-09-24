@@ -27,6 +27,23 @@ export function normalizeSiret(raw: string): string {
 }
 
 /**
+ * ORIAS (immatriculation IOBSP des courtiers bancaires) : contrôle de format
+ * souple — 5 à 10 chiffres une fois les espaces retirés. Contrairement au
+ * SIRET, l'ORIAS n'a pas de clé de contrôle publique connue ; la validité
+ * réelle du numéro reste vérifiée à la main par l'admin (annuaire ORIAS),
+ * comme le SIRET et la carte T le sont déjà pour les agences.
+ */
+export function isValidOrias(raw: string): boolean {
+  const digits = raw.replace(/\s/g, "");
+  return /^\d{5,10}$/.test(digits);
+}
+
+/** Ne garde que les chiffres d'un numéro ORIAS saisi. */
+export function normalizeOrias(raw: string): string {
+  return raw.replace(/\D/g, "");
+}
+
+/**
  * Ajoute `https://` devant une URL saisie sans schéma (ex. "www.site.fr" ou
  * "site.fr") — les champs `type="text"` (voir normalizeUrl côté formulaires)
  * n'imposent plus la saisie du schéma, très souvent omis par les utilisateurs.
