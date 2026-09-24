@@ -109,3 +109,29 @@ export async function reviewCourtierVerificationAction(formData: FormData) {
   revalidatePath("/admin/verifications");
   redirect("/admin/verifications");
 }
+
+/**
+ * Repasse une agence ou un courtier déjà VERIFIEE en EN_ATTENTE — retire
+ * immédiatement le compte de l'annuaire public (getAgencies()/
+ * getVerifiedCourtiers() ne montrent que verifStatut: "VERIFIEE") sans le
+ * refuser ni le supprimer : utile quand la fiche a besoin d'une correction
+ * (ex. logo manquant) avant de redevenir visible. Contrairement à un refus,
+ * n'envoie aucun email — ce n'est pas une décision négative, juste une pause
+ * de publication le temps d'un ajustement. Le compte réapparaît dans la
+ * liste « en attente » de /admin/verifications, prêt à être revalidé.
+ */
+export async function revertToVerificationPendingAction(formData: FormData) {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const accountType = String(formData.get("accountType") ?? "");
+  if (accountType !== "AGENCE" && accountType !== "COURTIER") redirect("/admin/comptes");
+
+  await prisma.user.updateMany({
+    where: { id: userId, type: accountType, verifStatut: "VERIFIEE" },
+    data: { verifStatut: "EN_ATTENTE", verifTraiteeLe: null, verifRaison: null },
+  });
+
+  revalidatePath("/admin/comptes");
+  revalidatePath("/admin/verifications");
+  redirect(`/admin/comptes?type=${accountType}`);
+}

@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
-import type { AccountType } from "@prisma/client";
+import type { AccountType, AgencyVerificationStatus } from "@prisma/client";
 
 export type UserSummary = {
   id: string;
@@ -11,6 +11,8 @@ export type UserSummary = {
   isAdmin: boolean;
   createdAt: Date;
   listingCount: number;
+  /** Pertinent seulement pour AGENCE/COURTIER — null pour les autres types. */
+  verifStatut: AgencyVerificationStatus | null;
 };
 
 export async function getAllUsers(): Promise<UserSummary[]> {
@@ -24,6 +26,7 @@ export async function getAllUsers(): Promise<UserSummary[]> {
       type: true,
       isAdmin: true,
       createdAt: true,
+      verifStatut: true,
       _count: { select: { listings: true } },
     },
   });
@@ -36,6 +39,7 @@ export async function getAllUsers(): Promise<UserSummary[]> {
     isAdmin: u.isAdmin,
     createdAt: u.createdAt,
     listingCount: u._count.listings,
+    verifStatut: u.type === "AGENCE" || u.type === "COURTIER" ? u.verifStatut : null,
   }));
 }
 
