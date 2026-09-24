@@ -47,6 +47,25 @@ export async function getAgencies(): Promise<AgencySummary[]> {
   }));
 }
 
+export type PendingAgencyPlaceholder = { ville: string | null };
+
+/**
+ * Agences réellement inscrites mais pas encore vérifiées (EN_ATTENTE ou
+ * NON_SOUMISE) — pour la section « Professionnels en cours d'intégration »
+ * de /professionnels (carte anonymisée, non cliquable). Ne sélectionne QUE
+ * la ville : aucune donnée permettant d'identifier le compte (nom, email,
+ * id, logo...) n'est exposée publiquement avant validation par un admin.
+ * Jamais de données inventées ici — si aucune agence réelle n'est en
+ * attente, la liste est vide et la section correspondante reste masquée.
+ */
+export async function getPendingAgencyPlaceholders(): Promise<PendingAgencyPlaceholder[]> {
+  return prisma.user.findMany({
+    where: { type: "AGENCE", verifStatut: { in: ["EN_ATTENTE", "NON_SOUMISE"] } },
+    orderBy: { createdAt: "asc" },
+    select: { ville: true },
+  });
+}
+
 const AGENCY_PROFILE_SELECT = {
   id: true,
   nom: true,
