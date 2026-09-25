@@ -15,7 +15,7 @@ const RAW: [string, string, string, string][] = [
     "SAINGHIN-EN-MÉL.",
     "Sainghin-en-Mélantois",
     "59523",
-    "Aux portes de la métropole, entre champs et golf — l’accès le plus direct vers Lille.",
+    "Aux portes de la métropole, entre champs et plateau du Mélantois — l’accès le plus direct vers Lille.",
   ],
   [
     "GRUSON",
@@ -63,7 +63,7 @@ const RAW: [string, string, string, string][] = [
     "CAMPHIN-EN-PÉV.",
     "Camphin-en-Pévèle",
     "59124",
-    "Pavé de la trouée d’Arenberg à deux pas, esprit village et grandes fermes en briques.",
+    "Secteurs pavés de Camphin-en-Pévèle et du Carrefour de l’Arbre (Paris-Roubaix) à deux pas, esprit village et grandes fermes en briques.",
   ],
   [
     "WANNEHAIN",
