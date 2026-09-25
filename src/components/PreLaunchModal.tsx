@@ -84,6 +84,26 @@ export default function PreLaunchModal() {
           préparons en ce moment avec les agences de la Pévèle la mise en place de
           leurs annonces.
         </p>
+        <p className="mt-3 rounded-2xl bg-surface px-4 py-3 text-[13.5px] leading-[1.6] text-muted">
+          <b className="text-ink">Courtiers et artisans</b>, rejoignez dès
+          maintenant l&apos;annuaire et recevez des demandes de financement ou de
+          devis :{" "}
+          <Link
+            href="/inscription?type=COURTIER"
+            onClick={handleDismiss}
+            className="font-semibold text-blue"
+          >
+            compte courtier
+          </Link>{" "}
+          ·{" "}
+          <Link
+            href="/inscription?type=ARTISAN"
+            onClick={handleDismiss}
+            className="font-semibold text-blue"
+          >
+            compte artisan
+          </Link>
+        </p>
 
         <div className="mt-5 flex flex-col gap-2.5">
           <Link
