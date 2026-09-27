@@ -20,7 +20,13 @@ export default async function DeposerPage() {
   if (!session) redirect("/connexion?next=/vendre/deposer");
 
   const accountLabel =
-    session.type === "AGENCE" ? session.nom : `${session.nom} (particulier)`;
+    session.type === "AGENCE"
+      ? session.nom
+      : session.type === "ARTISAN"
+        ? `${session.nom} (artisan)`
+        : session.type === "COURTIER"
+          ? `${session.nom} (courtier)`
+          : `${session.nom} (particulier)`;
 
   return (
     <div className="animate-fade-up mx-auto max-w-[900px] px-9 py-8">
