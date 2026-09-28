@@ -18,10 +18,10 @@ const MAIN_NAV = [
 const PEVELE_NAV = [
   { label: "La carte", href: "/carte" },
   { label: "Les villages", href: "/villages" },
+  { label: "Les agences", href: "/professionnels" },
   { label: "Prix de l'immobilier", href: "/prix" },
   { label: "Artisans & habitat", href: "/artisans" },
   { label: "Courtiers", href: "/courtiers" },
-  { label: "Professionnels", href: "/professionnels" },
 ];
 
 function navLinkClass(active: boolean): string {
