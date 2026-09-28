@@ -176,7 +176,7 @@ export default async function AgencyPage({
           </h1>
           {agency.verifStatut === "VERIFIEE" ? (
             <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#EAF3E8] px-3 py-1 text-[12px] font-semibold text-green">
-              ✓ Agence vérifiée — SIRET et carte professionnelle contrôlés
+              ✓ Agence vérifiée
             </span>
           ) : null}
         </div>
