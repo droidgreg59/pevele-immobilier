@@ -127,6 +127,7 @@ export default async function AgencyPage({
   );
 
   const adresseLine = [agency.codePostal, agency.ville].filter(Boolean).join(" ");
+  const publicEmail = agency.contactEmail ?? agency.email;
 
   return (
     <div className="animate-fade-up mx-auto max-w-[1200px] px-9 py-8">
@@ -136,7 +137,7 @@ export default async function AgencyPage({
           path: "professionnels",
           nom: agency.entreprise ?? agency.nom,
           telephone: agency.telephone,
-          email: agency.email,
+          email: publicEmail,
           adresse: agency.adresse,
           codePostal: agency.codePostal,
           ville: agency.ville,
@@ -215,9 +216,9 @@ export default async function AgencyPage({
               {agency.telephone}
             </a>
           ) : null}
-          <a href={`mailto:${agency.email}`} className="flex items-center gap-2 text-[14px] text-blue">
+          <a href={`mailto:${publicEmail}`} className="flex items-center gap-2 text-[14px] text-blue">
             <Mail className="h-4 w-4 shrink-0 text-muted-2" strokeWidth={1.75} />
-            {agency.email}
+            {publicEmail}
           </a>
           {agency.siteWeb ? (
             <a

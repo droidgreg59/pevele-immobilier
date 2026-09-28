@@ -25,6 +25,11 @@ model User {
   siteWeb             String?
   googleAvisUrl       String?
   logoUrl             String?
+  /// Email de contact affiché sur la fiche publique de l'agence (mailto +
+  /// JSON-LD) — distinct de `email` (identifiant de connexion, jamais
+  /// affiché publiquement). Null : la fiche retombe sur `email`. Agence
+  /// uniquement pour l'instant, éditable depuis /compte/agence/profil.
+  contactEmail        String?
   /// Mode de diffusion déclaré à l'inscription (agence uniquement) — MANUEL :
   /// saisie à la main depuis /vendre/deposer, comme un particulier.
   /// AUTOMATISE : l'agence a indiqué vouloir connecter son logiciel métier

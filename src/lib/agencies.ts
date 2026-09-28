@@ -71,6 +71,7 @@ const AGENCY_PROFILE_SELECT = {
   nom: true,
   entreprise: true,
   email: true,
+  contactEmail: true,
   telephone: true,
   adresse: true,
   codePostal: true,
@@ -93,6 +94,8 @@ export type AgencyProfile = {
   nom: string;
   entreprise: string | null;
   email: string;
+  /// Email de contact public — distinct de `email` (identifiant de connexion). Fiche publique : toujours `contactEmail ?? email`.
+  contactEmail: string | null;
   telephone: string | null;
   adresse: string | null;
   codePostal: string | null;
@@ -119,6 +122,7 @@ export async function getAgencyById(id: string): Promise<AgencyProfile | null> {
 
 export type AgencyProfileInput = {
   entreprise: string;
+  contactEmail?: string;
   telephone?: string;
   adresse?: string;
   codePostal?: string;
@@ -136,6 +140,7 @@ export async function updateAgencyProfile(
     where: { id: userId },
     data: {
       entreprise: input.entreprise,
+      contactEmail: input.contactEmail || null,
       telephone: input.telephone || null,
       adresse: input.adresse || null,
       codePostal: input.codePostal || null,

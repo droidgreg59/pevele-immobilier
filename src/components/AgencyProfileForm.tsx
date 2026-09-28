@@ -70,6 +70,23 @@ export default function AgencyProfileForm({
 
       <label className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+          Email de contact (facultatif)
+        </span>
+        <input
+          name="contactEmail"
+          type="email"
+          defaultValue={agency.contactEmail ?? ""}
+          placeholder={agency.email}
+          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+        />
+        <span className="text-[12px] text-muted-2">
+          Affiché sur votre fiche publique, à la place de l&apos;email de
+          connexion ({agency.email}) si vous en indiquez un différent.
+        </span>
+      </label>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
           Téléphone
         </span>
         <input

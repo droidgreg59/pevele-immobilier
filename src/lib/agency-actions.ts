@@ -10,7 +10,7 @@ import { isValidSiret, normalizeSiret } from "./validation";
 import { canManageServiceAreas } from "./agency-service-area";
 import { logEvent } from "./events";
 import { pickLogoFile, validateLogoFile, saveLogoFile, deleteLogoFile } from "./photo-upload";
-import { normalizeUrl, isValidHttpUrl } from "./validation";
+import { normalizeUrl, isValidHttpUrl, isValidEmail } from "./validation";
 
 export type AgencyProfileFormState = { error?: string };
 export type AgencyVerificationFormState = { error?: string; success?: boolean };
@@ -27,6 +27,7 @@ export async function updateAgencyProfileAction(
   }
 
   const entreprise = String(formData.get("entreprise") ?? "").trim();
+  const contactEmail = String(formData.get("contactEmail") ?? "").trim().toLowerCase();
   const telephone = String(formData.get("telephone") ?? "").trim();
   const adresse = String(formData.get("adresse") ?? "").trim();
   const codePostal = String(formData.get("codePostal") ?? "").trim();
@@ -36,6 +37,9 @@ export async function updateAgencyProfileAction(
 
   if (!entreprise) {
     return { error: "Merci d'indiquer le nom de l'agence." };
+  }
+  if (contactEmail && !isValidEmail(contactEmail)) {
+    return { error: "L'email de contact doit être une adresse valide." };
   }
   if (siteWeb && !isValidHttpUrl(siteWeb)) {
     return { error: "Le site web doit être une URL valide (https://...)." };
@@ -56,6 +60,7 @@ export async function updateAgencyProfileAction(
 
   await updateAgencyProfile(session.userId, {
     entreprise,
+    contactEmail,
     telephone,
     adresse,
     codePostal,

@@ -4,6 +4,11 @@ export function isValidPhoneNumber(raw: string): boolean {
   return /^(0[1-9]\d{8}|\+33[1-9]\d{8})$/.test(digits);
 }
 
+/** Contrôle de format simple, cohérent avec EMAIL_RE (auth-actions.ts) — pas de vérification de délivrabilité. */
+export function isValidEmail(raw: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
+}
+
 /** SIRET : 14 chiffres avec clé de Luhn valide (espaces tolérés). */
 export function isValidSiret(raw: string): boolean {
   const digits = raw.replace(/\s/g, "");
