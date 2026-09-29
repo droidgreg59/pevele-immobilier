@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
+import type { ComparableRow } from "./estimate";
 
 /**
  * Les DVF ne changent qu'au rythme de l'import (`/api/cron/dvf-import`, ~1×/
@@ -217,6 +218,46 @@ export const getDvfPriceByYear = unstable_cache(
       });
   },
   ["dvf-price-by-year"],
+  { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
+);
+
+/**
+ * Ventes d'un type de bien dans une commune, valeurs atypiques exclues, avec
+ * les champs utiles à la recherche de biens comparables de `/estimer`
+ * (voir `selectComparables` dans src/lib/estimate.ts).
+ */
+export type DvfComparableRow = ComparableRow & {
+  id: string;
+  /** ISO 8601 — pas de `Date`, que `unstable_cache` sérialiserait en chaîne. */
+  dateMutation: string;
+  valeurFonciere: number;
+  surfaceBati: number;
+  adresse: string | null;
+};
+
+export const getDvfComparableRows = unstable_cache(
+  async (villageSlug: string, typeLocal: DvfBienType): Promise<DvfComparableRow[]> => {
+    const [rows, bounds] = await Promise.all([
+      prisma.dvfTransaction.findMany({
+        where: { villageSlug, typeLocal },
+        select: {
+          id: true,
+          dateMutation: true,
+          valeurFonciere: true,
+          surfaceBati: true,
+          prixM2: true,
+          nombrePieces: true,
+          surfaceTerrain: true,
+          adresse: true,
+        },
+      }),
+      getDvfOutlierBounds(),
+    ]);
+    return rows
+      .filter((r) => isRetained(r.prixM2, bounds[typeLocal]))
+      .map((r) => ({ ...r, dateMutation: r.dateMutation.toISOString() }));
+  },
+  ["dvf-comparable-rows"],
   { revalidate: DVF_REVALIDATE, tags: [DVF_TAG] }
 );
 
