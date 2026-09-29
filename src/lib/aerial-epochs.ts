@@ -49,7 +49,21 @@ export function epochTileUrl(epoch: AerialEpoch): string {
   );
 }
 
+/** Modes d'affichage, comme sur « Remonter le temps » de l'IGN. */
+export const AERIAL_MODES = [
+  { id: "vertical", label: "Séparation verticale" },
+  { id: "horizontal", label: "Séparation horizontale" },
+  { id: "cote", label: "Côte à côte" },
+] as const;
+export type AerialMode = (typeof AERIAL_MODES)[number]["id"];
+export const DEFAULT_MODE: AerialMode = "vertical";
+
+function parseMode(raw: string | null): AerialMode {
+  return AERIAL_MODES.find((m) => m.id === raw)?.id ?? DEFAULT_MODE;
+}
+
 export type AerialViewState = {
+  mode: AerialMode;
   before: string;
   after: string;
   lat: number | null;
@@ -73,6 +87,7 @@ export function parseAerialParams(params: URLSearchParams): AerialViewState {
     return Number.isFinite(n) && n >= min && n <= max ? n : null;
   };
   return {
+    mode: parseMode(params.get("mode")),
     before,
     after,
     lat: num("lat", -90, 90),
@@ -82,6 +97,7 @@ export function parseAerialParams(params: URLSearchParams): AerialViewState {
 }
 
 export function buildAerialParams(state: {
+  mode: AerialMode;
   before: string;
   after: string;
   lat: number;
@@ -89,6 +105,7 @@ export function buildAerialParams(state: {
   zoom: number;
 }): string {
   const p = new URLSearchParams({
+    mode: state.mode,
     avant: state.before,
     apres: state.after,
     lat: state.lat.toFixed(5),

@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Columns2, SquareSplitHorizontal, SquareSplitVertical } from "lucide-react";
 import {
   AERIAL_ATTRIBUTION,
   AERIAL_EPOCHS,
+  AERIAL_MODES,
+  DEFAULT_MODE,
   buildAerialParams,
   epochTileUrl,
   getAerialEpoch,
   parseAerialParams,
+  type AerialMode,
 } from "@/lib/aerial-epochs";
 
 export type AerialVillage = { slug: string; nom: string; lat: number; lng: number };
@@ -22,8 +26,15 @@ type Props = {
 
 const VILLAGE_ZOOM = 15;
 const OVERVIEW_ZOOM = 12;
+const MODE_ICONS: Record<AerialMode, typeof Columns2> = {
+  vertical: SquareSplitHorizontal,
+  horizontal: SquareSplitVertical,
+  cote: Columns2,
+};
 const selectCls =
   "box-border w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15";
+const badgeCls =
+  "pointer-events-none absolute z-[1000] rounded-full bg-ink/80 px-3 py-1.5 text-[12.5px] font-semibold text-white";
 
 function tileLayer(epochId: string, pane: string): L.TileLayer {
   const epoch = getAerialEpoch(epochId)!;
@@ -36,18 +47,26 @@ function tileLayer(epochId: string, pane: string): L.TileLayer {
 }
 
 /**
- * Comparateur « avant / après » de photographies aériennes IGN : deux couches
- * superposées dans deux panes Leaflet, la couche « avant » découpée
- * (clip-path) à gauche du curseur. Le découpage est recalculé en coordonnées
- * de calque à chaque déplacement, la pane suivant les translations de la carte.
+ * Comparateur de photographies aériennes IGN, trois modes :
+ * - séparation verticale / horizontale : une carte, deux couches superposées
+ *   dans deux panes, la couche « avant » découpée (clip-path) par le curseur ;
+ *   le découpage est recalculé en coordonnées de calque à chaque déplacement ;
+ * - côte à côte : deux cartes synchronisées (centre et zoom), une époque
+ *   chacune — l'une au-dessus de l'autre sur mobile.
  */
 export default function AerialTimeMachine({ villages, initialVillageSlug }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const secondContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const secondMapRef = useRef<L.Map | null>(null);
   const beforeLayerRef = useRef<L.TileLayer | null>(null);
   const afterLayerRef = useRef<L.TileLayer | null>(null);
+  const secondLayerRef = useRef<L.TileLayer | null>(null);
   const ratioRef = useRef(0.5);
+  const modeRef = useRef<AerialMode>(DEFAULT_MODE);
+  const syncingRef = useRef(false);
 
+  const [mode, setMode] = useState<AerialMode>(DEFAULT_MODE);
   const [before, setBefore] = useState<string | null>(null);
   const [after, setAfter] = useState<string | null>(null);
   const [villageSlug, setVillageSlug] = useState(initialVillageSlug ?? "");
@@ -65,25 +84,38 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
   const updateClip = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
-    const pane = map.getPane("avant");
-    if (!pane) return;
+    const beforePane = map.getPane("avant");
+    const afterPane = map.getPane("apres");
+    if (!beforePane || !afterPane) return;
+    if (modeRef.current === "cote") {
+      // Carte de gauche : seulement l'époque « avant », non découpée.
+      beforePane.style.clipPath = "";
+      afterPane.style.display = "none";
+      return;
+    }
+    afterPane.style.display = "";
     const size = map.getSize();
     const nw = map.containerPointToLayerPoint([0, 0]);
     const se = map.containerPointToLayerPoint(size);
-    const x = nw.x + size.x * ratioRef.current;
-    pane.style.clipPath = `polygon(${nw.x}px ${nw.y}px, ${x}px ${nw.y}px, ${x}px ${se.y}px, ${nw.x}px ${se.y}px)`;
+    if (modeRef.current === "vertical") {
+      const x = nw.x + size.x * ratioRef.current;
+      beforePane.style.clipPath = `polygon(${nw.x}px ${nw.y}px, ${x}px ${nw.y}px, ${x}px ${se.y}px, ${nw.x}px ${se.y}px)`;
+    } else {
+      const y = nw.y + size.y * ratioRef.current;
+      beforePane.style.clipPath = `polygon(${nw.x}px ${nw.y}px, ${se.x}px ${nw.y}px, ${se.x}px ${y}px, ${nw.x}px ${y}px)`;
+    }
   }, []);
 
   const syncUrl = useCallback(() => {
     const map = mapRef.current;
     if (!map || !before || !after) return;
     const c = map.getCenter();
-    const qs = buildAerialParams({ before, after, lat: c.lat, lng: c.lng, zoom: map.getZoom() });
+    const qs = buildAerialParams({ mode, before, after, lat: c.lat, lng: c.lng, zoom: map.getZoom() });
     const path = villageSlug ? `/vue-du-ciel/${villageSlug}` : "/vue-du-ciel";
     window.history.replaceState(null, "", `${path}?${qs}`);
-  }, [before, after, villageSlug]);
+  }, [mode, before, after, villageSlug]);
 
-  // Création de la carte (une fois), état initial lu dans l'URL partagée.
+  // Création de la carte principale (une fois), état initial lu dans l'URL partagée.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const state = parseAerialParams(new URLSearchParams(window.location.search));
@@ -102,21 +134,63 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
       maxZoom: 19,
       maxBounds: bounds,
       maxBoundsViscosity: 0.8,
-      zoomControl: true,
     });
     map.createPane("apres").style.zIndex = "200";
     map.createPane("avant").style.zIndex = "250";
     map.attributionControl.setPrefix(false);
     mapRef.current = map;
+    modeRef.current = state.mode;
+    setMode(state.mode);
     setBefore(state.before);
     setAfter(state.after);
     map.on("move zoom resize", updateClip);
+    map.on("move zoomend", () => {
+      const second = secondMapRef.current;
+      if (!second || syncingRef.current) return;
+      syncingRef.current = true;
+      second.setView(map.getCenter(), map.getZoom(), { animate: false });
+      syncingRef.current = false;
+    });
     return () => {
       map.remove();
       mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- création unique
   }, []);
+
+  // Seconde carte, uniquement en mode côte à côte, synchronisée dans les deux sens.
+  useEffect(() => {
+    const map = mapRef.current;
+    modeRef.current = mode;
+    if (!map) return;
+    map.invalidateSize();
+    if (mode !== "cote" || !secondContainerRef.current) {
+      updateClip();
+      return;
+    }
+    const second = L.map(secondContainerRef.current, {
+      center: map.getCenter(),
+      zoom: map.getZoom(),
+      minZoom: map.getMinZoom(),
+      maxZoom: 19,
+      maxBounds: map.options.maxBounds,
+      maxBoundsViscosity: 0.8,
+    });
+    second.attributionControl.setPrefix(false);
+    second.on("move zoomend", () => {
+      if (syncingRef.current) return;
+      syncingRef.current = true;
+      map.setView(second.getCenter(), second.getZoom(), { animate: false });
+      syncingRef.current = false;
+    });
+    secondMapRef.current = second;
+    updateClip();
+    return () => {
+      second.remove();
+      secondMapRef.current = null;
+      secondLayerRef.current = null;
+    };
+  }, [mode, updateClip]);
 
   // Couches des deux époques.
   useEffect(() => {
@@ -126,8 +200,13 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
     afterLayerRef.current?.remove();
     beforeLayerRef.current = tileLayer(before, "avant").addTo(map);
     afterLayerRef.current = tileLayer(after, "apres").addTo(map);
+    const second = secondMapRef.current;
+    if (second) {
+      secondLayerRef.current?.remove();
+      secondLayerRef.current = tileLayer(after, "tilePane").addTo(second);
+    }
     updateClip();
-  }, [before, after, updateClip]);
+  }, [before, after, mode, updateClip]);
 
   // URL partageable, tenue à jour sans recharger la page.
   useEffect(() => {
@@ -140,10 +219,12 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
     };
   }, [syncUrl]);
 
-  function setSplit(clientX: number) {
+  function setSplitFromPointer(clientX: number, clientY: number) {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const r = Math.min(0.98, Math.max(0.02, (clientX - rect.left) / rect.width));
+    const raw =
+      modeRef.current === "vertical" ? (clientX - rect.left) / rect.width : (clientY - rect.top) / rect.height;
+    const r = Math.min(0.98, Math.max(0.02, raw));
     ratioRef.current = r;
     setRatio(r);
     updateClip();
@@ -158,12 +239,22 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
 
   function onHandlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    setSplit(e.clientX);
+    setSplitFromPointer(e.clientX, e.clientY);
   }
 
   function onHandlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
     e.currentTarget.releasePointerCapture(e.pointerId);
     mapRef.current?.dragging.enable();
+  }
+
+  function onHandleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    const keys = mode === "vertical" ? ["ArrowLeft", "ArrowRight"] : ["ArrowUp", "ArrowDown"];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const next = ratioRef.current + (e.key === keys[0] ? -0.05 : 0.05);
+    setSplitFromPointer(rect.left + rect.width * next, rect.top + rect.height * next);
   }
 
   function onVillageChange(slug: string) {
@@ -191,6 +282,7 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
 
   const beforeEpoch = getAerialEpoch(before);
   const afterEpoch = getAerialEpoch(after);
+  const isSwipe = mode !== "cote";
 
   return (
     <div className="flex flex-col gap-4">
@@ -207,12 +299,10 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
           </select>
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">À gauche</span>
-          <select
-            value={before ?? ""}
-            onChange={(e) => setBefore(e.target.value)}
-            className={selectCls}
-          >
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            {mode === "horizontal" ? "En haut" : "À gauche"}
+          </span>
+          <select value={before ?? ""} onChange={(e) => setBefore(e.target.value)} className={selectCls}>
             {AERIAL_EPOCHS.filter((e) => e.id !== after).map((e) => (
               <option key={e.id} value={e.id}>
                 {e.label}
@@ -221,7 +311,9 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
           </select>
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">À droite</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            {mode === "horizontal" ? "En bas" : "À droite"}
+          </span>
           <select value={after ?? ""} onChange={(e) => setAfter(e.target.value)} className={selectCls}>
             {AERIAL_EPOCHS.filter((e) => e.id !== before).map((e) => (
               <option key={e.id} value={e.id}>
@@ -239,48 +331,89 @@ export default function AerialTimeMachine({ villages, initialVillageSlug }: Prop
         </button>
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl border border-line shadow-sm">
-        <div ref={containerRef} className="h-[68vh] min-h-[420px] w-full bg-surface" />
+      <div role="radiogroup" aria-label="Mode d'affichage" className="flex flex-wrap gap-2">
+        {AERIAL_MODES.map((m) => {
+          const Icon = MODE_ICONS[m.id];
+          const active = m.id === mode;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setMode(m.id)}
+              className="flex items-center gap-2 rounded-full border px-4 py-2 text-[13px] font-semibold transition"
+              style={{
+                background: active ? "var(--pvl-blue)" : "#fff",
+                color: active ? "#fff" : "var(--pvl-ink)",
+                borderColor: active ? "var(--pvl-blue)" : "var(--pvl-line)",
+              }}
+            >
+              <Icon className="h-4 w-4" strokeWidth={2} />
+              {m.label}
+            </button>
+          );
+        })}
+      </div>
 
-        {beforeEpoch ? (
-          <span className="pointer-events-none absolute left-14 top-3 z-[1000] rounded-full bg-ink/80 px-3 py-1.5 text-[12.5px] font-semibold text-white">
-            {beforeEpoch.label}
-          </span>
-        ) : null}
-        {afterEpoch ? (
-          <span className="pointer-events-none absolute right-3 top-3 z-[1000] rounded-full bg-ink/80 px-3 py-1.5 text-[12.5px] font-semibold text-white">
-            {afterEpoch.label}
-          </span>
-        ) : null}
+      <div
+        className={
+          mode === "cote"
+            ? "grid h-[68vh] min-h-[420px] grid-cols-1 grid-rows-2 gap-1.5 sm:grid-cols-2 sm:grid-rows-1"
+            : "h-[68vh] min-h-[420px]"
+        }
+      >
+        <div className="relative h-full overflow-hidden rounded-2xl border border-line shadow-sm">
+          <div ref={containerRef} className="h-full w-full bg-surface" />
 
-        <div
-          className="absolute inset-y-0 z-[1000] w-0"
-          style={{ left: `${ratio * 100}%` }}
-        >
-          <div className="pointer-events-none absolute inset-y-0 -left-px w-0.5 bg-white shadow-[0_0_6px_rgba(0,0,0,.5)]" />
-          <div
-            role="slider"
-            aria-label="Déplacer la séparation entre les deux époques"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(ratio * 100)}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-              const rect = containerRef.current?.getBoundingClientRect();
-              if (!rect) return;
-              const step = e.key === "ArrowLeft" ? -0.05 : 0.05;
-              setSplit(rect.left + rect.width * (ratioRef.current + step));
-            }}
-            onPointerDown={onHandlePointerDown}
-            onPointerMove={onHandlePointerMove}
-            onPointerUp={onHandlePointerUp}
-            onPointerCancel={onHandlePointerUp}
-            className="absolute top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize touch-none select-none items-center justify-center rounded-full bg-white text-[18px] font-bold text-blue shadow-md outline-none focus-visible:ring-4 focus-visible:ring-yellow/60"
-          >
-            ‹ ›
-          </div>
+          {beforeEpoch ? <span className={`${badgeCls} left-14 top-3`}>{beforeEpoch.label}</span> : null}
+          {afterEpoch && isSwipe ? (
+            <span className={`${badgeCls} ${mode === "vertical" ? "right-3 top-3" : "bottom-8 left-3"}`}>
+              {afterEpoch.label}
+            </span>
+          ) : null}
+
+          {isSwipe ? (
+            <div
+              className={mode === "vertical" ? "absolute inset-y-0 z-[1000] w-0" : "absolute inset-x-0 z-[1000] h-0"}
+              style={mode === "vertical" ? { left: `${ratio * 100}%` } : { top: `${ratio * 100}%` }}
+            >
+              <div
+                className={
+                  mode === "vertical"
+                    ? "pointer-events-none absolute inset-y-0 -left-px w-0.5 bg-white shadow-[0_0_6px_rgba(0,0,0,.5)]"
+                    : "pointer-events-none absolute inset-x-0 -top-px h-0.5 bg-white shadow-[0_0_6px_rgba(0,0,0,.5)]"
+                }
+              />
+              <div
+                role="slider"
+                aria-label="Déplacer la séparation entre les deux époques"
+                aria-orientation={mode === "vertical" ? "horizontal" : "vertical"}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(ratio * 100)}
+                tabIndex={0}
+                onKeyDown={onHandleKeyDown}
+                onPointerDown={onHandlePointerDown}
+                onPointerMove={onHandlePointerMove}
+                onPointerUp={onHandlePointerUp}
+                onPointerCancel={onHandlePointerUp}
+                className={`absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 touch-none select-none items-center justify-center rounded-full bg-white text-[18px] font-bold text-blue shadow-md outline-none focus-visible:ring-4 focus-visible:ring-yellow/60 ${
+                  mode === "vertical" ? "top-1/2 cursor-ew-resize" : "left-1/2 cursor-ns-resize"
+                }`}
+              >
+                <span className={mode === "vertical" ? "" : "rotate-90"}>‹ ›</span>
+              </div>
+            </div>
+          ) : null}
         </div>
+
+        {mode === "cote" ? (
+          <div className="relative h-full overflow-hidden rounded-2xl border border-line shadow-sm">
+            <div ref={secondContainerRef} className="h-full w-full bg-surface" />
+            {afterEpoch ? <span className={`${badgeCls} left-14 top-3`}>{afterEpoch.label}</span> : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );

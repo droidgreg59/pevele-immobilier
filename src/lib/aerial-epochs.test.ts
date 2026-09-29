@@ -34,6 +34,7 @@ describe("epochTileUrl", () => {
 describe("parseAerialParams", () => {
   it("retombe sur 1950 / aujourd'hui sans paramètre", () => {
     expect(parseAerialParams(new URLSearchParams())).toEqual({
+      mode: "vertical",
       before: "1950",
       after: "aujourdhui",
       lat: null,
@@ -43,12 +44,13 @@ describe("parseAerialParams", () => {
   });
 
   it("lit une vue partagée", () => {
-    const s = parseAerialParams(new URLSearchParams("avant=1965&apres=2011&lat=50.57&lng=3.21&z=16"));
-    expect(s).toEqual({ before: "1965", after: "2011", lat: 50.57, lng: 3.21, zoom: 16 });
+    const s = parseAerialParams(new URLSearchParams("mode=cote&avant=1965&apres=2011&lat=50.57&lng=3.21&z=16"));
+    expect(s).toEqual({ mode: "cote", before: "1965", after: "2011", lat: 50.57, lng: 3.21, zoom: 16 });
   });
 
   it("ignore les époques inconnues et les coordonnées hors bornes", () => {
-    const s = parseAerialParams(new URLSearchParams("avant=1800&apres=foo&lat=200&z=42"));
+    const s = parseAerialParams(new URLSearchParams("mode=loupe&avant=1800&apres=foo&lat=200&z=42"));
+    expect(s.mode).toBe("vertical");
     expect(s.before).toBe("1950");
     expect(s.after).toBe("aujourdhui");
     expect(s.lat).toBeNull();
@@ -64,9 +66,17 @@ describe("parseAerialParams", () => {
 
 describe("buildAerialParams", () => {
   it("fait l'aller-retour avec parseAerialParams", () => {
-    const qs = buildAerialParams({ before: "1950", after: "2021", lat: 50.570612, lng: 3.217812, zoom: 16.4 });
-    expect(qs).toBe("avant=1950&apres=2021&lat=50.57061&lng=3.21781&z=16");
+    const qs = buildAerialParams({
+      mode: "horizontal",
+      before: "1950",
+      after: "2021",
+      lat: 50.570612,
+      lng: 3.217812,
+      zoom: 16.4,
+    });
+    expect(qs).toBe("mode=horizontal&avant=1950&apres=2021&lat=50.57061&lng=3.21781&z=16");
     expect(parseAerialParams(new URLSearchParams(qs))).toEqual({
+      mode: "horizontal",
       before: "1950",
       after: "2021",
       lat: 50.57061,

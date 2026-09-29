@@ -26,8 +26,9 @@ export default function AerialPageBody({
       </div>
 
       <p className="m-0 mt-3 text-[13px] leading-[1.6] text-muted">
-        Faites glisser le rond blanc pour passer d&apos;une époque à l&apos;autre, zoomez sur votre rue, puis
-        partagez le lien : il garde les époques et l&apos;endroit choisis.
+        Choisissez un affichage : séparation verticale ou horizontale (faites glisser le rond blanc), ou
+        côte à côte (les deux cartes bougent ensemble). Zoomez sur votre rue, puis partagez le lien : il
+        garde l&apos;affichage, les époques et l&apos;endroit choisis.
       </p>
 
       {villageSlug && villageNom ? (
