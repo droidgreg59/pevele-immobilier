@@ -17,6 +17,7 @@ const MAIN_NAV = [
 
 const PEVELE_NAV = [
   { label: "La carte", href: "/carte" },
+  { label: "Vue du ciel d'hier", href: "/vue-du-ciel" },
   { label: "Les villages", href: "/villages" },
   { label: "Les agences", href: "/professionnels" },
   { label: "Prix de l'immobilier", href: "/prix" },

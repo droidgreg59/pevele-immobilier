@@ -17,6 +17,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/vendre", priority: 0.8, changeFrequency: "weekly" },
   { path: "/estimer", priority: 0.8, changeFrequency: "weekly" },
   { path: "/carte", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/vue-du-ciel", priority: 0.7, changeFrequency: "monthly" },
   { path: "/villages", priority: 0.9, changeFrequency: "weekly" },
   { path: "/prix", priority: 0.9, changeFrequency: "weekly" },
   { path: "/methodologie", priority: 0.5, changeFrequency: "monthly" },
@@ -50,6 +51,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${SITE_URL}/villages/${v.slug}`,
     changeFrequency: "weekly",
     priority: 0.85,
+  }));
+
+  const vueDuCielEntries: MetadataRoute.Sitemap = villages.map((v) => ({
+    url: `${SITE_URL}/vue-du-ciel/${v.slug}`,
+    changeFrequency: "monthly",
+    priority: 0.6,
   }));
 
   // Page prix approfondie par commune : seulement celles qui ont des données DVF.
@@ -137,6 +144,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...villageEntries,
+    ...vueDuCielEntries,
     ...prixEntries,
     ...intentEntries,
     ...ventesEntries,

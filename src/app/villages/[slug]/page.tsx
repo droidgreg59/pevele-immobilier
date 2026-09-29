@@ -96,6 +96,12 @@ export default async function VillagePage({
         >
           Voir sur la carte →
         </Link>
+        <Link
+          href={`/vue-du-ciel/${village.slug}`}
+          className="text-[13px] font-semibold text-blue"
+        >
+          {village.nom} vu du ciel en 1950 →
+        </Link>
       </div>
 
       <p className="mt-6 max-w-[64ch] text-[16px] leading-[1.6] text-muted">
