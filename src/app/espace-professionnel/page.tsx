@@ -33,6 +33,23 @@ const AVANTAGES = [
   },
 ];
 
+// Vidéos de présentation agences (Reels de campagne), hébergées sur R2 sous
+// videos/ — suffixe -vN à incrémenter si une vidéo est refaite (cache immutable).
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL ?? "").replace(/\/$/, "");
+
+const VIDEOS = [
+  {
+    slug: "agences-demandes-v1",
+    titre: "Vos demandes, centralisées",
+    desc: "Visites, recherches confiées, estimations : tout arrive dans votre tableau de bord.",
+  },
+  {
+    slug: "agences-recherche-ia-v1",
+    titre: "Visible dans la recherche IA",
+    desc: "Votre agence et vos annonces, décrites pour être lues par les moteurs IA.",
+  },
+];
+
 export default function EspaceProfessionnelPage() {
   return (
     <div className="animate-fade-up mx-auto max-w-[900px] px-6 py-14 sm:py-20">
@@ -64,6 +81,36 @@ export default function EspaceProfessionnelPage() {
           </div>
         ))}
       </div>
+
+      {R2_PUBLIC_URL ? (
+        <section className="mt-12">
+          <h2 className="m-0 text-center font-display text-[24px] font-extrabold text-ink">
+            Pévèle Immobilier en vidéo
+          </h2>
+          <div className="mx-auto mt-6 grid max-w-[680px] grid-cols-1 gap-6 sm:grid-cols-2">
+            {VIDEOS.map((v) => (
+              <div key={v.slug} className="flex flex-col gap-3">
+                <video
+                  controls
+                  playsInline
+                  preload="none"
+                  poster={`${R2_PUBLIC_URL}/videos/${v.slug}.jpg`}
+                  className="aspect-[9/16] w-full rounded-2xl bg-ink shadow-sm"
+                >
+                  <source src={`${R2_PUBLIC_URL}/videos/${v.slug}.mp4`} type="video/mp4" />
+                </video>
+                <div className="flex flex-col gap-1 px-1">
+                  <span className="font-display text-[16px] font-extrabold text-ink">{v.titre}</span>
+                  <span className="font-sans text-[13.5px] leading-[1.5] text-muted">{v.desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-center text-[12px] text-muted-2">
+            Écrans présentés avec des données fictives.
+          </p>
+        </section>
+      ) : null}
 
       <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link
