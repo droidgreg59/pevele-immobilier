@@ -6,24 +6,9 @@ import { useEffect, useState } from "react";
 import { ChevronDown, User } from "lucide-react";
 import type { AccountType } from "@prisma/client";
 import ProjectPill from "./ProjectPill";
+import { MAIN_NAV, PEVELE_NAV } from "@/data/site-nav";
 
 type SessionUser = { nom: string; type: AccountType; email: string };
-
-const MAIN_NAV = [
-  { label: "Acheter", href: "/acheter" },
-  { label: "Louer", href: "/louer" },
-  { label: "Vendre", href: "/vendre" },
-];
-
-const PEVELE_NAV = [
-  { label: "La carte", href: "/carte" },
-  { label: "Vue du ciel d'hier", href: "/vue-du-ciel" },
-  { label: "Les villages", href: "/villages" },
-  { label: "Les agences", href: "/professionnels" },
-  { label: "Prix de l'immobilier", href: "/prix" },
-  { label: "Artisans & habitat", href: "/artisans" },
-  { label: "Courtiers", href: "/courtiers" },
-];
 
 function navLinkClass(active: boolean): string {
   return `rounded-full px-3 py-2 text-[14px] font-semibold transition-colors ${

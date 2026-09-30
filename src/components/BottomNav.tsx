@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Home, Search, Map, Sparkles, Heart, Menu as MenuIcon } from "lucide-react";
 import type { AccountType } from "@prisma/client";
 import { useProjectDraft, projectDraftProgress } from "@/lib/project-draft";
+import { MAIN_NAV, PEVELE_NAV } from "@/data/site-nav";
 import BottomSheet from "./BottomSheet";
 
 const BASE_TABS = [
@@ -23,24 +24,12 @@ const PARTICULIER_TABS = [
 // Ces pages ont leur propre barre d'action sticky mobile — pas de double barre.
 const HIDDEN_ON = [/^\/acheter\/[^/]+$/, /^\/louer\/[^/]+$/];
 
-// Miroir du header desktop (MAIN_NAV + PEVELE_NAV, Header.tsx) — seule
+// Même source que le header desktop (src/data/site-nav.ts) — seule
 // navigation possible vers ces pages sur mobile, où la nav du header est
 // masquée (`hidden md:flex`) et où le footer ne les reprend pas toutes.
-const MENU_SECTIONS: { label: string; href: string }[][] = [
-  [
-    { label: "Acheter", href: "/acheter" },
-    { label: "Louer", href: "/louer" },
-    { label: "Vendre", href: "/vendre" },
-  ],
-  [
-    { label: "La carte", href: "/carte" },
-    { label: "Les villages", href: "/villages" },
-    { label: "Les agences", href: "/professionnels" },
-    { label: "Prix de l'immobilier", href: "/prix" },
-    { label: "Artisans & habitat", href: "/artisans" },
-    { label: "Courtiers", href: "/courtiers" },
-  ],
-];
+// Partager la source évite qu'un ajout dans le header (ex. "Vue du ciel
+// d'hier") reste invisible ici sans qu'aucun test ne le révèle.
+const MENU_SECTIONS = [MAIN_NAV, PEVELE_NAV];
 
 const ACCOUNT_HUB_HREF: Partial<Record<AccountType, string>> = {
   AGENCE: "/compte/agence",
