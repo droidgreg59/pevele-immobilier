@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   Heart,
@@ -22,7 +22,6 @@ import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
 import type { ArtisanSummary } from "@/lib/artisans";
 import type { CourtierSummary } from "@/lib/courtiers";
 import type { OpenHouseForListing } from "@/lib/open-house";
-import type { CommuneRisques } from "@/lib/georisques";
 import type { VillageAmenities } from "@/data/village-amenities";
 import {
   ETAT_LABEL,
@@ -43,6 +42,7 @@ import VisitRequestForm, { type ExistingVisitRequestInfo } from "./VisitRequestF
 import OpenHouseSignupForm from "./OpenHouseSignupForm";
 import PurchaseCostBlock from "./PurchaseCostBlock";
 import BottomSheet from "./BottomSheet";
+import RiskLine from "./RiskLine";
 
 const EQUIPEMENT_ICON: Record<string, LucideIcon> = {
   Jardin: TreePine,
@@ -139,21 +139,6 @@ function DpeBlock({ listing }: { listing: ListingWithOwner }) {
         ) : null}
       </div>
     </section>
-  );
-}
-
-const RADON_RISK_LABEL: Record<string, string> = {
-  "1": "faible",
-  "2": "faible, sur des formations géologiques particulières",
-  "3": "significatif",
-};
-
-function RiskLine({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className="text-[12px] font-semibold text-muted">{label}</span>
-      <span className="text-[13.5px] text-ink">{value}</span>
-    </div>
   );
 }
 
@@ -259,86 +244,6 @@ function FraisBlock({ listing }: { listing: ListingWithOwner }) {
         {lines.map((l) => (
           <RiskLine key={l.label} label={l.label} value={l.value} />
         ))}
-      </div>
-    </section>
-  );
-}
-
-function RisquesBlock({
-  risques,
-  communeNom,
-}: {
-  risques: CommuneRisques | null;
-  communeNom: string;
-}) {
-  if (!risques || !risques.hasData) return null;
-
-  return (
-    <section className="mt-8">
-      <h2 className="m-0 font-display text-2xl text-ink">État des risques</h2>
-      <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm">
-        {risques.categories.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <span className="text-[12px] font-semibold text-muted">
-              Risques recensés sur la commune
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {risques.categories.map((c) => (
-                <span
-                  key={c}
-                  className="rounded-full bg-surface px-3 py-1 text-[12.5px] font-medium text-ink"
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {risques.sismicite || risques.argile || risques.radonClasse || risques.catnat ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {risques.sismicite ? (
-              <RiskLine label="Sismicité" value={`Zone ${risques.sismicite}`} />
-            ) : null}
-            {risques.argile ? (
-              <RiskLine label="Retrait-gonflement des argiles" value={risques.argile} />
-            ) : null}
-            {risques.radonClasse ? (
-              <RiskLine
-                label="Potentiel radon"
-                value={`Potentiel ${
-                  RADON_RISK_LABEL[risques.radonClasse] ?? `classe ${risques.radonClasse}`
-                }`}
-              />
-            ) : null}
-            {risques.catnat ? (
-              <RiskLine
-                label="Catastrophes naturelles"
-                value={`${risques.catnat.total} arrêté${
-                  risques.catnat.total > 1 ? "s" : ""
-                }${
-                  risques.catnat.libelles.length > 0
-                    ? ` — ${risques.catnat.libelles.slice(0, 3).join(", ").toLowerCase()}`
-                    : ""
-                }`}
-              />
-            ) : null}
-          </div>
-        ) : null}
-
-        <p className="m-0 text-[11.5px] text-muted-2">
-          Source : Géorisques (georisques.gouv.fr), au niveau de la commune de{" "}
-          {communeNom}. N&apos;a pas valeur d&apos;état des risques et pollutions
-          (ERP), qui reste annexé au bail ou à l&apos;acte.{" "}
-          <a
-            href="https://www.georisques.gouv.fr/mes-risques/connaitre-les-risques-pres-de-chez-moi"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue"
-          >
-            Consulter Géorisques →
-          </a>
-        </p>
       </div>
     </section>
   );
@@ -473,7 +378,7 @@ export default function ListingDetail({
   artisans,
   courtiers = [],
   openHouse,
-  risques,
+  risquesSlot = null,
   amenities,
   similar = [],
   viewerNom = "",
@@ -493,7 +398,8 @@ export default function ListingDetail({
   /** Absent (donc []) sur /louer — le financement n'a de sens que pour un achat. Bloc « Besoin d'un financement ? » masqué tant que ce tableau est vide (aucun courtier vérifié). */
   courtiers?: CourtierSummary[];
   openHouse: OpenHouseForListing | null;
-  risques: CommuneRisques | null;
+  /** Pré-construit par la page, déjà enveloppé dans un <Suspense> — voir RisquesSection.tsx. Ne bloque jamais le reste du rendu (Géorisques peut mettre plusieurs secondes à répondre depuis Vercel). */
+  risquesSlot?: ReactNode;
   amenities: VillageAmenities | null;
   similar?: ListingWithOwner[];
   viewerNom?: string;
@@ -758,7 +664,7 @@ export default function ListingDetail({
             <PurchaseCostBlock prix={listing.prix} />
           ) : null}
 
-          <RisquesBlock risques={risques} communeNom={village?.nom ?? listing.commune} />
+          {risquesSlot}
 
           <EnvironnementBlock amenities={amenities} />
         </div>

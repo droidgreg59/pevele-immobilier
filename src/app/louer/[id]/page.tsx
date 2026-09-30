@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
 import { getSession, isParticulierSession } from "@/lib/session";
@@ -6,11 +7,11 @@ import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
 import { getOpenHouseForListing } from "@/lib/open-house";
 import { getVisitFormContext } from "@/lib/visits";
-import { getCommuneRisques } from "@/lib/georisques";
 import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageCoords } from "@/data/village-coords";
 import { villageAmenities } from "@/data/village-amenities";
 import ListingDetail from "@/components/ListingDetail";
+import RisquesSection from "@/components/RisquesSection";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
 import { formatPrix } from "@/lib/format";
@@ -46,13 +47,10 @@ export default async function LouerListingPage({
   if (!listing || listing.transaction !== "LOCATION") notFound();
 
   const village = getVillageBySlug(listing.villageSlug);
-  const [priceHistory, session, artisans, risques] = await Promise.all([
+  const [priceHistory, session, artisans] = await Promise.all([
     getPriceHistory(listing.id),
     getSession(),
     getArtisansForVillage(listing.villageSlug),
-    village
-      ? getCommuneRisques(village.insee, villageCoords[village.insee] ?? null)
-      : Promise.resolve(null),
   ]);
   // Contexte du formulaire de visite (téléphone à pré-remplir, demande déjà
   // envoyée) — inutile pour le propriétaire lui-même ou un compte pro,
@@ -91,7 +89,15 @@ export default async function LouerListingPage({
         isFavorited={isFavorited}
         artisans={artisans}
         openHouse={openHouse}
-        risques={risques}
+        risquesSlot={
+          <Suspense fallback={null}>
+            <RisquesSection
+              insee={village?.insee ?? null}
+              coords={village ? villageCoords[village.insee] ?? null : null}
+              communeNom={village?.nom ?? listing.commune}
+            />
+          </Suspense>
+        }
         amenities={village ? villageAmenities[village.insee] ?? null : null}
         similar={similar}
         viewerNom={session?.nom ?? ""}

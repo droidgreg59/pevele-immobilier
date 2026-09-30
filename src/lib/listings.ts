@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { Prisma } from "@prisma/client";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 import { prisma } from "./prisma";
@@ -66,11 +67,16 @@ export async function getListingsForIntent(
   });
 }
 
-export async function getListingById(
+/**
+ * `cache()` (React, portée d'une seule requête serveur) — dédupe l'appel
+ * entre `generateMetadata` et le composant de page, qui interrogent tous les
+ * deux la même annonce sur /acheter/[id] et /louer/[id].
+ */
+export const getListingById = cache(async function getListingById(
   id: string
 ): Promise<ListingWithOwner | null> {
   return prisma.listing.findUnique({ where: { id }, ...listingWithOwner });
-}
+});
 
 /**
  * Biens comparables à afficher en bas de fiche : même transaction, même type,

@@ -24,7 +24,11 @@ async function georisquesGet<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${BASE}/${path}`, {
       headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(8000),
+      // Court : ce bloc est désormais isolé dans son propre <Suspense>
+      // (voir RisquesSection.tsx) et ne doit jamais faire attendre le reste
+      // de la page — un délai court limite juste la durée d'affichage du
+      // fallback quand Géorisques ne répond pas depuis l'infra Vercel.
+      signal: AbortSignal.timeout(3000),
       next: { revalidate: REVALIDATE },
     });
     if (!res.ok) return null;

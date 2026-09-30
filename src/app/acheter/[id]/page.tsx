@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
 import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
@@ -8,11 +9,11 @@ import { getArtisansForVillage } from "@/lib/artisans";
 import { getVerifiedCourtiers } from "@/lib/courtiers";
 import { getOpenHouseForListing } from "@/lib/open-house";
 import { getVisitFormContext } from "@/lib/visits";
-import { getCommuneRisques } from "@/lib/georisques";
 import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageCoords } from "@/data/village-coords";
 import { villageAmenities } from "@/data/village-amenities";
 import ListingDetail from "@/components/ListingDetail";
+import RisquesSection from "@/components/RisquesSection";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
 import { formatPrix } from "@/lib/format";
@@ -48,7 +49,7 @@ export default async function AcheterListingPage({
   if (!listing || listing.transaction !== "VENTE") notFound();
 
   const village = getVillageBySlug(listing.villageSlug);
-  const [dvfStats, dvfRecent, priceHistory, session, artisans, courtiers, risques] = await Promise.all([
+  const [dvfStats, dvfRecent, priceHistory, session, artisans, courtiers] = await Promise.all([
     getDvfStatsForVillage(listing.villageSlug),
     getRecentDvfTransactions(listing.villageSlug),
     getPriceHistory(listing.id),
@@ -57,9 +58,6 @@ export default async function AcheterListingPage({
     // Achat = le cas d'usage typique du financement — jamais pour une
     // location (voir louer/[id]/page.tsx, qui ne fait pas cet appel).
     getVerifiedCourtiers(),
-    village
-      ? getCommuneRisques(village.insee, villageCoords[village.insee] ?? null)
-      : Promise.resolve(null),
   ]);
   // Contexte du formulaire de visite (téléphone à pré-remplir, demande déjà
   // envoyée) — inutile pour le propriétaire lui-même ou un compte pro,
@@ -99,7 +97,15 @@ export default async function AcheterListingPage({
         artisans={artisans}
         courtiers={courtiers}
         openHouse={openHouse}
-        risques={risques}
+        risquesSlot={
+          <Suspense fallback={null}>
+            <RisquesSection
+              insee={village?.insee ?? null}
+              coords={village ? villageCoords[village.insee] ?? null : null}
+              communeNom={village?.nom ?? listing.commune}
+            />
+          </Suspense>
+        }
         amenities={village ? villageAmenities[village.insee] ?? null : null}
         similar={similar}
         viewerNom={session?.nom ?? ""}
