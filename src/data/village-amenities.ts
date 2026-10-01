@@ -83,13 +83,13 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole élémentaire Jules Ferry",
-        "type": "École élémentaire",
+        "nom": "Ecole maternelle La Fontenelle",
+        "type": "École maternelle",
         "secteur": "Public"
       },
       {
-        "nom": "Ecole maternelle La Fontenelle",
-        "type": "École maternelle",
+        "nom": "Ecole élémentaire Jules Ferry",
+        "type": "École élémentaire",
         "secteur": "Public"
       }
     ],
@@ -155,14 +155,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole primaire Alphonse Daudet",
-        "type": "École primaire",
-        "secteur": "Public"
-      },
-      {
         "nom": "Ecole primaire privée Sacré-Coeur",
         "type": "École primaire",
         "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire Alphonse Daudet",
+        "type": "École primaire",
+        "secteur": "Public"
       }
     ],
     "transports": {
@@ -235,14 +235,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Privé"
       },
       {
-        "nom": "Ecole primaire Paul Emile Victor",
-        "type": "École primaire",
-        "secteur": "Public"
-      },
-      {
         "nom": "Ecole primaire privée Saint Jean-Baptiste",
         "type": "École primaire",
         "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire Paul Emile Victor",
+        "type": "École primaire",
+        "secteur": "Public"
       }
     ],
     "transports": {
@@ -292,13 +292,13 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole élémentaire les trois arbres",
-        "type": "École élémentaire",
+        "nom": "Ecole maternelle de la souris verte",
+        "type": "École maternelle",
         "secteur": "Public"
       },
       {
-        "nom": "Ecole maternelle de la souris verte",
-        "type": "École maternelle",
+        "nom": "Ecole élémentaire les trois arbres",
+        "type": "École élémentaire",
         "secteur": "Public"
       }
     ],
@@ -390,14 +390,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Privé"
       },
       {
-        "nom": "Lycée Général et Technologique privé hors contrat LOSC Formation de CAMPHIN-EN-PEVELE",
-        "type": "Lycée",
-        "secteur": "Privé"
-      },
-      {
         "nom": "Ecole primaire Pasteur",
         "type": "École primaire",
         "secteur": "Public"
+      },
+      {
+        "nom": "Lycée Général et Technologique privé hors contrat LOSC Formation de CAMPHIN-EN-PEVELE",
+        "type": "Lycée",
+        "secteur": "Privé"
       }
     ],
     "transports": {
@@ -584,14 +584,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole maternelle Saint-Exupéry",
-        "type": "École maternelle",
-        "secteur": "Public"
-      },
-      {
         "nom": "Ecole élémentaire Yann Arthus-Bertrand",
         "type": "École élémentaire",
         "secteur": "Public"
+      },
+      {
+        "nom": "Collège Notre-Dame",
+        "type": "Collège",
+        "secteur": "Privé"
       },
       {
         "nom": "Collège Paul Éluard",
@@ -599,9 +599,9 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Public"
       },
       {
-        "nom": "Collège Notre-Dame",
-        "type": "Collège",
-        "secteur": "Privé"
+        "nom": "Ecole maternelle Saint-Exupéry",
+        "type": "École maternelle",
+        "secteur": "Public"
       },
       {
         "nom": "Ecole primaire privée Saint Joseph",
@@ -667,24 +667,24 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole maternelle Gérard Philipe",
-        "type": "École maternelle",
-        "secteur": "Public"
-      },
-      {
         "nom": "Ecole élémentaire René Cassin",
         "type": "École élémentaire",
         "secteur": "Public"
       },
       {
-        "nom": "Collège Jean Moulin",
-        "type": "Collège",
+        "nom": "Ecole maternelle Gérard Philipe",
+        "type": "École maternelle",
         "secteur": "Public"
       },
       {
         "nom": "Ecole primaire privée Saint Michel",
         "type": "École primaire",
         "secteur": "Privé"
+      },
+      {
+        "nom": "Collège Jean Moulin",
+        "type": "Collège",
+        "secteur": "Public"
       },
       {
         "nom": "Ecole primaire Pierre Brossolette",
@@ -727,9 +727,9 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Public"
       },
       {
-        "nom": "Institut de Genech",
-        "type": "Lycée",
-        "secteur": "Privé"
+        "nom": "Ecole primaire Le Petit Prince",
+        "type": "École primaire",
+        "secteur": "Public"
       },
       {
         "nom": "Lycée agricole privé de Genech",
@@ -737,9 +737,9 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Privé"
       },
       {
-        "nom": "Ecole primaire Le Petit Prince",
-        "type": "École primaire",
-        "secteur": "Public"
+        "nom": "Institut de Genech",
+        "type": "Lycée",
+        "secteur": "Privé"
       }
     ],
     "transports": {
@@ -787,14 +787,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole primaire Jean Macé",
-        "type": "École primaire",
-        "secteur": "Public"
-      },
-      {
         "nom": "Ecole primaire privée Sainte Bernadette - Saint Joseph",
         "type": "École primaire",
         "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire Jean Macé",
+        "type": "École primaire",
+        "secteur": "Public"
       }
     ],
     "transports": {
@@ -868,19 +868,14 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole primaire privée Sainte Thérèse",
-        "type": "École primaire",
-        "secteur": "Privé"
-      },
-      {
-        "nom": "Ecole primaire Le Grand Meaulnes",
-        "type": "École primaire",
-        "secteur": "Public"
-      },
-      {
         "nom": "Ecole maternelle Françoise Dolto",
         "type": "École maternelle",
         "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire privée Sainte Thérèse",
+        "type": "École primaire",
+        "secteur": "Privé"
       },
       {
         "nom": "Ecole élémentaire Georges Brassens",
@@ -890,6 +885,11 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       {
         "nom": "Collège Marguerite Yourcenar",
         "type": "Collège",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole primaire Le Grand Meaulnes",
+        "type": "École primaire",
         "secteur": "Public"
       }
     ],
@@ -959,27 +959,22 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     }
   },
   "59419": {
-    "commerces": [
-      {
-        "nom": "Pharmacie Van Welden",
-        "type": "Pharmacie"
-      }
-    ],
+    "commerces": [],
     "ecoles": [
-      {
-        "nom": "Ecole primaire Camille Desmoulins",
-        "type": "École primaire",
-        "secteur": "Public"
-      },
       {
         "nom": "Ecole primaire privée Sacré-Coeur",
         "type": "École primaire",
         "secteur": "Privé"
+      },
+      {
+        "nom": "Ecole primaire Camille Desmoulins",
+        "type": "École primaire",
+        "secteur": "Public"
       }
     ],
     "transports": {
       "gares": [],
-      "arretsBus": 20
+      "arretsBus": 0
     }
   },
   "59427": {
@@ -1123,18 +1118,13 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole élémentaire Joliot-Curie",
-        "type": "École élémentaire",
-        "secteur": "Public"
-      },
-      {
-        "nom": "Collège Notre-Dame de la Providence",
-        "type": "Collège",
+        "nom": "Ecole primaire privée Notre-Dame de La Providence Saint Michel",
+        "type": "École primaire",
         "secteur": "Privé"
       },
       {
-        "nom": "Section d'enseignement général et professionnel adapté du Collège du Pévèle",
-        "type": "Collège",
+        "nom": "Ecole élémentaire Joliot-Curie",
+        "type": "École élémentaire",
         "secteur": "Public"
       },
       {
@@ -1143,14 +1133,24 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Privé"
       },
       {
+        "nom": "Collège Notre-Dame de la Providence",
+        "type": "Collège",
+        "secteur": "Privé"
+      },
+      {
         "nom": "Lycée Notre-Dame de la Providence",
         "type": "Lycée",
         "secteur": "Privé"
       },
       {
-        "nom": "Ecole primaire privée Notre-Dame de La Providence Saint Michel",
-        "type": "École primaire",
-        "secteur": "Privé"
+        "nom": "Ecole maternelle Roger Salengro",
+        "type": "École maternelle",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Section d'enseignement général et professionnel adapté du Collège du Pévèle",
+        "type": "Collège",
+        "secteur": "Public"
       },
       {
         "nom": "Ecole élémentaire Jules Ferry",
@@ -1160,11 +1160,6 @@ export const villageAmenities: Record<string, VillageAmenities> = {
       {
         "nom": "Collège du Pévèle",
         "type": "Collège",
-        "secteur": "Public"
-      },
-      {
-        "nom": "Ecole maternelle Roger Salengro",
-        "type": "École maternelle",
         "secteur": "Public"
       }
     ],
@@ -1390,7 +1385,7 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Ecole primaire publique Jules Verne",
+        "nom": "Groupe scolaire Marie Navart",
         "type": "École primaire",
         "secteur": "Public"
       },
@@ -1400,7 +1395,7 @@ export const villageAmenities: Record<string, VillageAmenities> = {
         "secteur": "Privé"
       },
       {
-        "nom": "Groupe scolaire Marie Navart",
+        "nom": "Ecole primaire publique Jules Verne",
         "type": "École primaire",
         "secteur": "Public"
       }
@@ -1426,23 +1421,23 @@ export const villageAmenities: Record<string, VillageAmenities> = {
     ],
     "ecoles": [
       {
-        "nom": "Collège Albert Camus",
-        "type": "Collège",
-        "secteur": "Public"
-      },
-      {
         "nom": "Ecole primaire Jules Ferry",
         "type": "École primaire",
         "secteur": "Public"
       },
       {
-        "nom": "Ecole élémentaire Paul Bert",
-        "type": "École élémentaire",
+        "nom": "Collège Albert Camus",
+        "type": "Collège",
         "secteur": "Public"
       },
       {
         "nom": "Ecole maternelle Condorcet",
         "type": "École maternelle",
+        "secteur": "Public"
+      },
+      {
+        "nom": "Ecole élémentaire Paul Bert",
+        "type": "École élémentaire",
         "secteur": "Public"
       }
     ],
