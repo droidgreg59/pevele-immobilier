@@ -30,7 +30,9 @@ export type EventName =
   | "mandate_created"
   | "agency_verification_submitted"
   | "courtier_verification_submitted"
-  | "financing_requested";
+  | "financing_requested"
+  | "admin_impersonation_started"
+  | "admin_impersonation_ended";
 
 type LogEventData = {
   userId?: string | null;

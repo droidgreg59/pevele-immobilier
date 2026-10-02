@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { getAllUsers } from "@/lib/admin-users";
 import { revertToVerificationPendingAction } from "@/lib/admin-users-actions";
+import { startImpersonationAction } from "@/lib/impersonation-actions";
 import DeleteUserButton from "@/components/DeleteUserButton";
 
 export const dynamic = "force-dynamic";
@@ -126,7 +127,20 @@ export default async function AdminComptesPage({
                   <td className="px-4 py-3 text-muted">{u.createdAt.toLocaleDateString("fr-FR")}</td>
                   <td className="px-4 py-3 text-right">
                     {session && u.id !== session.userId ? (
-                      <DeleteUserButton userId={u.id} label={u.entreprise ?? u.nom} />
+                      <div className="flex items-center justify-end gap-3">
+                        {u.isAdmin ? null : (
+                          <form action={startImpersonationAction}>
+                            <input type="hidden" name="userId" value={u.id} />
+                            <button
+                              type="submit"
+                              className="text-[12px] font-semibold text-blue transition hover:text-ink"
+                            >
+                              Se connecter en tant que
+                            </button>
+                          </form>
+                        )}
+                        <DeleteUserButton userId={u.id} label={u.entreprise ?? u.nom} />
+                      </div>
                     ) : (
                       <span className="text-[11.5px] text-muted-2">Vous</span>
                     )}

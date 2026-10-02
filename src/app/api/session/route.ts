@@ -11,6 +11,7 @@ export async function GET() {
   const project = await getMostRecentSavedSearchSummary(session.userId);
   return NextResponse.json({
     user: { nom: session.nom, type: session.type, email: session.email },
+    impersonating: Boolean(session.impersonatedBy),
     project,
   });
 }

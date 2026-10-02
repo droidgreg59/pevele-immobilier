@@ -11,7 +11,12 @@ export type SessionPayload = {
   email: string;
   nom: string;
   type: AccountType;
+  /** Présent uniquement pendant une prise de contrôle support : id de l'admin à l'origine. */
+  impersonatedBy?: string;
 };
+
+/** Une prise de contrôle support expire vite — jamais les 30 jours d'une session normale. */
+const IMPERSONATION_DURATION = 60 * 60 * 2;
 
 function getSecretKey() {
   const secret = process.env.AUTH_SECRET;
@@ -22,10 +27,11 @@ function getSecretKey() {
 }
 
 export async function setSessionCookie(payload: SessionPayload) {
+  const duration = payload.impersonatedBy ? IMPERSONATION_DURATION : SESSION_DURATION;
   const token = await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_DURATION}s`)
+    .setExpirationTime(`${duration}s`)
     .sign(getSecretKey());
 
   const cookieStore = await cookies();
@@ -34,7 +40,7 @@ export async function setSessionCookie(payload: SessionPayload) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_DURATION,
+    maxAge: duration,
   });
 }
 
@@ -55,6 +61,8 @@ export async function getSession(): Promise<SessionPayload | null> {
       email: payload.email as string,
       nom: payload.nom as string,
       type: payload.type as AccountType,
+      impersonatedBy:
+        typeof payload.impersonatedBy === "string" ? payload.impersonatedBy : undefined,
     };
   } catch {
     return null;
