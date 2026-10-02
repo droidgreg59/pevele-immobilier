@@ -9,7 +9,8 @@ type ProjectSummary = { matchCount: number } | null;
 
 /**
  * Pill "Mon projet" du header. Priorité à la recherche sauvegardée côté
- * serveur (utilisateur connecté) ; à défaut, reflète le brouillon local.
+ * serveur (utilisateur connecté) — elle mène à « Mes recherches » (le projet
+ * existe déjà, pas au formulaire) ; à défaut, reflète le brouillon local.
  */
 export default function ProjectPill() {
   const pathname = usePathname();
@@ -34,7 +35,7 @@ export default function ProjectPill() {
   if (project) {
     return (
       <Link
-        href="/mon-projet"
+        href="/compte/particulier/recherches"
         className="flex items-center gap-2 whitespace-nowrap rounded-full bg-blue-soft px-3.5 py-2 text-[13px] font-semibold text-blue transition hover:brightness-95"
       >
         Mon projet

@@ -49,14 +49,17 @@ export default function BottomNav() {
   const progress = draft ? projectDraftProgress(draft) : 0;
   const projectDot = progress > 0 && progress < 1;
   const [accountType, setAccountType] = useState<AccountType | null | undefined>(undefined);
+  const [hasProject, setHasProject] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     fetch("/api/session")
       .then((res) => res.json())
-      .then((data: { user: { type: AccountType } | null }) => {
-        if (!cancelled) setAccountType(data.user?.type ?? null);
+      .then((data: { user: { type: AccountType } | null; project?: unknown }) => {
+        if (cancelled) return;
+        setAccountType(data.user?.type ?? null);
+        setHasProject(Boolean(data.project));
       })
       .catch(() => {
         if (!cancelled) setAccountType(null);
@@ -67,7 +70,17 @@ export default function BottomNav() {
   }, []);
 
   const isPro = accountType === "AGENCE" || accountType === "ARTISAN" || accountType === "COURTIER";
-  const TABS = isPro ? BASE_TABS : [...BASE_TABS, ...PARTICULIER_TABS];
+  // Projet déjà défini → « Mes recherches », pas le formulaire de définition.
+  const TABS = isPro
+    ? BASE_TABS
+    : [
+        ...BASE_TABS,
+        ...PARTICULIER_TABS.map((t) =>
+          t.href === "/mon-projet" && hasProject
+            ? { ...t, href: "/compte/particulier/recherches" }
+            : t
+        ),
+      ];
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
@@ -100,7 +113,7 @@ export default function BottomNav() {
                   className="h-6 w-6"
                   strokeWidth={1.75}
                   color={active ? "var(--pvl-blue)" : "var(--pvl-muted-2)"}
-                  fill={active && tab.href === "/mon-projet" ? "var(--pvl-blue)" : "none"}
+                  fill={active && tab.label === "Projet" ? "var(--pvl-blue)" : "none"}
                 />
                 <span
                   className="text-[10px] font-semibold"
@@ -108,7 +121,7 @@ export default function BottomNav() {
                 >
                   {tab.label}
                 </span>
-                {tab.href === "/mon-projet" && projectDot ? (
+                {tab.label === "Projet" && projectDot ? (
                   <span className="absolute right-[26%] top-1 h-2 w-2 rounded-full border-[1.5px] border-cream bg-blue" />
                 ) : null}
               </Link>
