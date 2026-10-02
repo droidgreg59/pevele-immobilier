@@ -80,7 +80,7 @@ export default function PreLaunchModal() {
         </h2>
         <p className="mt-3 text-[14px] leading-[1.6] text-muted">
           Le site est actuellement en pré-lancement — l&apos;ouverture au grand
-          public est prévue le <b className="text-ink">1er octobre 2026</b>. Nous
+          public est prévue le <b className="text-ink">10 octobre 2026</b>. Nous
           préparons en ce moment avec les agences de la Pévèle la mise en place de
           leurs annonces.
         </p>
