@@ -9,6 +9,7 @@ import {
 } from "@/lib/listing-query";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import { getSession, isParticulierSession } from "@/lib/session";
+import { getSavedSearchOptions } from "@/lib/saved-searches";
 
 export const dynamic = "force-dynamic";
 
@@ -42,9 +43,14 @@ export default async function LouerPage({ searchParams }: PageProps<"/louer">) {
     getBrowseFacets("LOCATION"),
     getSession(),
   ]);
-  const favoriteIds = session
-    ? Array.from(await getFavoriteListingIds(session.userId))
-    : [];
+  const [favoriteIds, savedSearches] = session
+    ? await Promise.all([
+        getFavoriteListingIds(session.userId).then((ids) => Array.from(ids)),
+        isParticulierSession(session)
+          ? getSavedSearchOptions(session.userId, "LOCATION")
+          : Promise.resolve([]),
+      ])
+    : [[], []];
 
   return (
     <ListingsBrowser
@@ -70,6 +76,7 @@ export default async function LouerPage({ searchParams }: PageProps<"/louer">) {
       isLoggedIn={session !== null}
       isParticulier={isParticulierSession(session)}
       favoriteIds={favoriteIds}
+      savedSearches={savedSearches}
     />
   );
 }

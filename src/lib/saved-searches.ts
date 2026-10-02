@@ -245,3 +245,21 @@ export function savedSearchUrl(
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
+
+export type SavedSearchOption = { id: string; label: string; url: string };
+
+/**
+ * Recherches sauvegardées d'un utilisateur pour une transaction, sous forme
+ * légère (libellé + URL de résultats) — alimente le sélecteur « Mes
+ * recherches » de /acheter et /louer. Pas de comptage de biens ici.
+ */
+export async function getSavedSearchOptions(
+  userId: string,
+  transaction: TransactionType
+): Promise<SavedSearchOption[]> {
+  const rows = await prisma.savedSearch.findMany({
+    where: { userId, transaction },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((r) => ({ id: r.id, label: savedSearchLabel(r), url: savedSearchUrl(r) }));
+}

@@ -83,6 +83,7 @@ export default function ListingsBrowser({
   isLoggedIn = false,
   isParticulier = true,
   favoriteIds = [],
+  savedSearches = [],
 }: {
   listings: ListingWithOwner[];
   total: number;
@@ -107,6 +108,8 @@ export default function ListingsBrowser({
   /** false uniquement pour un compte pro (agence, artisan) — masque favoris et enregistrement de recherche. */
   isParticulier?: boolean;
   favoriteIds?: string[];
+  /** Recherches sauvegardées du particulier connecté pour cette transaction — sélecteur « Mes recherches ». */
+  savedSearches?: { id: string; label: string; url: string }[];
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -120,6 +123,17 @@ export default function ListingsBrowser({
   const chambresMin = initialChambresMin;
   const equipements = initialEquipements ?? [];
   const tri = initialTri ?? "recent";
+
+  // Une recherche sauvegardée est « active » quand les filtres de l'URL sont
+  // exactement les siens (tri, page et vue exclus).
+  const activeSavedSearchId =
+    savedSearches.find((s) => {
+      const wanted = new URLSearchParams(s.url.split("?")[1] ?? "");
+      const current = new URLSearchParams(searchParams.toString());
+      for (const k of ["tri", "page", "vue"]) current.delete(k);
+      if ([...wanted.keys()].length !== [...current.keys()].length) return false;
+      return [...wanted.entries()].every(([k, v]) => current.get(k) === v);
+    })?.id ?? "";
 
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -389,6 +403,28 @@ export default function ListingsBrowser({
             ))}
           </select>
         </label>
+        {savedSearches.length > 0 ? (
+          <label className="flex items-center gap-2 text-[12px] font-medium text-muted">
+            Mes recherches
+            <select
+              value={activeSavedSearchId}
+              onChange={(e) => {
+                const target = savedSearches.find((x) => x.id === e.target.value);
+                if (target) router.push(target.url);
+              }}
+              className="max-w-[260px] cursor-pointer rounded-full border border-line bg-white px-3.5 py-2 text-[13px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+            >
+              <option value="" disabled>
+                Choisir…
+              </option>
+              {savedSearches.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         {isLoggedIn && !isParticulier ? null : isLoggedIn ? (
           <button
             type="button"

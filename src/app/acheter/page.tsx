@@ -9,6 +9,7 @@ import {
 } from "@/lib/listing-query";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import { getSession, isParticulierSession } from "@/lib/session";
+import { getSavedSearchOptions } from "@/lib/saved-searches";
 
 export const dynamic = "force-dynamic";
 
@@ -47,9 +48,14 @@ export default async function AcheterPage({ searchParams }: PageProps<"/acheter"
     getBrowseFacets("VENTE"),
     getSession(),
   ]);
-  const favoriteIds = session
-    ? Array.from(await getFavoriteListingIds(session.userId))
-    : [];
+  const [favoriteIds, savedSearches] = session
+    ? await Promise.all([
+        getFavoriteListingIds(session.userId).then((ids) => Array.from(ids)),
+        isParticulierSession(session)
+          ? getSavedSearchOptions(session.userId, "VENTE")
+          : Promise.resolve([]),
+      ])
+    : [[], []];
 
   return (
     <ListingsBrowser
@@ -75,6 +81,7 @@ export default async function AcheterPage({ searchParams }: PageProps<"/acheter"
       isLoggedIn={session !== null}
       isParticulier={isParticulierSession(session)}
       favoriteIds={favoriteIds}
+      savedSearches={savedSearches}
     />
   );
 }
