@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAllListingsSummary } from "@/lib/admin-listings";
+import { getAllListingsSummary, getPublishedForDuplicateCheck } from "@/lib/admin-listings";
+import { findDuplicateGroups } from "@/lib/duplicate-listings";
+import { hideListingAction, unhideListingAction } from "@/lib/admin-listings-actions";
 import { formatPrix } from "@/lib/format";
 import DeleteListingButton from "@/components/DeleteListingButton";
 
@@ -36,7 +38,11 @@ export default async function AdminToutesAnnoncesPage({
   const params = await searchParams;
   const statutFilter = typeof params.statut === "string" ? params.statut : undefined;
 
-  const all = await getAllListingsSummary();
+  const [all, published] = await Promise.all([
+    getAllListingsSummary(),
+    getPublishedForDuplicateCheck(),
+  ]);
+  const duplicateGroups = findDuplicateGroups(published);
   const listings = statutFilter ? all.filter((l) => l.statut === statutFilter) : all;
 
   return (
@@ -48,6 +54,56 @@ export default async function AdminToutesAnnoncesPage({
       <Link href="/admin" className="text-[13px] font-semibold text-blue">
         ← Vue d&apos;ensemble
       </Link>
+
+      {duplicateGroups.length > 0 ? (
+        <section className="mt-6 rounded-2xl border border-gold/40 bg-[#FBF3DC] p-5">
+          <h2 className="m-0 text-[15px] font-semibold text-ink">
+            Doublons probables ({duplicateGroups.length})
+          </h2>
+          <p className="m-0 mt-1 text-[12.5px] text-muted">
+            Même agence, même bien (prix, surface, pièces, chambres, extérieur) publié dans
+            plusieurs communes. Masquez les annonces en trop : elles disparaissent du site et la
+            synchro du flux ne les republie pas.
+          </p>
+          <div className="mt-4 flex flex-col gap-4">
+            {duplicateGroups.map((group) => (
+              <div key={group[0].id} className="rounded-xl border border-line bg-white p-4">
+                <div className="text-[13px] font-semibold text-ink">
+                  {group[0].ownerLabel} · {group[0].titre} ·{" "}
+                  {formatPrix(group[0].prix, group[0].transaction as "VENTE" | "LOCATION")}
+                </div>
+                <div className="mt-2 flex flex-col gap-2">
+                  {group.map((l) => (
+                    <div key={l.id} className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="text-[12.5px] text-muted">
+                        {l.commune} · ajoutée le {l.createdAt.toLocaleDateString("fr-FR")}
+                      </span>
+                      <div className="flex items-center gap-4">
+                        <Link
+                          href={l.transaction === "VENTE" ? `/acheter/${l.id}` : `/louer/${l.id}`}
+                          className="text-[12.5px] font-semibold text-blue"
+                          target="_blank"
+                        >
+                          Voir →
+                        </Link>
+                        <form action={hideListingAction}>
+                          <input type="hidden" name="listingId" value={l.id} />
+                          <button
+                            type="submit"
+                            className="text-[12.5px] font-semibold text-ink hover:text-blue"
+                          >
+                            Masquer
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <div className="mt-5 flex flex-wrap gap-2">
         {[
@@ -88,7 +144,7 @@ export default async function AdminToutesAnnoncesPage({
                     color: STATUT_STYLE[l.statut].color,
                   }}
                 >
-                  {STATUT_LABEL[l.statut] ?? l.statut}
+                  {l.hiddenByAdminAt ? "Masquée (admin)" : (STATUT_LABEL[l.statut] ?? l.statut)}
                 </span>
               </div>
               <span className="text-[12.5px] text-muted">
@@ -102,6 +158,21 @@ export default async function AdminToutesAnnoncesPage({
               </span>
             </div>
             <div className="flex items-center gap-4">
+              {l.hiddenByAdminAt ? (
+                <form action={unhideListingAction}>
+                  <input type="hidden" name="listingId" value={l.id} />
+                  <button type="submit" className="text-[12.5px] font-semibold text-ink hover:text-blue">
+                    Rétablir
+                  </button>
+                </form>
+              ) : l.statut === "PUBLIEE" ? (
+                <form action={hideListingAction}>
+                  <input type="hidden" name="listingId" value={l.id} />
+                  <button type="submit" className="text-[12.5px] font-semibold text-ink hover:text-blue">
+                    Masquer
+                  </button>
+                </form>
+              ) : null}
               <Link
                 href={`/admin/annonces/${l.id}`}
                 className="text-[12.5px] font-semibold text-blue"

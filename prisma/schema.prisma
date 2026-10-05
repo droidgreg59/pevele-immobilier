@@ -226,6 +226,11 @@ model Listing {
   /// 60 s à la synchro quotidienne). Null = jamais importé, ou un
   /// téléchargement a échoué : on retente à la synchro suivante.
   photoSourceKey     String?
+  /// Masquée à la main par un admin (ex. doublon multi-villes d'une agence).
+  /// Statut RETIREE + cette date : la synchro du flux continue de mettre
+  /// l'annonce à jour mais ne la republie jamais tant que l'admin ne la rétablit
+  /// pas — contrairement à un simple RETIREE, que le flux ressuscite.
+  hiddenByAdminAt    DateTime?
   importSource       String?
   photos             ListingPhoto[]
   priceHistory       PriceHistory[]

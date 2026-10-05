@@ -25,7 +25,7 @@ export async function generateMetadata({
 }: PageProps<"/acheter/[id]">): Promise<Metadata> {
   const { id } = await params;
   const listing = await getListingById(id);
-  if (!listing || listing.transaction !== "VENTE") return {};
+  if (!listing || listing.transaction !== "VENTE" || listing.hiddenByAdminAt) return {};
   const title = `${listing.titre} à vendre à ${listing.commune} — ${formatPrix(listing.prix, listing.transaction)}`;
   return {
     title,
@@ -46,7 +46,8 @@ export default async function AcheterListingPage({
 }: PageProps<"/acheter/[id]">) {
   const { id } = await params;
   const listing = await getListingById(id);
-  if (!listing || listing.transaction !== "VENTE") notFound();
+  // Masquée par un admin (doublon…) : introuvable, même par lien direct.
+  if (!listing || listing.transaction !== "VENTE" || listing.hiddenByAdminAt) notFound();
 
   const village = getVillageBySlug(listing.villageSlug);
   const [dvfStats, dvfRecent, priceHistory, session, artisans, courtiers] = await Promise.all([

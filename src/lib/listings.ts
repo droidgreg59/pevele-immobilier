@@ -412,7 +412,7 @@ export async function upsertImportedListing(
     return { id: created.id, created: true };
   }
 
-  const isRevival = existing.statut === "RETIREE";
+  const isRevival = existing.statut === "RETIREE" && !existing.hiddenByAdminAt;
   await prisma.$transaction(async (tx) => {
     await tx.listing.update({
       where: { id: existing.id },
@@ -422,7 +422,7 @@ export async function upsertImportedListing(
         // Une annonce RETIREE qui réapparaît dans le flux (republiée côté
         // agence) redevient active automatiquement — jamais l'inverse : on ne
         // déduit jamais un retrait ici, seulement dans retireStaleImportedListings.
-        ...listingRevivalFields(existing.statut),
+        ...(existing.hiddenByAdminAt ? {} : listingRevivalFields(existing.statut)),
       },
     });
     if (fields.prix !== existing.prix) {

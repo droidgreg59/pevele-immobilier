@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "./admin";
+import { prisma } from "./prisma";
 import {
   adminUpdateListing,
   adminDeleteListing,
@@ -63,6 +64,40 @@ export async function adminDeleteListingAction(formData: FormData) {
     await deleteListingUploadDir(listingId);
   }
 
+  revalidatePath("/admin/annonces/toutes");
+  redirect("/admin/annonces/toutes");
+}
+
+/**
+ * Masque une annonce publiée (RETIREE + hiddenByAdminAt) : disparaît du site,
+ * et la synchro du flux ne la republie pas. Historisé comme un retrait dans
+ * ListingLifecycleEvent, comme n'importe quel autre retrait.
+ */
+export async function hideListingAction(formData: FormData) {
+  await requireAdmin();
+  const listingId = String(formData.get("listingId") ?? "");
+  const now = new Date();
+  const { count } = await prisma.listing.updateMany({
+    where: { id: listingId, statut: "PUBLIEE" },
+    data: { statut: "RETIREE", retiredAt: now, hiddenByAdminAt: now },
+  });
+  if (count > 0) {
+    await prisma.listingLifecycleEvent.create({ data: { listingId, type: "RETIRED" } });
+  }
+  revalidatePath("/admin/annonces/toutes");
+  redirect("/admin/annonces/toutes");
+}
+
+export async function unhideListingAction(formData: FormData) {
+  await requireAdmin();
+  const listingId = String(formData.get("listingId") ?? "");
+  const { count } = await prisma.listing.updateMany({
+    where: { id: listingId, hiddenByAdminAt: { not: null } },
+    data: { statut: "PUBLIEE", retiredAt: null, hiddenByAdminAt: null },
+  });
+  if (count > 0) {
+    await prisma.listingLifecycleEvent.create({ data: { listingId, type: "REPUBLISHED" } });
+  }
   revalidatePath("/admin/annonces/toutes");
   redirect("/admin/annonces/toutes");
 }

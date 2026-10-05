@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import type { DuplicateCandidate } from "./duplicate-listings";
 
 const LISTING_SUMMARY_SELECT = {
   id: true,
@@ -11,6 +12,7 @@ const LISTING_SUMMARY_SELECT = {
   prix: true,
   commune: true,
   createdAt: true,
+  hiddenByAdminAt: true,
   owner: { select: { nom: true, entreprise: true, type: true } },
 } as const;
 
@@ -24,6 +26,7 @@ export type ListingSummary = {
   prix: number;
   commune: string;
   createdAt: Date;
+  hiddenByAdminAt: Date | null;
   ownerLabel: string;
 };
 
@@ -42,6 +45,46 @@ export async function getAllListingsSummary(): Promise<ListingSummary[]> {
     prix: l.prix,
     commune: l.commune,
     createdAt: l.createdAt,
+    hiddenByAdminAt: l.hiddenByAdminAt,
     ownerLabel: l.owner.entreprise ?? l.owner.nom,
+  }));
+}
+
+/** Annonces publiées, sous la forme minimale nécessaire à la détection de doublons. */
+export async function getPublishedForDuplicateCheck(): Promise<DuplicateCandidate[]> {
+  const rows = await prisma.listing.findMany({
+    where: { statut: "PUBLIEE" },
+    select: {
+      id: true,
+      ownerId: true,
+      transaction: true,
+      typeBien: true,
+      prix: true,
+      surface: true,
+      pieces: true,
+      chambres: true,
+      exterieur: true,
+      villageSlug: true,
+      commune: true,
+      titre: true,
+      createdAt: true,
+      owner: { select: { nom: true, entreprise: true } },
+    },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    ownerId: r.ownerId,
+    ownerLabel: r.owner.entreprise ?? r.owner.nom,
+    transaction: r.transaction,
+    typeBien: r.typeBien,
+    prix: r.prix,
+    surface: r.surface,
+    pieces: r.pieces,
+    chambres: r.chambres,
+    exterieur: r.exterieur,
+    villageSlug: r.villageSlug,
+    commune: r.commune,
+    titre: r.titre,
+    createdAt: r.createdAt,
   }));
 }

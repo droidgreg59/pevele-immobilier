@@ -23,7 +23,7 @@ export async function generateMetadata({
 }: PageProps<"/louer/[id]">): Promise<Metadata> {
   const { id } = await params;
   const listing = await getListingById(id);
-  if (!listing || listing.transaction !== "LOCATION") return {};
+  if (!listing || listing.transaction !== "LOCATION" || listing.hiddenByAdminAt) return {};
   const title = `${listing.titre} à louer à ${listing.commune} — ${formatPrix(listing.prix, listing.transaction)}`;
   return {
     title,
@@ -44,7 +44,8 @@ export default async function LouerListingPage({
 }: PageProps<"/louer/[id]">) {
   const { id } = await params;
   const listing = await getListingById(id);
-  if (!listing || listing.transaction !== "LOCATION") notFound();
+  // Masquée par un admin (doublon…) : introuvable, même par lien direct.
+  if (!listing || listing.transaction !== "LOCATION" || listing.hiddenByAdminAt) notFound();
 
   const village = getVillageBySlug(listing.villageSlug);
   const [priceHistory, session, artisans] = await Promise.all([
