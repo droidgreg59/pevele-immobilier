@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, User } from "lucide-react";
 import type { AccountType } from "@prisma/client";
 import ProjectPill from "./ProjectPill";
@@ -19,6 +19,32 @@ function navLinkClass(active: boolean): string {
 export default function Header() {
   const pathname = usePathname();
   const [user, setUser] = useState<SessionUser | null | undefined>(undefined);
+  const peveleMenuRef = useRef<HTMLDetailsElement>(null);
+
+  // Le <details> natif reste ouvert après un clic sur un lien (l'en-tête n'est
+  // pas remonté à la navigation) et quand on clique ailleurs : on le referme.
+  useEffect(() => {
+    if (peveleMenuRef.current) peveleMenuRef.current.open = false;
+  }, [pathname]);
+
+  useEffect(() => {
+    const close = () => {
+      if (peveleMenuRef.current) peveleMenuRef.current.open = false;
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      const menu = peveleMenuRef.current;
+      if (menu?.open && !menu.contains(e.target as Node)) close();
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,7 +82,7 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
-          <details className="group relative">
+          <details ref={peveleMenuRef} className="group relative">
             <summary
               className={`${navLinkClass(peveleActive)} flex cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden`}
             >
