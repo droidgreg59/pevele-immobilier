@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { ListingWithOwner, PriceHistoryEntry } from "@/lib/listings";
 import type { DvfTransactionSummary, DvfVillageStats } from "@/lib/dvf";
+import type { MarketPosition } from "@/lib/listing-market";
 import type { ArtisanSummary } from "@/lib/artisans";
 import type { CourtierSummary } from "@/lib/courtiers";
 import type { OpenHouseForListing } from "@/lib/open-house";
@@ -330,17 +331,64 @@ function EnvironnementBlock({ amenities }: { amenities: VillageAmenities | null 
   );
 }
 
-function marketComparison(
-  listingPrixM2: number | null,
-  dvfStats: DvfVillageStats | null
-): string | null {
-  if (!listingPrixM2 || !dvfStats) return null;
-  const diffPct = Math.round(
-    ((listingPrixM2 - dvfStats.avgPrixM2) / dvfStats.avgPrixM2) * 100
+const eurM2 = (n: number) => `${n.toLocaleString("fr-FR")} €/m²`;
+
+function MarketPositionCard({
+  position: p,
+  communeNom,
+  typeBien,
+}: {
+  position: MarketPosition;
+  communeNom: string;
+  typeBien: string;
+}) {
+  const typeLabel = typeBien === "APPARTEMENT" ? "appartements" : "maisons";
+  const criteria = [
+    p.pieces ? `de ${p.pieces.min} à ${p.pieces.max} pièces principales` : null,
+    p.terrain ? `avec ${p.terrain} de terrain` : null,
+  ].filter(Boolean);
+  const verdict =
+    p.position === "within"
+      ? "dans la fourchette des ventes comparables"
+      : p.position === "above"
+        ? `${Math.abs(p.diffPct)} % au-dessus de la médiane, au-dessus de la fourchette habituelle`
+        : `${Math.abs(p.diffPct)} % en dessous de la médiane, sous la fourchette habituelle`;
+
+  return (
+    <div className="rounded-2xl bg-surface p-5">
+      <p className="m-0 font-sans text-[14.5px] leading-[1.6] text-ink">
+        {p.scope === "comparables" ? (
+          <>
+            Ventes comparables à <b>{communeNom}</b> : {typeLabel}
+            {criteria.length > 0 ? ` ${criteria.join(", ")}` : ""}.
+          </>
+        ) : (
+          <>
+            Pas assez de ventes comparables (pièces, terrain) à <b>{communeNom}</b> :
+            comparaison à l&apos;ensemble des {typeLabel} vendus — à interpréter avec prudence.
+          </>
+        )}
+      </p>
+      {p.terrainIgnored ? (
+        <p className="m-0 mt-2 text-[12.5px] leading-[1.5] text-muted">
+          Le terrain de ce bien ({p.terrainIgnored.toLocaleString("fr-FR")} m²) n&apos;a pas pu être
+          pris en compte : trop peu de ventes avec une surface de terrain comparable. Le prix au
+          m² bâti peut donc sembler élevé par rapport à ces ventes.
+        </p>
+      ) : null}
+      <p className="m-0 mt-2 font-sans text-[14.5px] leading-[1.6] text-ink">
+        Médiane <b>{eurM2(p.medianPrixM2)}</b> · la moitié des ventes entre {eurM2(p.p25)} et{" "}
+        {eurM2(p.p75)} ({p.count} vente{p.count > 1 ? "s" : ""}, {p.minAnnee}–{p.maxAnnee}).
+      </p>
+      <p className="m-0 mt-2 text-[13px] font-semibold text-blue">
+        Ce bien : {eurM2(p.listingPrixM2)} — {verdict}.
+      </p>
+      <p className="m-0 mt-2 text-[11.5px] leading-[1.5] text-muted-2">
+        Prix demandé comparé à des prix de vente constatés : ne tient compte ni de l&apos;état, ni
+        du DPE, ni des prestations du bien.
+      </p>
+    </div>
   );
-  if (diffPct > 3) return `${diffPct}% au-dessus du prix moyen constaté dans le secteur.`;
-  if (diffPct < -3) return `${Math.abs(diffPct)}% en-dessous du prix moyen constaté dans le secteur.`;
-  return "Dans la moyenne du secteur.";
 }
 
 function PriceHistoryChart({ history }: { history: PriceHistoryEntry[] }) {
@@ -370,6 +418,7 @@ export default function ListingDetail({
   listing,
   dvfStats,
   dvfRecent,
+  marketPosition = null,
   priceHistory,
   isOwner,
   isLoggedIn,
@@ -388,6 +437,8 @@ export default function ListingDetail({
   listing: ListingWithOwner;
   dvfStats: DvfVillageStats | null;
   dvfRecent: DvfTransactionSummary[];
+  /** Prix demandé vs ventes DVF comparables (type, pièces, terrain) — null si échantillon insuffisant ou terrain. */
+  marketPosition?: MarketPosition | null;
   priceHistory: PriceHistoryEntry[];
   isOwner: boolean;
   isLoggedIn: boolean;
@@ -436,7 +487,6 @@ export default function ListingDetail({
       ? Math.round(listing.prix / listing.surface)
       : null;
   const prixM2 = listingPrixM2 ? formatPrixM2(listing.prix, listing.surface) : null;
-  const comparisonText = marketComparison(listingPrixM2, dvfStats);
   const videoEmbedUrl = listing.videoUrl ? getVideoEmbedUrl(listing.videoUrl) : null;
   const equipements = listing.equipements
     ? listing.equipements.split(",").filter(Boolean)
@@ -602,20 +652,31 @@ export default function ListingDetail({
               <h2 className="m-0 font-display text-2xl text-ink">Le marché</h2>
               {dvfStats ? (
                 <div className="mt-3 flex flex-col gap-4">
-                  <div className="rounded-2xl bg-surface p-5">
-                    <p className="m-0 font-sans text-[14.5px] leading-[1.6] text-ink">
-                      Prix moyen constaté à <b>{village?.nom}</b> :{" "}
-                      <b>{dvfStats.avgPrixM2.toLocaleString("fr-FR")} € / m²</b>{" "}
-                      ({dvfStats.count} vente{dvfStats.count > 1 ? "s" : ""},{" "}
-                      {dvfStats.minAnnee}–{dvfStats.maxAnnee}).
-                    </p>
-                    {comparisonText ? (
-                      <p className="m-0 mt-2 text-[12.5px] font-semibold text-blue">
-                        {comparisonText}
+                  {marketPosition ? (
+                    <MarketPositionCard
+                      position={marketPosition}
+                      communeNom={village?.nom ?? listing.commune}
+                      typeBien={listing.typeBien}
+                    />
+                  ) : listing.typeBien === "TERRAIN" ? (
+                    <div className="rounded-2xl bg-surface p-5">
+                      <p className="m-0 font-sans text-[14px] leading-[1.6] text-muted">
+                        Pas de comparaison de marché pour un terrain : les ventes DVF de la
+                        commune portent sur des maisons et appartements, dont le prix au m² n&apos;est
+                        pas comparable à celui d&apos;un terrain.
                       </p>
-                    ) : null}
-                  </div>
-                  {dvfRecent.length > 0 ? (
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-surface p-5">
+                      <p className="m-0 font-sans text-[14.5px] leading-[1.6] text-ink">
+                        Prix moyen constaté à <b>{village?.nom}</b> :{" "}
+                        <b>{dvfStats.avgPrixM2.toLocaleString("fr-FR")} € / m²</b>{" "}
+                        ({dvfStats.count} vente{dvfStats.count > 1 ? "s" : ""},{" "}
+                        {dvfStats.minAnnee}–{dvfStats.maxAnnee}, toutes ventes confondues).
+                      </p>
+                    </div>
+                  )}
+                  {dvfRecent.length > 0 && listing.typeBien !== "TERRAIN" ? (
                     <div className="rounded-2xl border border-line bg-white">
                       <div className="border-b border-line px-4 py-2 text-[11px] font-semibold text-muted">
                         Dernières ventes à {village?.nom}

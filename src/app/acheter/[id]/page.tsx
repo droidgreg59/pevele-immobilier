@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
-import { getDvfStatsForVillage, getRecentDvfTransactions } from "@/lib/dvf";
+import {
+  getDvfStatsForVillage,
+  getRecentDvfTransactions,
+  getDvfComparableRows,
+} from "@/lib/dvf";
+import { positionListing } from "@/lib/listing-market";
 import { getSession, isParticulierSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
@@ -19,6 +24,9 @@ import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
 import { formatPrix } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+/** Ventes comparables minimum pour afficher une position — en dessous, la médiane est trop fragile. */
+const MARKET_MIN_SAMPLE = 8;
 
 export async function generateMetadata({
   params,
@@ -50,9 +58,12 @@ export default async function AcheterListingPage({
   if (!listing || listing.transaction !== "VENTE" || listing.hiddenByAdminAt) notFound();
 
   const village = getVillageBySlug(listing.villageSlug);
-  const [dvfStats, dvfRecent, priceHistory, session, artisans, courtiers] = await Promise.all([
+  const typeLocal =
+    listing.typeBien === "MAISON" ? "Maison" : listing.typeBien === "APPARTEMENT" ? "Appartement" : null;
+  const [dvfStats, dvfRecent, comparableRows, priceHistory, session, artisans, courtiers] = await Promise.all([
     getDvfStatsForVillage(listing.villageSlug),
     getRecentDvfTransactions(listing.villageSlug),
+    typeLocal ? getDvfComparableRows(listing.villageSlug, typeLocal) : Promise.resolve([]),
     getPriceHistory(listing.id),
     getSession(),
     getArtisansForVillage(listing.villageSlug),
@@ -60,6 +71,7 @@ export default async function AcheterListingPage({
     // location (voir louer/[id]/page.tsx, qui ne fait pas cet appel).
     getVerifiedCourtiers(),
   ]);
+  const marketPosition = positionListing(listing, comparableRows, MARKET_MIN_SAMPLE);
   // Contexte du formulaire de visite (téléphone à pré-remplir, demande déjà
   // envoyée) — inutile pour le propriétaire lui-même ou un compte pro,
   // qui ne voient de toute façon jamais ce formulaire.
@@ -90,6 +102,7 @@ export default async function AcheterListingPage({
         listing={listing}
         dvfStats={dvfStats}
         dvfRecent={dvfRecent}
+        marketPosition={marketPosition}
         priceHistory={priceHistory}
         isOwner={session?.userId === listing.ownerId}
         isLoggedIn={session !== null}

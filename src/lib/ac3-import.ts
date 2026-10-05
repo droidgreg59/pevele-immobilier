@@ -29,6 +29,8 @@ export type ParsedAc3Listing = {
   chambres: number;
   surface: number;
   exterieur: string;
+  /** Surface du terrain (m²), balise SURFACE_TERRAIN — null pour un TERRAIN (déjà dans `surface`) ou si absente. */
+  surfaceTerrain: number | null;
   equipements: string;
   dpe?: string;
   ges?: string;
@@ -261,6 +263,7 @@ export function parseAc3Feed(xml: string): {
       chambres: Number(typeNode.NBRE_CHAMBRES) || 0,
       surface,
       exterieur: buildExterieur(typeBien, typeNode),
+      surfaceTerrain: typeBien !== "TERRAIN" && surfaceTerrain > 0 ? Math.round(surfaceTerrain) : null,
       equipements: buildEquipements(typeNode),
       dpe,
       ges,
