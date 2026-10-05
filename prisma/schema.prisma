@@ -220,6 +220,12 @@ model Listing {
   videoUrl           String?
   visiteVirtuelleUrl String?
   externalRef        String?
+  /// Empreinte de la liste ordonnée d'URLs photo du flux importé au dernier
+  /// import complet réussi. Identique au flux courant → les photos ne sont
+  /// pas retéléchargées/renvoyées sur R2 (c'était ce qui faisait dépasser
+  /// 60 s à la synchro quotidienne). Null = jamais importé, ou un
+  /// téléchargement a échoué : on retente à la synchro suivante.
+  photoSourceKey     String?
   importSource       String?
   photos             ListingPhoto[]
   priceHistory       PriceHistory[]

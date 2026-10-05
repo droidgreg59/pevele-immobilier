@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 import { prisma } from "./prisma";
@@ -366,6 +367,10 @@ export type ImportedListingInput = ListingFieldsInput & {
  * vérifié et le flux est sa propre source officielle, donc la vérification
  * manuelle habituelle ne s'applique pas ici.
  */
+function photoSourceKey(urls: string[]): string {
+  return createHash("sha1").update(urls.join("\n")).digest("hex");
+}
+
 export async function upsertImportedListing(
   ownerId: string,
   input: ImportedListingInput
@@ -398,6 +403,12 @@ export async function upsertImportedListing(
     });
     const savedUrls = await saveRemotePhotos(created.id, photoUrls);
     await addListingPhotos(created.id, savedUrls);
+    if (savedUrls.length === photoUrls.length) {
+      await prisma.listing.update({
+        where: { id: created.id },
+        data: { photoSourceKey: photoSourceKey(photoUrls) },
+      });
+    }
     return { id: created.id, created: true };
   }
 
@@ -427,12 +438,25 @@ export async function upsertImportedListing(
     }
   });
 
+  // Photos du flux inchangées depuis le dernier import complet → rien à
+  // retélécharger (voir Listing.photoSourceKey).
+  const newKey = photoSourceKey(photoUrls);
+  const photosUnchanged =
+    photoUrls.length > 0 &&
+    existing.photoSourceKey === newKey &&
+    (await prisma.listingPhoto.count({ where: { listingId: existing.id } })) > 0;
+  if (photosUnchanged) return { id: existing.id, created: false };
+
   const savedUrls = await saveRemotePhotos(existing.id, photoUrls);
   if (savedUrls.length > 0) {
     const oldPhotos = await prisma.listingPhoto.findMany({ where: { listingId: existing.id } });
     await prisma.listingPhoto.deleteMany({ where: { listingId: existing.id } });
     await deletePhotoFilesByUrl(oldPhotos.map((p) => p.url));
     await addListingPhotos(existing.id, savedUrls);
+    await prisma.listing.update({
+      where: { id: existing.id },
+      data: { photoSourceKey: savedUrls.length === photoUrls.length ? newKey : null },
+    });
   }
 
   return { id: existing.id, created: false };

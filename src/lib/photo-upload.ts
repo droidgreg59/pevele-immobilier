@@ -82,21 +82,30 @@ export async function saveRemotePhotos(
 ): Promise<string[]> {
   if (urls.length === 0) return [];
 
+  // Par lots de 4 (l'ordre du flux est conservé) : séquentiel, une grosse
+  // annonce suffisait à elle seule à frôler la limite de durée de la fonction.
+  const CONCURRENCY = 4;
   const saved: string[] = [];
-  for (const url of urls) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) continue;
-      const contentType = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
-      const ext =
-        EXT_BY_CONTENT_TYPE[contentType] ??
-        (/\.(jpe?g|png|webp)$/i.exec(url)?.[1]?.toLowerCase().replace("jpeg", "jpg") || "jpg");
-      const key = `listings/${listingId}/${randomUUID()}.${ext}`;
-      const buffer = Buffer.from(await res.arrayBuffer());
-      saved.push(await putObject(key, buffer, contentType || "image/jpeg"));
-    } catch {
-      // URL injoignable — ignorée, sans bloquer l'import du reste
-    }
+  for (let i = 0; i < urls.length; i += CONCURRENCY) {
+    const batch = await Promise.all(
+      urls.slice(i, i + CONCURRENCY).map(async (url) => {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) return null;
+          const contentType = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
+          const ext =
+            EXT_BY_CONTENT_TYPE[contentType] ??
+            (/\.(jpe?g|png|webp)$/i.exec(url)?.[1]?.toLowerCase().replace("jpeg", "jpg") || "jpg");
+          const key = `listings/${listingId}/${randomUUID()}.${ext}`;
+          const buffer = Buffer.from(await res.arrayBuffer());
+          return await putObject(key, buffer, contentType || "image/jpeg");
+        } catch {
+          // URL injoignable — ignorée, sans bloquer l'import du reste
+          return null;
+        }
+      })
+    );
+    for (const u of batch) if (u) saved.push(u);
   }
   return saved;
 }
