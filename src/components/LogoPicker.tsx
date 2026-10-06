@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { findContentBox, padBox } from "@/lib/logo-crop";
 
 const VIEW = 280; // côté du cadre de recadrage affiché (px)
 const OUT = 512; // côté du logo final (px)
@@ -10,12 +11,74 @@ const MAX_ZOOM = 6;
 export type LogoChange = { file: File; previewUrl: string };
 
 /**
- * Sélecteur de logo avec recadrage carré (glisser pour déplacer, curseur ou
- * molette pour zoomer). Le fichier recadré (PNG 512×512) remplace celui choisi :
+ * Sélecteur de logo. Dès qu'un fichier est choisi (quelle que soit sa taille),
+ * il est recadré automatiquement : marges vides retirées, centré dans un carré
+ * de 512 px. Un bouton « Recadrer » ouvre ensuite le recadrage manuel (glisser
+ * pour déplacer, curseur ou molette pour zoomer). Le PNG obtenu remplace le
+ * fichier choisi :
  * il est placé dans un <input type="file" name={name}> caché — donc envoyé avec
  * le formulaire parent — et renvoyé via `onChange` pour les écrans qui
  * construisent eux-mêmes leur FormData.
  */
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("decode"));
+    img.src = src;
+  });
+}
+
+function canvasToFile(canvas: HTMLCanvasElement): Promise<File> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(new File([blob], "logo.png", { type: "image/png" }));
+      else reject(new Error("encode"));
+    }, "image/png");
+  });
+}
+
+/** Retire les marges vides puis centre le contenu dans un carré OUT×OUT (sans le déformer ni le rogner). */
+async function autoCropLogo(img: HTMLImageElement): Promise<File> {
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+
+  // Analyse sur une version réduite : rapide même pour une photo de 8 000 px.
+  const k = Math.min(1, 256 / Math.max(w, h));
+  const sw = Math.max(1, Math.round(w * k));
+  const sh = Math.max(1, Math.round(h * k));
+  const scan = document.createElement("canvas");
+  scan.width = sw;
+  scan.height = sh;
+  const sctx = scan.getContext("2d", { willReadFrequently: true });
+  let src = { x: 0, y: 0, w, h };
+  if (sctx) {
+    sctx.drawImage(img, 0, 0, sw, sh);
+    const box = findContentBox(sctx.getImageData(0, 0, sw, sh).data, sw, sh);
+    if (box) {
+      const padded = padBox(box, 0.04, sw, sh);
+      src = {
+        x: Math.floor(padded.x / k),
+        y: Math.floor(padded.y / k),
+        w: Math.min(w, Math.ceil(padded.w / k)),
+        h: Math.min(h, Math.ceil(padded.h / k)),
+      };
+    }
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = OUT;
+  canvas.height = OUT;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas");
+  ctx.imageSmoothingQuality = "high";
+  const fit = OUT / Math.max(src.w, src.h);
+  const dw = src.w * fit;
+  const dh = src.h * fit;
+  ctx.drawImage(img, src.x, src.y, src.w, src.h, (OUT - dw) / 2, (OUT - dh) / 2, dw, dh);
+  return canvasToFile(canvas);
+}
+
 export default function LogoPicker({
   currentUrl,
   initial,
@@ -30,15 +93,20 @@ export default function LogoPicker({
   const pickRef = useRef<HTMLInputElement>(null);
   const formInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(currentUrl);
-  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  // Fichier d'origine (jamais envoyé) : sert de source au recadrage manuel.
+  const [original, setOriginal] = useState<string | null>(null);
+  const [cropping, setCropping] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const originalRef = useRef<string | null>(null);
 
-  function closeCropper() {
-    if (cropSrc) URL.revokeObjectURL(cropSrc);
-    setCropSrc(null);
-    if (pickRef.current) pickRef.current.value = "";
-  }
+  useEffect(() => {
+    return () => {
+      if (originalRef.current) URL.revokeObjectURL(originalRef.current);
+    };
+  }, []);
 
-  function handleConfirm(file: File) {
+  function apply(file: File) {
     if (formInputRef.current) {
       const dt = new DataTransfer();
       dt.items.add(file);
@@ -47,7 +115,25 @@ export default function LogoPicker({
     const previewUrl = URL.createObjectURL(file);
     setPreview(previewUrl);
     onChange?.({ file, previewUrl });
-    closeCropper();
+  }
+
+  async function handlePick(file: File) {
+    setError(null);
+    setBusy(true);
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await loadImage(url);
+      apply(await autoCropLogo(img));
+      if (originalRef.current) URL.revokeObjectURL(originalRef.current);
+      originalRef.current = url;
+      setOriginal(url);
+    } catch {
+      URL.revokeObjectURL(url);
+      setError("Impossible de lire cette image. Essayez un fichier JPEG, PNG ou WebP.");
+    } finally {
+      setBusy(false);
+      if (pickRef.current) pickRef.current.value = "";
+    }
   }
 
   return (
@@ -67,7 +153,7 @@ export default function LogoPicker({
           )}
         </div>
         <label className="cursor-pointer rounded-full border border-line bg-white px-4 py-2.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface">
-          {preview ? "Changer le logo" : "Ajouter un logo"}
+          {busy ? "Traitement…" : preview ? "Changer le logo" : "Ajouter un logo"}
           <input
             ref={pickRef}
             type="file"
@@ -75,20 +161,37 @@ export default function LogoPicker({
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) setCropSrc(URL.createObjectURL(file));
+              if (file) void handlePick(file);
             }}
           />
         </label>
+        {original ? (
+          <button
+            type="button"
+            onClick={() => setCropping(true)}
+            className="rounded-full border border-line bg-white px-4 py-2.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+          >
+            Recadrer
+          </button>
+        ) : null}
       </div>
       <input ref={formInputRef} type="file" name={name} className="hidden" tabIndex={-1} />
       <span className="text-[12px] text-muted-2">
-        JPEG, PNG ou WebP. Vous pourrez recadrer votre logo avant de l&apos;enregistrer.
+        JPEG, PNG ou WebP, de toute taille : votre logo est recadré automatiquement.
       </span>
+      {error ? <span className="text-[12.5px] font-semibold text-ink">{error}</span> : null}
 
       {/* Portail : un ancêtre animé (transform) ferait de `fixed` un positionnement relatif à lui. */}
-      {cropSrc
+      {cropping && original
         ? createPortal(
-            <CropDialog src={cropSrc} onCancel={closeCropper} onConfirm={handleConfirm} />,
+            <CropDialog
+              src={original}
+              onCancel={() => setCropping(false)}
+              onConfirm={(file) => {
+                apply(file);
+                setCropping(false);
+              }}
+            />,
             document.body
           )
         : null}
