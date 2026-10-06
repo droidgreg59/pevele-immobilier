@@ -36,7 +36,7 @@ export default function XmlImportPanel({ agency }: { agency: AgencyProfile }) {
     <div className="flex max-w-[640px] flex-col gap-5 rounded-2xl border border-line bg-white p-6">
       <div>
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          Import XML (AC3 / Immofacile)
+          Import XML
         </span>
         <p className="mt-1.5 text-[13.5px] leading-[1.6] text-muted">
           Publiez vos annonces automatiquement depuis le flux XML de votre
@@ -55,7 +55,7 @@ export default function XmlImportPanel({ agency }: { agency: AgencyProfile }) {
             type="text"
             inputMode="url"
             defaultValue={agency.xmlImportUrl ?? ""}
-            placeholder="https://clients.immo-facile.com/..."
+            placeholder="https://exemple.fr/export/votre-agence/flux.xml"
             className="rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
