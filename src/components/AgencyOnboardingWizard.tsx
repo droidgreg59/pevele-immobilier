@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { updateAgencyProfileAction } from "@/lib/agency-actions";
 import type { AgencyProfile } from "@/lib/agencies";
+import LogoPicker from "./LogoPicker";
 
 type Step = "agence" | "adresse" | "logo" | "recap";
 const STEPS: Step[] = ["agence", "adresse", "logo", "recap"];
@@ -18,7 +19,8 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
   const [siteWeb, setSiteWeb] = useState(agency.siteWeb ?? "");
   const [googleAvisUrl, setGoogleAvisUrl] = useState(agency.googleAvisUrl ?? "");
   const [logoPreview, setLogoPreview] = useState<string | null>(agency.logoUrl);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Conservé en état : le champ du pas « logo » est démonté dès qu'on passe au récapitulatif.
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -49,7 +51,6 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
     formData.set("ville", ville);
     formData.set("siteWeb", siteWeb);
     formData.set("googleAvisUrl", googleAvisUrl);
-    const logoFile = fileInputRef.current?.files?.[0];
     if (logoFile) formData.set("logo", logoFile);
 
     startTransition(async () => {
@@ -183,36 +184,14 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
             </h1>
             <p className="mt-2 text-[14.5px] text-muted">Facultatif — vous pourrez les ajouter plus tard.</p>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-              Logo de l&apos;agence
-            </span>
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface">
-                {logoPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={logoPreview} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="font-display text-xl text-muted-2">
-                    {entreprise.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <label className="cursor-pointer rounded-full border border-line bg-white px-4 py-2.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface">
-                {logoPreview ? "Changer le logo" : "Ajouter un logo"}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) setLogoPreview(URL.createObjectURL(file));
-                  }}
-                />
-              </label>
-            </div>
-          </div>
+          <LogoPicker
+            currentUrl={logoPreview}
+            initial={entreprise}
+            onChange={({ file, previewUrl }) => {
+              setLogoFile(file);
+              setLogoPreview(previewUrl);
+            }}
+          />
           <label className="flex flex-col gap-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
               Site web

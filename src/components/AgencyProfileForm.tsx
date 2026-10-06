@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import {
   updateAgencyProfileAction,
   type AgencyProfileFormState,
 } from "@/lib/agency-actions";
 import type { AgencyProfile } from "@/lib/agencies";
+import LogoPicker from "./LogoPicker";
 
 const initialState: AgencyProfileFormState = {};
 
@@ -18,43 +19,10 @@ export default function AgencyProfileForm({
     updateAgencyProfileAction,
     initialState
   );
-  const [logoPreview, setLogoPreview] = useState<string | null>(agency.logoUrl);
 
   return (
     <form action={formAction} className="flex max-w-[640px] flex-col gap-5">
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          Logo de l&apos;agence
-        </span>
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface">
-            {logoPreview ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoPreview} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <span className="font-display text-xl text-muted-2">
-                {(agency.entreprise ?? agency.nom).charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-          <label className="cursor-pointer rounded-full border border-line bg-white px-4 py-2.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface">
-            {logoPreview ? "Changer le logo" : "Ajouter un logo"}
-            <input
-              type="file"
-              name="logo"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) setLogoPreview(URL.createObjectURL(file));
-              }}
-            />
-          </label>
-        </div>
-        <span className="text-[12px] text-muted-2">
-          JPEG, PNG ou WebP, 5 Mo max.
-        </span>
-      </div>
+      <LogoPicker currentUrl={agency.logoUrl} initial={agency.entreprise ?? agency.nom} />
 
       <label className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
