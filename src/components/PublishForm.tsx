@@ -14,8 +14,11 @@ const initialState: ListingFormState = {};
 
 export default function PublishForm({
   accountLabel,
+  maxPhotos,
 }: {
   accountLabel: string;
+  /** Limite de photos du compte connecté (voir maxPhotosFor). */
+  maxPhotos: number;
 }) {
   const [state, formAction, pending] = useActionState(
     createListingAction,
@@ -23,6 +26,7 @@ export default function PublishForm({
   );
   const [transaction, setTransaction] = useState<"VENTE" | "LOCATION">("VENTE");
   const [typeBien, setTypeBien] = useState<"MAISON" | "APPARTEMENT" | "TERRAIN">("MAISON");
+  const [photosBusy, setPhotosBusy] = useState(false);
 
   return (
     <form action={formAction} className="flex max-w-[720px] flex-col gap-5">
@@ -249,7 +253,7 @@ export default function PublishForm({
         />
       </label>
 
-      <PhotoDropzone />
+      <PhotoDropzone maxPhotos={maxPhotos} onBusyChange={setPhotosBusy} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5">
@@ -318,10 +322,10 @@ export default function PublishForm({
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || photosBusy}
         className="self-start rounded-full bg-yellow px-6.5 py-4 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
       >
-        {pending ? "Publication…" : "Publier mon annonce →"}
+        {pending ? "Publication…" : photosBusy ? "Envoi des photos…" : "Publier mon annonce →"}
       </button>
     </form>
   );

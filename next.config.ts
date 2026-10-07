@@ -1,12 +1,13 @@
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
-import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "./src/lib/photo-constants";
+import { MAX_PHOTO_BYTES } from "./src/lib/photo-constants";
 
-// Une annonce peut inclure jusqu'à MAX_PHOTOS photos de MAX_PHOTO_BYTES chacune
-// (voir src/lib/photo-constants.ts) ; la limite par défaut des Server Actions
-// (1 Mo) est bien trop basse et faisait échouer la publication ("Failed to
-// fetch"). Marge de +20 % pour l'overhead multipart et les autres champs.
-const photosLimitMb = Math.ceil((MAX_PHOTOS * MAX_PHOTO_BYTES * 1.2) / (1024 * 1024));
+// Les photos d'annonce partent UNE PAR UNE (stagePhotoAction, compressées dans
+// le navigateur) : une Server Action reçoit au plus une photo de
+// MAX_PHOTO_BYTES. La limite par défaut (1 Mo) restait trop basse ; au-delà de
+// 4,5 Mo, c'est de toute façon Vercel qui refuse la requête (413). Marge de
+// +20 % pour l'overhead multipart.
+const photosLimitMb = Math.ceil((MAX_PHOTO_BYTES * 1.2) / (1024 * 1024));
 
 // Photos d'annonces et logos servis depuis Cloudflare R2 (src/lib/r2.ts) —
 // next/image doit connaître ce domaine pour l'optimiser. R2_PUBLIC_URL peut

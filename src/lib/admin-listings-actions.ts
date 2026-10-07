@@ -12,10 +12,10 @@ import {
   removeListingPhotos,
 } from "./listings";
 import { parseListingFields } from "./listing-fields";
+import { validateStagedKeys } from "./photo-keys";
+import { maxPhotosFor } from "./photo-constants";
 import {
-  pickPhotoFiles,
-  validatePhotoFiles,
-  savePhotoFiles,
+  commitStagedPhotos,
   deletePhotoFilesByUrl,
   deleteListingUploadDir,
 } from "./photo-upload";
@@ -25,16 +25,20 @@ export async function adminUpdateListingAction(
   _prevState: ListingFormState,
   formData: FormData
 ): Promise<ListingFormState> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const listingId = String(formData.get("listingId") ?? "");
   const existing = await getListingForEditAsAdmin(listingId);
   if (!existing) return { error: "Annonce introuvable." };
 
+  if (formData.get("photosPending")) {
+    return { error: "Les photos sont encore en cours d'envoi : patientez quelques secondes puis réessayez." };
+  }
   const removePhotoIds = formData.getAll("removePhotoIds").map(String);
-  const photoFiles = pickPhotoFiles(formData);
+  // Photos mises en attente par l'admin connecté ; limite selon le compte propriétaire.
+  const photoKeys = formData.getAll("photoKeys").map(String).filter(Boolean);
   const remainingExisting = existing.photos.length - removePhotoIds.length;
-  const photoError = validatePhotoFiles(photoFiles, remainingExisting);
+  const photoError = validateStagedKeys(photoKeys, admin.userId, remainingExisting, maxPhotosFor(existing.owner.type));
   if (photoError) return { error: photoError };
 
   const parsed = parseListingFields(formData);
@@ -46,8 +50,8 @@ export async function adminUpdateListingAction(
     const removed = await removeListingPhotos(removePhotoIds);
     await deletePhotoFilesByUrl(removed.map((p) => p.url));
   }
-  if (photoFiles.length > 0) {
-    const urls = await savePhotoFiles(listingId, photoFiles);
+  if (photoKeys.length > 0) {
+    const urls = await commitStagedPhotos(listingId, photoKeys);
     await addListingPhotos(listingId, urls);
   }
 

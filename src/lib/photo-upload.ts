@@ -2,12 +2,14 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import {
   PutObjectCommand,
+  CopyObjectCommand,
   DeleteObjectCommand,
   DeleteObjectsCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import { r2Client, r2Bucket, r2PublicUrl } from "./r2";
-import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "./photo-constants";
+import { MAX_PHOTO_BYTES } from "./photo-constants";
+import { listingKeyFromStaged, stagedPhotoKey } from "./photo-keys";
 
 const EXT_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -15,24 +17,10 @@ const EXT_BY_MIME: Record<string, string> = {
   "image/webp": "webp",
 };
 
-export function pickPhotoFiles(formData: FormData): File[] {
-  return formData
-    .getAll("photos")
-    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
-}
-
-export function validatePhotoFiles(files: File[], existingCount = 0): string | null {
-  if (existingCount + files.length > MAX_PHOTOS) {
-    return `Maximum ${MAX_PHOTOS} photos par annonce.`;
-  }
-  for (const file of files) {
-    if (!EXT_BY_MIME[file.type]) {
-      return "Les photos doivent être au format JPEG, PNG ou WebP.";
-    }
-    if (file.size > MAX_PHOTO_BYTES) {
-      return "Chaque photo doit faire moins de 5 Mo.";
-    }
-  }
+/** Vérifie une photo envoyée seule (déjà compressée dans le navigateur). */
+export function validatePhotoFile(file: File): string | null {
+  if (!EXT_BY_MIME[file.type]) return "Les photos doivent être au format JPEG, PNG ou WebP.";
+  if (file.size > MAX_PHOTO_BYTES) return "Photo trop lourde, même après compression.";
   return null;
 }
 
@@ -43,22 +31,35 @@ async function putObject(key: string, buffer: Buffer, contentType: string): Prom
   return `${r2PublicUrl}/${key}`;
 }
 
-/**
- * Envoie les fichiers sur R2 sous listings/{listingId}/ et renvoie leurs
- * URLs publiques (domaine public R2, cf. src/lib/r2.ts).
- */
-export async function savePhotoFiles(
-  listingId: string,
-  files: File[]
-): Promise<string[]> {
-  if (files.length === 0) return [];
+/** Envoie une photo seule sous staging/<userId>/ et renvoie sa clé. */
+export async function stagePhotoFile(userId: string, file: File): Promise<string> {
+  const key = stagedPhotoKey(userId, randomUUID(), EXT_BY_MIME[file.type]);
+  await putObject(key, Buffer.from(await file.arrayBuffer()), file.type);
+  return key;
+}
 
+/**
+ * Rattache des photos en attente (clés déjà validées par validateStagedKeys)
+ * à une annonce : copie sous listings/<listingId>/ dans l'ordre reçu, puis
+ * supprime les originaux en attente. Renvoie les URLs publiques.
+ */
+export async function commitStagedPhotos(listingId: string, stagedKeys: string[]): Promise<string[]> {
   const urls: string[] = [];
-  for (const file of files) {
-    const ext = EXT_BY_MIME[file.type];
-    const key = `listings/${listingId}/${randomUUID()}.${ext}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
-    urls.push(await putObject(key, buffer, file.type));
+  for (const key of stagedKeys) {
+    const dest = listingKeyFromStaged(key, listingId);
+    await r2Client.send(
+      new CopyObjectCommand({ Bucket: r2Bucket, Key: dest, CopySource: `${r2Bucket}/${key}` })
+    );
+    urls.push(`${r2PublicUrl}/${dest}`);
+  }
+  if (stagedKeys.length > 0) {
+    try {
+      await r2Client.send(
+        new DeleteObjectsCommand({ Bucket: r2Bucket, Delete: { Objects: stagedKeys.map((Key) => ({ Key })) } })
+      );
+    } catch {
+      // best-effort — une copie en attente oubliée ne gêne pas l'annonce
+    }
   }
   return urls;
 }
@@ -72,7 +73,7 @@ const EXT_BY_CONTENT_TYPE: Record<string, string> = {
 
 /**
  * Télécharge des photos depuis des URLs distantes (flux XML d'agence) et les
- * envoie sur R2 sous listings/{listingId}/, comme savePhotoFiles. Les URLs
+ * envoie sur R2 sous listings/{listingId}/, comme commitStagedPhotos. Les URLs
  * qui échouent ou ne renvoient pas une image reconnue sont ignorées
  * (best-effort — un flux agence peut contenir des liens morts).
  */

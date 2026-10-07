@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import PublishForm from "@/components/PublishForm";
+import { maxPhotosFor } from "@/lib/photo-constants";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function DeposerPage() {
       </Link>
 
       <div className="mt-6.5">
-        <PublishForm accountLabel={accountLabel} />
+        <PublishForm accountLabel={accountLabel} maxPhotos={maxPhotosFor(session.type)} />
       </div>
     </div>
   );

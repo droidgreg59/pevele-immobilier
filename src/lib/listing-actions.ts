@@ -14,12 +14,19 @@ import {
 import { parseListingFields } from "./listing-fields";
 import { logEvent } from "./events";
 import {
-  pickPhotoFiles,
-  validatePhotoFiles,
-  savePhotoFiles,
+  commitStagedPhotos,
   deletePhotoFilesByUrl,
   deleteListingUploadDir,
 } from "./photo-upload";
+import { validateStagedKeys } from "./photo-keys";
+import { maxPhotosFor } from "./photo-constants";
+
+/** Clés des photos en attente soumises avec le formulaire (voir stagePhotoAction). */
+function pickStagedKeys(formData: FormData): string[] {
+  return formData.getAll("photoKeys").map(String).filter(Boolean);
+}
+
+const PHOTOS_PENDING_ERROR = "Les photos sont encore en cours d'envoi : patientez quelques secondes puis réessayez.";
 
 export type ListingFormState = { error?: string };
 
@@ -43,8 +50,9 @@ export async function createListingAction(
     };
   }
 
-  const photoFiles = pickPhotoFiles(formData);
-  const photoError = validatePhotoFiles(photoFiles);
+  if (formData.get("photosPending")) return { error: PHOTOS_PENDING_ERROR };
+  const photoKeys = pickStagedKeys(formData);
+  const photoError = validateStagedKeys(photoKeys, session.userId, 0, maxPhotosFor(session.type));
   if (photoError) return { error: photoError };
 
   const parsed = parseListingFields(formData);
@@ -52,8 +60,8 @@ export async function createListingAction(
 
   const listing = await createListing({ ownerId: session.userId, ...parsed.fields });
 
-  if (photoFiles.length > 0) {
-    const urls = await savePhotoFiles(listing.id, photoFiles);
+  if (photoKeys.length > 0) {
+    const urls = await commitStagedPhotos(listing.id, photoKeys);
     await addListingPhotos(listing.id, urls);
   }
 
@@ -64,7 +72,7 @@ export async function createListingAction(
       transaction: parsed.fields.transaction,
       typeBien: parsed.fields.typeBien,
       commune: parsed.fields.villageSlug,
-      photos: photoFiles.length,
+      photos: photoKeys.length,
     },
   });
 
@@ -84,10 +92,11 @@ export async function updateListingAction(
   const existing = await getListingForEdit(listingId, session.userId);
   if (!existing) return { error: "Annonce introuvable." };
 
+  if (formData.get("photosPending")) return { error: PHOTOS_PENDING_ERROR };
   const removePhotoIds = formData.getAll("removePhotoIds").map(String);
-  const photoFiles = pickPhotoFiles(formData);
+  const photoKeys = pickStagedKeys(formData);
   const remainingExisting = existing.photos.length - removePhotoIds.length;
-  const photoError = validatePhotoFiles(photoFiles, remainingExisting);
+  const photoError = validateStagedKeys(photoKeys, session.userId, remainingExisting, maxPhotosFor(session.type));
   if (photoError) return { error: photoError };
 
   const parsed = parseListingFields(formData);
@@ -99,8 +108,8 @@ export async function updateListingAction(
     const removed = await removeListingPhotos(removePhotoIds);
     await deletePhotoFilesByUrl(removed.map((p) => p.url));
   }
-  if (photoFiles.length > 0) {
-    const urls = await savePhotoFiles(listingId, photoFiles);
+  if (photoKeys.length > 0) {
+    const urls = await commitStagedPhotos(listingId, photoKeys);
     await addListingPhotos(listingId, urls);
   }
 

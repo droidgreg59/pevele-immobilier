@@ -9,7 +9,7 @@ import {
 import { villages } from "@/data/villages";
 import { EQUIPEMENTS } from "@/data/equipements";
 import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
-import { MAX_PHOTOS } from "@/lib/photo-constants";
+import { maxPhotosFor } from "@/lib/photo-constants";
 import type { ListingWithOwner } from "@/lib/listings";
 import PhotoDropzone from "./PhotoDropzone";
 import DpeFields from "./DpeFields";
@@ -39,6 +39,8 @@ export default function EditListingForm({
     listing.typeBien
   );
   const [removedIds, setRemovedIds] = useState<string[]>([]);
+  const [photosBusy, setPhotosBusy] = useState(false);
+  const maxPhotos = maxPhotosFor(listing.owner.type);
 
   const visiblePhotos = listing.photos.filter((p) => !removedIds.includes(p.id));
   const existingEquipements = listing.equipements
@@ -354,7 +356,11 @@ export default function EditListingForm({
           <input key={id} type="hidden" name="removePhotoIds" value={id} />
         ))}
 
-        <PhotoDropzone maxNewPhotos={MAX_PHOTOS - visiblePhotos.length} />
+        <PhotoDropzone
+          maxPhotos={maxPhotos}
+          maxNewPhotos={maxPhotos - visiblePhotos.length}
+          onBusyChange={setPhotosBusy}
+        />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
@@ -426,10 +432,10 @@ export default function EditListingForm({
 
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || photosBusy}
           className="self-start rounded-full bg-yellow px-6.5 py-4 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95 disabled:opacity-60"
         >
-          {pending ? "Enregistrement…" : "Enregistrer les modifications →"}
+          {pending ? "Enregistrement…" : photosBusy ? "Envoi des photos…" : "Enregistrer les modifications →"}
         </button>
       </form>
 
