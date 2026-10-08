@@ -1,6 +1,13 @@
 import "server-only";
 import { cache } from "react";
 import { createHash } from "node:crypto";
+import {
+  detectManualOverrides,
+  mergeOverrides,
+  parseOverrides,
+  stripOverridden,
+  PHOTOS_FIELD,
+} from "./import-overrides";
 import { Prisma } from "@prisma/client";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 import { prisma } from "./prisma";
@@ -288,19 +295,43 @@ function dpeData(f: ListingFieldsInput) {
 
 async function applyListingUpdate(
   id: string,
-  existing: { statut: string; prix: number },
-  input: ListingFieldsInput
+  existing: {
+    statut: string;
+    prix: number;
+    importSource: string | null;
+    manualOverrides: string | null;
+  } & Record<string, unknown>,
+  rawInput: ListingFieldsInput
 ) {
+  // Annonce importée : le prix ne se modifie que par le flux, et on mémorise
+  // les champs que l'agence reprend à la main pour que la synchro les respecte.
+  const imported = existing.importSource !== null;
+  const input = imported ? { ...rawInput, prix: existing.prix } : rawInput;
+  // Absents du formulaire d'édition : sans ça, une édition manuelle les effacerait.
+  const dpeKept = imported
+    ? {
+        dpeCoutMin: existing.dpeCoutMin as number | null,
+        dpeCoutMax: existing.dpeCoutMax as number | null,
+        dpeCoutAnneeRef: existing.dpeCoutAnneeRef as number | null,
+        dpeDate: existing.dpeDate as Date | null,
+      }
+    : {};
+  const overrides = imported
+    ? mergeOverrides(existing.manualOverrides, detectManualOverrides(existing, input))
+    : existing.manualOverrides;
+
   return prisma.$transaction(async (tx) => {
     const updated = await tx.listing.update({
       where: { id },
       data: {
         ...input,
         ...dpeData(input),
+        ...dpeKept,
         ...fraisData(input),
         ...caracData(input),
         videoUrl: input.videoUrl || null,
         visiteVirtuelleUrl: input.visiteVirtuelleUrl || null,
+        manualOverrides: overrides,
         // Une annonce refusée repasse en vérification après correction.
         ...(existing.statut === "REFUSEE"
           ? { statut: "EN_VERIFICATION" as const, statutRaison: null }
@@ -413,11 +444,14 @@ export async function upsertImportedListing(
   }
 
   const isRevival = existing.statut === "RETIREE" && !existing.hiddenByAdminAt;
+  // Champs repris à la main par l'agence : la synchro ne les réécrit pas (le
+  // prix, lui, vient toujours du flux).
+  const overrides = parseOverrides(existing.manualOverrides);
   await prisma.$transaction(async (tx) => {
     await tx.listing.update({
       where: { id: existing.id },
       data: {
-        ...fieldsData,
+        ...stripOverridden(fieldsData, overrides),
         lastSeenAt: new Date(),
         // Une annonce RETIREE qui réapparaît dans le flux (republiée côté
         // agence) redevient active automatiquement — jamais l'inverse : on ne
@@ -437,6 +471,9 @@ export async function upsertImportedListing(
       });
     }
   });
+
+  // Photos modifiées à la main (ajout/retrait) : la liste n'est plus synchronisée.
+  if (overrides.includes(PHOTOS_FIELD)) return { id: existing.id, created: false };
 
   // Photos du flux inchangées depuis le dernier import complet → rien à
   // retélécharger (voir Listing.photoSourceKey).
@@ -534,5 +571,27 @@ export async function getPriceHistory(
     where: { listingId },
     orderBy: { changedAt: "asc" },
     select: { id: true, prix: true, changedAt: true },
+  });
+}
+
+/** Marque des champs comme modifiés à la main sur une annonce importée (sans effet sur une annonce manuelle). */
+export async function markManualOverrides(listingId: string, fields: string[]): Promise<void> {
+  if (fields.length === 0) return;
+  const l = await prisma.listing.findUnique({
+    where: { id: listingId },
+    select: { importSource: true, manualOverrides: true },
+  });
+  if (!l?.importSource) return;
+  await prisma.listing.update({
+    where: { id: listingId },
+    data: { manualOverrides: mergeOverrides(l.manualOverrides, fields) },
+  });
+}
+
+/** Rend tous les champs au flux : la prochaine synchro réécrira titre, description, photos… */
+export async function clearManualOverrides(listingId: string): Promise<void> {
+  await prisma.listing.update({
+    where: { id: listingId },
+    data: { manualOverrides: null, photoSourceKey: null },
   });
 }

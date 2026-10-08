@@ -226,6 +226,10 @@ model Listing {
   /// 60 s à la synchro quotidienne). Null = jamais importé, ou un
   /// téléchargement a échoué : on retente à la synchro suivante.
   photoSourceKey     String?
+  /// Champs d'une annonce importée modifiés à la main par l'agence (liste CSV,
+  /// voir src/lib/import-overrides.ts). La synchro du flux ne réécrit plus
+  /// ces champs ; le prix, lui, n'est jamais modifiable à la main.
+  manualOverrides    String?
   /// Masquée à la main par un admin (ex. doublon multi-villes d'une agence).
   /// Statut RETIREE + cette date : la synchro du flux continue de mettre
   /// l'annonce à jour mais ne la republie jamais tant que l'admin ne la rétablit

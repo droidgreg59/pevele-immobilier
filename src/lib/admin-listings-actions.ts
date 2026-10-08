@@ -10,7 +10,9 @@ import {
   getListingForEditAsAdmin,
   addListingPhotos,
   removeListingPhotos,
+  markManualOverrides,
 } from "./listings";
+import { PHOTOS_FIELD } from "./import-overrides";
 import { parseListingFields } from "./listing-fields";
 import { validateStagedKeys } from "./photo-keys";
 import { maxPhotosFor } from "./photo-constants";
@@ -53,6 +55,9 @@ export async function adminUpdateListingAction(
   if (photoKeys.length > 0) {
     const urls = await commitStagedPhotos(listingId, photoKeys);
     await addListingPhotos(listingId, urls);
+  }
+  if (removePhotoIds.length > 0 || photoKeys.length > 0) {
+    await markManualOverrides(listingId, [PHOTOS_FIELD]);
   }
 
   revalidatePath("/admin/annonces/toutes");

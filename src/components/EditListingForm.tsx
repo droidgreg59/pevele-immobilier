@@ -4,8 +4,10 @@ import { useActionState, useState } from "react";
 import {
   updateListingAction,
   deleteListingAction,
+  resetImportOverridesAction,
   type ListingFormState,
 } from "@/lib/listing-actions";
+import { overrideLabels } from "@/lib/import-overrides";
 import { villages } from "@/data/villages";
 import { EQUIPEMENTS } from "@/data/equipements";
 import { MODE_CHAUFFAGE_OPTIONS } from "@/data/mode-chauffage";
@@ -42,6 +44,9 @@ export default function EditListingForm({
   const [photosBusy, setPhotosBusy] = useState(false);
   const maxPhotos = maxPhotosFor(listing.owner.type);
 
+  const imported = listing.importSource !== null;
+  const protectedLabels = overrideLabels(listing.manualOverrides);
+
   const visiblePhotos = listing.photos.filter((p) => !removedIds.includes(p.id));
   const existingEquipements = listing.equipements
     ? listing.equipements.split(",").filter(Boolean)
@@ -60,6 +65,29 @@ export default function EditListingForm({
             Modifiez l&apos;annonce ci-dessous pour la soumettre à nouveau à
             vérification.
           </p>
+        </div>
+      ) : null}
+      {imported ? (
+        <div className="max-w-[720px] rounded-2xl bg-surface px-5 py-4">
+          <span className="text-[11px] font-semibold text-ink">Annonce importée depuis votre flux</span>
+          <p className="m-0 mt-1.5 text-[13.5px] leading-[1.6] text-muted">
+            Le <b>prix</b> n&apos;est modifiable que dans votre logiciel : il est mis à jour par le
+            flux. Les autres champs que vous modifiez ici ne sont plus écrasés par le flux.
+          </p>
+          {protectedLabels.length > 0 ? (
+            <form action={resetImportOverridesAction} className="mt-2.5 flex flex-col gap-2">
+              <input type="hidden" name="listingId" value={listing.id} />
+              <p className="m-0 text-[13px] text-ink">
+                Modifié(s) à la main : <b>{protectedLabels.join(", ")}</b>.
+              </p>
+              <button
+                type="submit"
+                className="self-start rounded-full border border-line bg-white px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+              >
+                Rétablir la synchronisation avec le flux
+              </button>
+            </form>
+          ) : null}
         </div>
       ) : null}
       <form action={formAction} className="flex max-w-[720px] flex-col gap-5">
@@ -168,7 +196,11 @@ export default function EditListingForm({
               min={1}
               required
               defaultValue={listing.prix}
-              className="rounded-xl border border-line bg-white px-3 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+              readOnly={imported}
+              title={imported ? "Prix géré par votre flux" : undefined}
+              className={`rounded-xl border border-line px-3 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15 ${
+                imported ? "cursor-not-allowed bg-surface text-muted" : "bg-white"
+              }`}
             />
           </label>
           <label className="flex flex-col gap-1.5">

@@ -10,7 +10,11 @@ import {
   addListingPhotos,
   removeListingPhotos,
   getListingForEdit,
+  markManualOverrides,
+  clearManualOverrides,
 } from "./listings";
+import { PHOTOS_FIELD } from "./import-overrides";
+import { isUserAdmin } from "./admin";
 import { parseListingFields } from "./listing-fields";
 import { logEvent } from "./events";
 import {
@@ -112,6 +116,9 @@ export async function updateListingAction(
     const urls = await commitStagedPhotos(listingId, photoKeys);
     await addListingPhotos(listingId, urls);
   }
+  if (removePhotoIds.length > 0 || photoKeys.length > 0) {
+    await markManualOverrides(listingId, [PHOTOS_FIELD]);
+  }
 
   redirect(`/${parsed.fields.transaction === "VENTE" ? "acheter" : "louer"}/${listingId}`);
 }
@@ -127,4 +134,22 @@ export async function deleteListingAction(formData: FormData) {
   }
 
   redirect("/compte");
+}
+
+/** « Rétablir la synchronisation » : l'annonce importée reprend tous ses champs du flux au prochain passage. */
+export async function resetImportOverridesAction(formData: FormData) {
+  const session = await getSession();
+  if (!session) redirect("/connexion");
+
+  const listingId = String(formData.get("listingId") ?? "");
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    select: { ownerId: true, importSource: true },
+  });
+  const allowed =
+    listing?.importSource &&
+    (listing.ownerId === session.userId || (await isUserAdmin(session.userId)));
+  if (allowed) await clearManualOverrides(listingId);
+
+  redirect(`/compte/annonces/${listingId}`);
 }
