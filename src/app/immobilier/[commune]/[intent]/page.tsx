@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { TransactionType, TypeBien } from "@prisma/client";
 import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageAmenities } from "@/data/village-amenities";
-import { getListingsForIntent } from "@/lib/listings";
+import { getListingsForIntent, getAvailableIntentKeys } from "@/lib/listings";
 import { getDvfStatsForVillage } from "@/lib/dvf";
 import { getSession, isParticulierSession } from "@/lib/session";
 import { getFavoriteListingIds } from "@/lib/favorites";
@@ -72,16 +72,22 @@ export default async function IntentLandingPage({
   const cfg = INTENTS[intent];
   if (!village || !cfg) notFound();
 
-  const [listings, dvfStats, session] = await Promise.all([
+  const [listings, dvfStats, session, intentKeys] = await Promise.all([
     getListingsForIntent(village.slug, cfg.typeBien, cfg.transaction),
     getDvfStatsForVillage(village.slug, cfg.dvfType),
     getSession(),
+    getAvailableIntentKeys(),
   ]);
   const favoriteIds = session ? await getFavoriteListingIds(session.userId) : new Set<string>();
   const amenities = villageAmenities[village.insee];
   const listBase = cfg.transaction === "VENTE" ? "/acheter" : "/louer";
-  const otherIntents = INTENT_SLUGS.filter((s) => s !== intent);
-  const voisines = nearestVillages(village.slug, 5);
+  // Liens vers les seules pages qui ont des annonces (les autres sont en noindex).
+  const otherIntents = INTENT_SLUGS.filter(
+    (s) => s !== intent && intentKeys.has(`${village.slug}/${s}`)
+  );
+  const voisines = nearestVillages(village.slug, 5).filter((v) =>
+    intentKeys.has(`${v.slug}/${intent}`)
+  );
 
   return (
     <div className="animate-fade-up mx-auto max-w-[1200px] px-9 py-8">
@@ -179,6 +185,8 @@ export default async function IntentLandingPage({
       </div>
 
       <div className="mt-10 border-t border-line pt-6">
+        {otherIntents.length > 0 ? (
+          <>
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
           Autres recherches à {village.nom}
         </span>
@@ -193,7 +201,11 @@ export default async function IntentLandingPage({
             </Link>
           ))}
         </div>
+          </>
+        ) : null}
 
+        {voisines.length > 0 ? (
+          <>
         <span className="mt-6 block text-[11px] font-semibold uppercase tracking-wide text-muted">
           {cfg.label} dans les communes proches
         </span>
@@ -208,6 +220,8 @@ export default async function IntentLandingPage({
             </Link>
           ))}
         </div>
+          </>
+        ) : null}
       </div>
     </div>
   );

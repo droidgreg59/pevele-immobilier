@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createHash } from "node:crypto";
+import { intentKeysFromListings } from "./intent-keys";
 import {
   detectManualOverrides,
   mergeOverrides,
@@ -608,3 +609,12 @@ export function isListingIndexable(l: {
 }): boolean {
   return l.statut === "PUBLIEE" && (l.owner.type !== "AGENCE" || l.owner.verifStatut === "VERIFIEE");
 }
+
+/** Clés « commune/intention » des pages /immobilier/… qui ont au moins une annonce publique. */
+export const getAvailableIntentKeys = cache(async (): Promise<Set<string>> => {
+  const [ventes, locations] = await Promise.all([
+    getPublicListings("VENTE"),
+    getPublicListings("LOCATION"),
+  ]);
+  return intentKeysFromListings([...ventes, ...locations]);
+});

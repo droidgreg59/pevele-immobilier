@@ -9,6 +9,7 @@ import { getAllGuidesMetadata } from "@/lib/guides";
 import { LAUNCH_PAIRS, isIndexablePair } from "@/lib/comparateur";
 import { getCronLastRun } from "@/lib/freshness";
 import { SITE_URL } from "@/lib/seo";
+import { intentKeysFromListings } from "@/lib/intent-keys";
 
 // Sans cette borne, le sitemap héritait de la revalidation d'une semaine des
 // lectures DVF mises en cache : une annonce masquée, retirée ou refusée y
@@ -78,16 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Pages d'atterrissage par intention : uniquement les combinaisons
   // commune × type × transaction qui ont au moins une annonce en ligne (les
   // pages sans annonce sont en noindex, inutile de les soumettre).
-  const INTENT_SLUG: Record<string, Record<string, string>> = {
-    MAISON: { VENTE: "maisons-a-vendre", LOCATION: "maisons-a-louer" },
-    APPARTEMENT: { VENTE: "appartements-a-vendre", LOCATION: "appartements-a-louer" },
-    TERRAIN: { VENTE: "terrains-a-vendre", LOCATION: "terrains-a-louer" },
-  };
-  const intentKeys = new Set<string>();
-  for (const l of [...ventes, ...locations]) {
-    const intent = INTENT_SLUG[l.typeBien]?.[l.transaction];
-    if (intent) intentKeys.add(`${l.villageSlug}/${intent}`);
-  }
+  const intentKeys = intentKeysFromListings([...ventes, ...locations]);
   const intentEntries: MetadataRoute.Sitemap = [...intentKeys].map((key) => ({
     url: `${SITE_URL}/immobilier/${key}`,
     changeFrequency: "weekly",

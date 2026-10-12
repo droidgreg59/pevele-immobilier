@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVillageBySlug, nearestVillages } from "@/data/villages";
 import { villageAmenities } from "@/data/village-amenities";
-import { getPublicListingsByVillage } from "@/lib/listings";
+import { getPublicListingsByVillage, getAvailableIntentKeys } from "@/lib/listings";
 import { getDvfMarketStatsForVillage } from "@/lib/dvf";
 import { getGuidesForVillage } from "@/lib/guides";
 import { getAgenciesForVillage, getActiveAgencyCount } from "@/lib/agencies";
@@ -47,14 +47,26 @@ export default async function VillagePage({
   const village = getVillageBySlug(slug);
   if (!village) notFound();
 
-  const [villageListings, dvfStats, session, guides, activeAgencyCount, comparateurs] = await Promise.all([
+  const [villageListings, dvfStats, session, guides, activeAgencyCount, comparateurs, intentKeys] = await Promise.all([
     getPublicListingsByVillage(village.slug),
     getDvfMarketStatsForVillage(village.slug, "Maison"),
     getSession(),
     getGuidesForVillage(village.slug),
     getActiveAgencyCount(),
     getIndexableComparateursForVillage(village.slug),
+    getAvailableIntentKeys(),
   ]);
+  // Seules les pages /immobilier/… qui ont des annonces : les autres sont en
+  // noindex, inutile d'y envoyer visiteurs et robots.
+  const intentLinks = (
+    [
+      ["maisons-a-vendre", "Maisons à vendre"],
+      ["appartements-a-vendre", "Appartements à vendre"],
+      ["terrains-a-vendre", "Terrains à vendre"],
+      ["maisons-a-louer", "Maisons à louer"],
+      ["appartements-a-louer", "Appartements à louer"],
+    ] as const
+  ).filter(([intent]) => intentKeys.has(`${village.slug}/${intent}`));
   // Le bloc "Agences intervenant à ..." reste construit et prêt, mais n'est
   // affiché publiquement qu'une fois le portail réellement multi-agences —
   // sinon les 44 pages village ne montreraient que PVL, ce qui donnerait
@@ -133,23 +145,19 @@ export default async function VillagePage({
             </Link>
           </p>
         )}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {[
-            ["maisons-a-vendre", "Maisons à vendre"],
-            ["appartements-a-vendre", "Appartements à vendre"],
-            ["terrains-a-vendre", "Terrains à vendre"],
-            ["maisons-a-louer", "Maisons à louer"],
-            ["appartements-a-louer", "Appartements à louer"],
-          ].map(([intent, label]) => (
-            <Link
-              key={intent}
-              href={`/immobilier/${village.slug}/${intent}`}
-              className="rounded-full border border-line bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
-            >
-              {label} à {village.nom}
-            </Link>
-          ))}
-        </div>
+        {intentLinks.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {intentLinks.map(([intent, label]) => (
+              <Link
+                key={intent}
+                href={`/immobilier/${village.slug}/${intent}`}
+                className="rounded-full border border-line bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
+              >
+                {label} à {village.nom}
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-9">

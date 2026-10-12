@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVillageBySlug, nearestVillages, villages } from "@/data/villages";
+import { getAvailableIntentKeys } from "@/lib/listings";
 import {
   getDvfMarketStatsForVillage,
   getDvfPriceByYear,
@@ -56,6 +57,12 @@ export default async function PrixCommunePage({
   const village = getVillageBySlug(commune);
   if (!village) notFound();
 
+  // La page /immobilier/… n'existe en indexable que s'il y a des maisons à vendre ici ;
+  // sinon on renvoie vers la liste filtrée sur la commune.
+  const annoncesHref = (await getAvailableIntentKeys()).has(`${village.slug}/maisons-a-vendre`)
+    ? `/immobilier/${village.slug}/maisons-a-vendre`
+    : `/acheter?villages=${village.slug}`;
+
   const [statsMaison, statsAppartement, byYear, byType, recent, medianRows, dvfUpdatedAt] =
     await Promise.all([
       getDvfMarketStatsForVillage(village.slug, "Maison"),
@@ -108,7 +115,7 @@ export default async function PrixCommunePage({
             médian fiable (moins de 5 ventes retenues).
           </p>
           <Link
-            href={`/immobilier/${village.slug}/maisons-a-vendre`}
+            href={annoncesHref}
             className="mt-4 inline-block text-[13px] font-semibold text-blue"
           >
             Voir les annonces à {village.nom} →
@@ -325,7 +332,7 @@ export default async function PrixCommunePage({
 
           <div className="mt-9 flex flex-wrap gap-3">
             <Link
-              href={`/immobilier/${village.slug}/maisons-a-vendre`}
+              href={annoncesHref}
               className="rounded-full bg-yellow px-5 py-3 text-[13px] font-semibold text-ink shadow-sm transition hover:shadow-md hover:brightness-95"
             >
               Voir les annonces à {village.nom}
