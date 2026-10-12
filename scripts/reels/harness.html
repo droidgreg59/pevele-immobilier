@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- Banc de rendu des reels « <Commune> de 1950 à aujourd'hui » : deux cartes
+     Leaflet superposées (époque a / époque b en fondu, rideau ou cercle),
+     titre, compteur d'années et marque. Piloté image par image par render.mjs. -->
+<link rel="stylesheet" href="../../node_modules/leaflet/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;width:100%;height:100%;background:#111;overflow:hidden}
+.m{position:absolute;inset:0}#a{z-index:1}#b{z-index:2}
+.leaflet-control-container{display:none}.leaflet-container{background:#111}
+#vig{position:absolute;inset:0;pointer-events:none;z-index:900;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.30) 100%)}
+.ov{position:absolute;z-index:950;font-family:"Plus Jakarta Sans",sans-serif;color:#fff;pointer-events:none}
+#title{left:0;right:0;top:200px;text-align:center;opacity:0}
+#title .t1{font-weight:800;font-size:72px;letter-spacing:-1.5px;white-space:nowrap;text-shadow:0 4px 24px rgba(0,0,0,.55)}
+#title .t2{display:inline-block;margin-top:12px;background:#f0b429;color:#20242e;font-weight:800;font-size:25px;padding:8px 18px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+#year{right:22px;bottom:62px;font-weight:800;font-size:54px;letter-spacing:-1px;background:rgba(20,26,56,.62);padding:6px 18px 8px;border-radius:18px;box-shadow:0 6px 22px rgba(0,0,0,.35);opacity:0;font-variant-numeric:tabular-nums}
+#brand{left:22px;bottom:66px;display:flex;align-items:center;gap:9px;background:rgba(20,26,56,.62);padding:7px 12px 7px 7px;border-radius:14px}
+#brand img{width:40px;height:40px;border-radius:10px}
+#brand span{font-weight:700;font-size:13.5px;line-height:1.2}
+</style>
+</head>
+<body>
+<div id="a" class="m"></div><div id="b" class="m"></div><div id="vig"></div>
+<div id="title" class="ov"><div class="t1"></div><div class="t2">de 1950 à aujourd'hui</div></div>
+<div id="year" class="ov">1950</div>
+<div id="brand" class="ov"><img src="../../public/icon-master.png" alt=""><span>Pévèle Immobilier<br>Tout l'immobilier de la Pévèle</span></div>
+<script src="../../node_modules/leaflet/dist/leaflet.js"></script>
+<script>
+// Couches IGN (Géoplateforme, Licence Ouverte Etalab 2.0) — mêmes que src/lib/aerial-epochs.ts.
+const E={
+ '1950':['ORTHOIMAGERY.ORTHOPHOTOS.1950-1965','BDORTHOHISTORIQUE','PM_0_18','image/png',18],
+ '1965':['ORTHOIMAGERY.ORTHOPHOTOS.1965-1980','BDORTHOHISTORIQUE','PM_3_18','image/png',18],
+ '2000':['ORTHOIMAGERY.ORTHOPHOTOS2000-2005','normal','PM_6_18','image/jpeg',18],
+ '2006':['ORTHOIMAGERY.ORTHOPHOTOS2006-2010','normal','PM_6_18','image/jpeg',18],
+ '2011':['ORTHOIMAGERY.ORTHOPHOTOS2011-2015','normal','PM_6_18','image/jpeg',18],
+ '2016':['ORTHOIMAGERY.ORTHOPHOTOS2016-2020','normal','PM_6_19','image/jpeg',19],
+ '2021':['ORTHOIMAGERY.ORTHOPHOTOS2021-2023','normal','PM_6_19','image/jpeg',19],
+ 'today':['ORTHOIMAGERY.ORTHOPHOTOS','normal','PM_0_19','image/jpeg',19]};
+const opts={zoomSnap:0,zoomAnimation:false,fadeAnimation:false,inertia:false,center:[50.56,3.21],zoom:14};
+const maps={a:L.map('a',opts),b:L.map('b',opts)}; const cache={a:{},b:{}}; const cur={a:null,b:null};
+window.__retrying=0; window.__failed=0;
+function show(k,id){ if(cur[k]===id)return; if(cur[k]) maps[k].removeLayer(cache[k][cur[k]]); cur[k]=id; if(!id)return;
+ if(!cache[k][id]){const e=E[id];
+  cache[k][id]=L.tileLayer(`https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${e[0]}&STYLE=${e[1]}&TILEMATRIXSET=${e[2]}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=${encodeURIComponent(e[3])}`,{maxNativeZoom:e[4],maxZoom:20,detectRetina:true,keepBuffer:4,crossOrigin:true});
+  // Tuile en échec (IGN parfois lent) : jusqu'à 6 nouvelles tentatives, sinon un trou gris resterait dans l'image.
+  cache[k][id].on('tileerror',ev=>{const img=ev.tile,n=(img._retry||0)+1; if(n>6){window.__failed++;return;} img._retry=n; window.__retrying++;
+   setTimeout(()=>{const done=()=>{window.__retrying--;img.removeEventListener('load',done);img.removeEventListener('error',done);}; img.addEventListener('load',done); img.addEventListener('error',done); img.src=img.src.split('&_r=')[0]+'&_r='+n;},300*n);});
+ }
+ cache[k][id].addTo(maps[k]); }
+// st : {lat,lng,z, a, b, op (opacité de b), wipe (0..1), circle (0..1), feather, nom, titleOp, year, yearOp}
+window.frame=async function(st){
+ show('a',st.a); show('b',st.b||null);
+ for(const k of ['a','b']) maps[k].setView([st.lat,st.lng],st.z,{animate:false});
+ const el=document.getElementById('b'); el.style.opacity=st.b?(st.op??1):0;
+ const W=innerWidth,H=innerHeight,f=st.feather??90;
+ if(st.wipe!=null){const x=st.wipe*(W+2*f)-f; el.style.webkitMaskImage=el.style.maskImage=`linear-gradient(to right,#000 ${x-f}px,transparent ${x+f}px)`;}
+ else if(st.circle!=null){const R=st.circle*Math.hypot(W,H)/2*1.15; el.style.webkitMaskImage=el.style.maskImage=`radial-gradient(circle at 50% 50%,#000 ${Math.max(0,R-f)}px,transparent ${R+f}px)`;}
+ else el.style.webkitMaskImage=el.style.maskImage='none';
+ const T=document.getElementById('title'),Y=document.getElementById('year');
+ T.style.opacity=st.titleOp||0;
+ if(st.nom){const t1=T.querySelector('.t1'); t1.textContent=st.nom; t1.style.fontSize=Math.min(72,Math.floor(800/st.nom.length))+'px';}
+ Y.style.opacity=st.yearOp??0;
+ if(st.year!=null){const num=/^\d+$/.test(st.year); Y.textContent=st.year; Y.style.fontSize=num?'54px':'34px'; Y.style.paddingTop=num?'6px':'14px'; Y.style.paddingBottom=num?'8px':'14px';}
+ const busy=()=>{let b=window.__retrying>0; for(const k of ['a','b']) maps[k].eachLayer(l=>{if(l.isLoading&&l.isLoading())b=true}); return b;};
+ const t0=performance.now(); while(busy()&&performance.now()-t0<15000) await new Promise(r=>setTimeout(r,40));
+ await document.fonts.ready; await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+ return true;};
+</script>
+</body>
+</html>

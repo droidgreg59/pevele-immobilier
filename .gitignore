@@ -47,3 +47,4 @@ next-env.d.ts
 
 # fichiers uploadés par les utilisateurs (stockage local, non versionné)
 /public/uploads
+/media/

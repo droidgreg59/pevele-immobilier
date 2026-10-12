@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin";
 const NAV = [
   { href: "/admin", label: "Vue d'ensemble" },
   { href: "/admin/stats", label: "Statistiques" },
+  { href: "/admin/publications", label: "Publications réseaux" },
   { href: "/admin/annonces", label: "Modération" },
   { href: "/admin/verifications", label: "Vérifications pro" },
   { href: "/admin/leads-estimation", label: "Leads estimation" },
