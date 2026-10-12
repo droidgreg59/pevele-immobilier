@@ -595,3 +595,16 @@ export async function clearManualOverrides(listingId: string): Promise<void> {
     data: { manualOverrides: null, photoSourceKey: null },
   });
 }
+
+/**
+ * Une fiche n'est indexable que si l'annonce est réellement visible du public :
+ * publiée, et — pour une agence — vérifiée (voir PUBLIC_OWNER_WHERE). Sinon la
+ * page reste joignable par son lien mais en noindex, comme elle l'est déjà
+ * dans les listes.
+ */
+export function isListingIndexable(l: {
+  statut: string;
+  owner: { type: string; verifStatut: string };
+}): boolean {
+  return l.statut === "PUBLIEE" && (l.owner.type !== "AGENCE" || l.owner.verifStatut === "VERIFIEE");
+}

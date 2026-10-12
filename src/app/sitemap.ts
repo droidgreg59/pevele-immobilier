@@ -10,6 +10,12 @@ import { LAUNCH_PAIRS, isIndexablePair } from "@/lib/comparateur";
 import { getCronLastRun } from "@/lib/freshness";
 import { SITE_URL } from "@/lib/seo";
 
+// Sans cette borne, le sitemap héritait de la revalidation d'une semaine des
+// lectures DVF mises en cache : une annonce masquée, retirée ou refusée y
+// restait jusqu'à 7 jours alors que sa page est en noindex (Search Console :
+// « Exclue par la balise noindex »).
+export const revalidate = 3600;
+
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1, changeFrequency: "daily" },
   { path: "/acheter", priority: 0.9, changeFrequency: "daily" },

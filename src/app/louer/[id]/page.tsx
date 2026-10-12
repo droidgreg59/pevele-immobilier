@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
+import { isListingIndexable, getListingById, getPriceHistory, getSimilarListings } from "@/lib/listings";
 import { getSession, isParticulierSession } from "@/lib/session";
 import { isListingFavorited } from "@/lib/favorites";
 import { getArtisansForVillage } from "@/lib/artisans";
@@ -28,6 +28,7 @@ export async function generateMetadata({
   return {
     title,
     description: listing.description,
+    robots: isListingIndexable(listing) ? undefined : { index: false, follow: true },
     alternates: {
       canonical: `/louer/${listing.id}`,
     },
