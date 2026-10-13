@@ -5,9 +5,9 @@ import { runDueSocialPosts } from "@/lib/social";
 export const maxDuration = 60;
 
 /**
- * Créneau de publication réseaux (Vercel Cron, 12 h 30 et 18 h 30 heure de
- * Paris) : publie les SocialPost VALIDEE dont l'heure est passée, et termine
- * celles restées EN_COURS (vidéo Instagram encore en traitement).
+ * Publication réseaux (Vercel Cron toutes les 15 minutes, offre Pro) : publie
+ * les SocialPost VALIDEE dont l'heure est passée, et termine celles restées
+ * EN_COURS (vidéo Instagram encore en traitement).
  */
 export async function GET(request: NextRequest) {
   if (!isAuthorizedCronRequest(request)) {

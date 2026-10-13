@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Publications réseaux" };
 
 const STATUS: Record<string, { label: string; bg: string; color: string }> = {
   BROUILLON: { label: "Brouillon — à valider", bg: "#FBF3DC", color: "var(--pvl-gold)" },
-  VALIDEE: { label: "Validée — partira au créneau", bg: "var(--pvl-blue-soft)", color: "var(--pvl-blue)" },
+  VALIDEE: { label: "Validée — partira à l'heure prévue", bg: "var(--pvl-blue-soft)", color: "var(--pvl-blue)" },
   EN_COURS: { label: "En cours de publication", bg: "var(--pvl-blue-soft)", color: "var(--pvl-blue)" },
   PUBLIEE: { label: "Publiée", bg: "#EAF3E8", color: "var(--pvl-green)" },
   ECHEC: { label: "Échec", bg: "#FBEAEA", color: "#c0392b" },
@@ -38,8 +38,8 @@ export default async function PublicationsPage() {
       <h1 className="m-0 font-display text-[28px] text-ink">Publications réseaux</h1>
       <p className="m-0 mt-1 max-w-[70ch] text-[13.5px] leading-[1.6] text-muted">
         Page Facebook et Instagram « Pévèle Immobilier ». Rien ne part sans validation. Les publications
-        validées partent au premier créneau après leur heure (12 h 30 et 18 h 30, heure de Paris en été ;
-        une heure plus tard en hiver), ou tout de suite avec « Publier maintenant ».
+        validées partent à leur heure (vérification toutes les 15 minutes), ou tout de suite avec
+        « Publier maintenant ».
       </p>
 
       <h2 className="m-0 mt-8 text-[13px] font-semibold uppercase tracking-wide text-muted">À venir ({upcoming.length})</h2>
