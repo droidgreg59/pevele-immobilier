@@ -15,7 +15,25 @@ const GRAPH = `https://graph.facebook.com/${VERSION}`;
 export const META_PAGE_ID = process.env.META_PAGE_ID || "1293118360556938";
 export const META_IG_ID = process.env.META_IG_ID || "17841415335014315";
 
-export class MetaError extends Error {}
+export class MetaError extends Error {
+  constructor(
+    message: string,
+    /** Codes Meta (`error.code` / `error.error_subcode`), quand ils sont fournis. */
+    readonly code?: number,
+    readonly subcode?: number
+  ) {
+    super(message);
+  }
+
+  /**
+   * Erreur passagère : à retenter au passage suivant plutôt qu'à marquer en
+   * échec. Ex. Instagram « le contenu n'est pas prêt à être publié » (code
+   * 9007, sous-code 2207027), limites de débit, indisponibilité temporaire.
+   */
+  get transient(): boolean {
+    return this.code === 9007 || this.subcode === 2207027 || this.code === 4 || this.code === 17 || this.code === 2 || this.code === 1;
+  }
+}
 
 function systemToken(): string {
   const t = process.env.META_SYSTEM_TOKEN;
@@ -35,8 +53,10 @@ async function graph(
       ? await fetch(`${GRAPH}${path}?${body}`, { cache: "no-store" })
       : await fetch(`${GRAPH}${path}`, { method: "POST", body, cache: "no-store" });
   const json = (await res.json().catch(() => ({}))) as Json;
-  const err = json.error as { message?: string; error_user_msg?: string } | undefined;
-  if (!res.ok || err) throw new MetaError(err?.error_user_msg || err?.message || `Erreur Meta (HTTP ${res.status})`);
+  const err = json.error as { message?: string; error_user_msg?: string; code?: number; error_subcode?: number } | undefined;
+  if (!res.ok || err) {
+    throw new MetaError(err?.error_user_msg || err?.message || `Erreur Meta (HTTP ${res.status})`, err?.code, err?.error_subcode);
+  }
   return json;
 }
 

@@ -79,10 +79,12 @@ export async function processSocialPost(id: string, budgetMs = 45_000): Promise<
         await sleep(5_000);
         s = await igContainerStatus(containerId);
       }
-      if (s.status === "ERROR" || s.status === "EXPIRED") {
-        // Conteneur inutilisable : on l'oublie pour en recréer un au prochain essai.
+      if (s.status === "EXPIRED") {
+        // Conteneur périmé (24 h) : on l'oublie, le passage suivant en recrée un.
+        post = await prisma.socialPost.update({ where: { id }, data: { igContainerId: null } });
+      } else if (s.status === "ERROR") {
         await prisma.socialPost.update({ where: { id }, data: { igContainerId: null } });
-        throw new MetaError(`Instagram : ${s.status === "EXPIRED" ? "conteneur expiré" : s.detail || "erreur de traitement de la vidéo"}`);
+        throw new MetaError(`Instagram : ${s.detail || "erreur de traitement du média"}`);
       }
       if (s.status === "FINISHED") {
         const { mediaId, permalink } = await igPublish(containerId);
@@ -98,8 +100,12 @@ export async function processSocialPost(id: string, budgetMs = 45_000): Promise<
     return { id, statut: updated.statut };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    await prisma.socialPost.update({ where: { id }, data: { statut: "ECHEC", error: message.slice(0, 1000) } });
-    return { id, statut: "ECHEC", error: message };
+    // Erreur passagère (contenu Instagram pas encore prêt, limite de débit…) :
+    // on reste EN_COURS, le passage suivant (15 min) reprendra là où on en est.
+    const retry = e instanceof MetaError && e.transient;
+    const statut = retry ? "EN_COURS" : "ECHEC";
+    await prisma.socialPost.update({ where: { id }, data: { statut, error: message.slice(0, 1000) } });
+    return { id, statut, error: message };
   }
 }
 
