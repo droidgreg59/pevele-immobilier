@@ -78,6 +78,19 @@ export default async function AdminAnnoncesPage() {
               </span>
 
               <div className="mt-2 flex flex-wrap items-center gap-3">
+                <Link
+                  href={`/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`}
+                  target="_blank"
+                  className="text-[12.5px] font-semibold text-blue"
+                >
+                  Voir la fiche →
+                </Link>
+                <Link
+                  href={`/admin/annonces/${listing.id}`}
+                  className="text-[12.5px] font-semibold text-blue"
+                >
+                  Modifier →
+                </Link>
                 <form action={publishListingAction}>
                   <input type="hidden" name="listingId" value={listing.id} />
                   <button
