@@ -10,17 +10,24 @@ const median = (a: number[]) => { const s = [...a].sort((x, y) => x - y); const 
 const MIN = 10; // ventes minimum pour une médiane publiée
 
 async function main() {
-  const rows = await p.dvfTransaction.findMany({ select: { villageSlug: true, typeLocal: true, prixM2: true, surfaceTerrain: true, sourceAnnee: true } });
+  const rows = await p.dvfTransaction.findMany({ select: { villageSlug: true, typeLocal: true, prixM2: true, surfaceTerrain: true, surfaceBati: true, sourceAnnee: true } });
   const years = [...new Set(rows.map((r) => r.sourceAnnee))].sort();
   const data = villages.map((v) => {
     const r = rows.filter((x) => x.villageSlug === v.slug), m = r.filter((x) => x.typeLocal === "Maison");
+    const ap = r.filter((x) => x.typeLocal === "Appartement");
     const t = m.map((x) => x.surfaceTerrain).filter((x): x is number => x != null);
     const a = villageAmenities[v.insee];
     return {
       nom: v.nom, slug: v.slug, ventes: r.length,
       prixMaison: m.length >= MIN ? median(m.map((x) => x.prixM2)) : null,
       terrain: t.length >= MIN ? median(t) : null,
+      surfaceMaison: m.length >= MIN ? median(m.map((x) => x.surfaceBati)) : null,
+      prixAppart: ap.length >= MIN ? median(ap.map((x) => x.prixM2)) : null,
+      ventesAppart: ap.length,
       commerces: a?.commerces.length ?? 0,
+      ecoles: a?.ecoles.length ?? 0,
+      colleges: (a?.ecoles ?? []).filter((e) => e.type === "Collège").map((e) => `${e.nom} (${e.secteur.toLowerCase()})`),
+      gares: a?.transports.gares ?? [],
       gare: (a?.transports.gares ?? []).length > 0,
     };
   });
