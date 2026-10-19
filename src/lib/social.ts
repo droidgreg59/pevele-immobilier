@@ -11,6 +11,7 @@ import {
   igCreateContainer,
   igContainerStatus,
   igPublish,
+  igFindPublishedByCaption,
 } from "./meta";
 import { isDue, isFullyPublished } from "./social-rules";
 
@@ -79,7 +80,15 @@ export async function processSocialPost(id: string, budgetMs = 45_000): Promise<
         await sleep(5_000);
         s = await igContainerStatus(containerId);
       }
-      if (s.status === "EXPIRED") {
+      if (s.status === "PUBLISHED") {
+        // Déjà publié lors d'une exécution interrompue avant l'enregistrement :
+        // on retrouve le média au lieu de republier.
+        const found = await igFindPublishedByCaption(post.captionInstagram);
+        post = await prisma.socialPost.update({
+          where: { id },
+          data: { igMediaId: found?.mediaId ?? null, igPermalink: found?.permalink ?? null, igPublishedAt: new Date(), error: null },
+        });
+      } else if (s.status === "EXPIRED") {
         // Conteneur périmé (24 h) : on l'oublie, le passage suivant en recrée un.
         post = await prisma.socialPost.update({ where: { id }, data: { igContainerId: null } });
       } else if (s.status === "ERROR") {
@@ -116,9 +125,14 @@ export async function runDueSocialPosts(now = new Date()): Promise<ProcessResult
     orderBy: { scheduledAt: "asc" },
     take: 5,
   });
+  // Budget partagé sur l'exécution (maxDuration 60 s) : ne jamais être coupé
+  // entre une publication et son enregistrement en base.
+  const deadline = Date.now() + 48_000;
   const results: ProcessResult[] = [];
   for (const p of candidates.filter((c) => isDue(c, now))) {
-    results.push(await processSocialPost(p.id, 40_000));
+    const left = deadline - Date.now();
+    if (left < 15_000) break;
+    results.push(await processSocialPost(p.id, Math.min(40_000, left)));
   }
   return results;
 }

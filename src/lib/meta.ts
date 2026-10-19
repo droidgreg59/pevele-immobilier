@@ -147,6 +147,17 @@ export async function igContainerStatus(containerId: string): Promise<{ status: 
   return { status: res.status_code as IgContainerStatus, detail: res.status as string | undefined };
 }
 
+/**
+ * Retrouve le média Instagram issu d'un conteneur déjà publié (cas d'une
+ * exécution interrompue juste après media_publish) : parmi les derniers
+ * médias du compte, celui dont la légende est identique.
+ */
+export async function igFindPublishedByCaption(caption: string): Promise<{ mediaId: string; permalink: string | null } | null> {
+  const res = await graph(`/${META_IG_ID}/media`, { params: { fields: "id,caption,permalink", limit: "25" } });
+  const hit = (res.data as { id: string; caption?: string; permalink?: string }[] | undefined)?.find((m) => (m.caption ?? "").trim() === caption.trim());
+  return hit ? { mediaId: hit.id, permalink: hit.permalink ?? null } : null;
+}
+
 export async function igPublish(containerId: string): Promise<{ mediaId: string; permalink: string | null }> {
   const res = await graph(`/${META_IG_ID}/media_publish`, { method: "POST", params: { creation_id: containerId } });
   const mediaId = String(res.id);
