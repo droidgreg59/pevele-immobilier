@@ -17,6 +17,7 @@ import { verifyTurnstile } from "./turnstile";
 import { isValidPhoneNumber } from "./validation";
 import { isLoginThrottled, recordFailedLogin, clearFailedLogins } from "./login-throttle";
 import { logEvent } from "./events";
+import { normalizeReseau, mandataireDisplayName, reseauLogo } from "@/data/reseaux";
 import type { AccountType } from "@prisma/client";
 
 export type AuthState = { error?: string };
@@ -78,6 +79,14 @@ export async function registerAction(
         ? "MANUEL"
         : null;
   const logicielMetier = String(formData.get("logicielMetier") ?? "").trim();
+  // Mandataire indépendant d'un réseau : pas d'agence, nom public calculé.
+  const isMandataire = type === "AGENCE" && formData.get("proStatut") === "MANDATAIRE";
+  const reseau = isMandataire
+    ? normalizeReseau(
+        String(formData.get("reseauChoice") ?? ""),
+        String(formData.get("reseauAutre") ?? "")
+      )
+    : null;
 
   if (!prenom) return { error: "Merci d'indiquer votre prénom." };
   if (!nom) return { error: "Merci d'indiquer votre nom." };
@@ -88,7 +97,10 @@ export async function registerAction(
   if (password.length < 8) {
     return { error: "Le mot de passe doit contenir au moins 8 caractères." };
   }
-  if (type === "AGENCE" && !entreprise) {
+  if (isMandataire && !reseau) {
+    return { error: "Merci d'indiquer votre réseau de mandataires." };
+  }
+  if (type === "AGENCE" && !isMandataire && !entreprise) {
     return { error: "Merci d'indiquer le nom de votre agence." };
   }
   if (type === "ARTISAN" && !entreprise) {
@@ -116,7 +128,14 @@ export async function registerAction(
       nom,
       prenom,
       telephone,
-      entreprise: type === "PARTICULIER" ? null : entreprise,
+      entreprise:
+        type === "PARTICULIER"
+          ? null
+          : reseau
+            ? mandataireDisplayName(reseau, prenom, nom)
+            : entreprise,
+      reseau,
+      logoUrl: reseauLogo(reseau),
       type,
       modeAnnonces,
       logicielMetier: modeAnnonces === "AUTOMATISE" ? logicielMetier : null,
@@ -135,7 +154,8 @@ export async function registerAction(
 
   if (type === "AGENCE") {
     const { subject, html } = newAgencySignupEmail({
-      agencyNom: entreprise,
+      agencyNom: reseau ? mandataireDisplayName(reseau, prenom, nom) : entreprise,
+      reseau,
       email,
       telephone,
       modeAnnonces,

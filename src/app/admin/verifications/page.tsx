@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { rsacNumero } from "@/data/reseaux";
 import { requireAdmin } from "@/lib/admin";
 import { getPendingVerifications, getUnsubmittedAgencies } from "@/lib/agency-verification";
 import {
@@ -35,11 +36,11 @@ export default async function AdminVerificationsPage() {
         ← Mon compte
       </Link>
 
-      <h2 className="m-0 mt-8 font-display text-2xl text-ink">Agences</h2>
+      <h2 className="m-0 mt-8 font-display text-2xl text-ink">Agences et mandataires</h2>
 
       <p className="mt-6 max-w-[64ch] text-[14.5px] leading-[1.6] text-muted">
         {pending.length > 0
-          ? `${pending.length} demande${pending.length > 1 ? "s" : ""} en attente. Contrôlez le SIRET et le numéro de carte professionnelle (carte T) avant de valider.`
+          ? `${pending.length} demande${pending.length > 1 ? "s" : ""} en attente. Contrôlez le SIRET, puis la carte professionnelle (carte T) pour une agence, ou l'immatriculation au RSAC pour un mandataire de réseau (agent commercial, sans carte T), avant de valider.`
           : "Aucune demande de vérification soumise."}
       </p>
 
@@ -47,7 +48,14 @@ export default async function AdminVerificationsPage() {
         {pending.map((a) => (
           <div key={a.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="text-[16px] font-bold text-ink">{a.entreprise ?? a.nom}</span>
+              <span className="text-[16px] font-bold text-ink">
+                {a.entreprise ?? a.nom}
+                {a.reseau ? (
+                  <span className="ml-2 rounded-full bg-blue-soft px-2 py-0.5 text-[10.5px] font-semibold text-blue">
+                    Mandataire {a.reseau}
+                  </span>
+                ) : null}
+              </span>
               <span className="text-[12px] text-muted-2">
                 {a.verifSoumiseLe ? a.verifSoumiseLe.toLocaleDateString("fr-FR") : ""}
               </span>
@@ -56,9 +64,25 @@ export default async function AdminVerificationsPage() {
               <span>
                 SIRET : <b>{a.siret}</b>
               </span>
-              <span>
-                Carte T : <b>{a.carteProfessionnelle}</b> ({a.carteProCci})
-              </span>
+              {a.reseau ? (
+                <span>
+                  RSAC : <b>{rsacNumero(a.siret) ?? "—"}</b> (greffe de {a.rsacVille ?? "?"}) ·{" "}
+                  {a.siret ? (
+                    <a
+                      href={`https://annuaire-entreprises.data.gouv.fr/entreprise/${a.siret.slice(0, 9)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue"
+                    >
+                      Vérifier sur l&apos;Annuaire des entreprises →
+                    </a>
+                  ) : null}
+                </span>
+              ) : (
+                <span>
+                  Carte T : <b>{a.carteProfessionnelle}</b> ({a.carteProCci})
+                </span>
+              )}
               {a.siretDenomination ? (
                 <span className="text-muted">
                   Raison sociale (INSEE) : {a.siretDenomination}
@@ -140,7 +164,14 @@ export default async function AdminVerificationsPage() {
           {unsubmitted.map((a) => (
             <div key={a.id} className="flex flex-col gap-3 rounded-2xl border border-dashed border-line bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-[16px] font-bold text-ink">{a.entreprise ?? a.nom}</span>
+                <span className="text-[16px] font-bold text-ink">
+                  {a.entreprise ?? a.nom}
+                  {a.reseau ? (
+                    <span className="ml-2 rounded-full bg-blue-soft px-2 py-0.5 text-[10.5px] font-semibold text-blue">
+                      Mandataire {a.reseau}
+                    </span>
+                  ) : null}
+                </span>
                 <span className="text-[12px] text-muted-2">
                   Inscrite le {a.createdAt.toLocaleDateString("fr-FR")}
                 </span>

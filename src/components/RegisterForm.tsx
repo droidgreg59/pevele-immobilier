@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { registerAction, type AuthState } from "@/lib/auth-actions";
 import TurnstileWidget from "./TurnstileWidget";
+import { RESEAUX, AUTRE_RESEAU, mandataireDisplayName } from "@/data/reseaux";
 
 const initialState: AuthState = {};
 
@@ -21,6 +22,15 @@ export default function RegisterForm({
   );
   const [type, setType] = useState<AccountType>(initialType ?? "PARTICULIER");
   const [modeAnnonces, setModeAnnonces] = useState<"MANUEL" | "AUTOMATISE">("MANUEL");
+  // Agence immobilière ou mandataire indépendant d'un réseau (SAFTI, IAD…) :
+  // un mandataire ne représente pas une agence, il s'affiche « RÉSEAU – Prénom Nom ».
+  const [proStatut, setProStatut] = useState<"AGENCE" | "MANDATAIRE">("AGENCE");
+  const [reseauChoice, setReseauChoice] = useState("");
+  const [reseauAutre, setReseauAutre] = useState("");
+  const [prenom, setPrenom] = useState("");
+  const [nom, setNom] = useState("");
+  const mandataire = type === "AGENCE" && proStatut === "MANDATAIRE";
+  const reseauPreview = reseauChoice === AUTRE_RESEAU ? reseauAutre.trim() : reseauChoice;
   const isPro = type === "AGENCE" || type === "ARTISAN" || type === "COURTIER";
 
   return (
@@ -28,6 +38,7 @@ export default function RegisterForm({
       <input type="hidden" name="type" value={type} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
       {type === "AGENCE" ? <input type="hidden" name="modeAnnonces" value={modeAnnonces} /> : null}
+      {type === "AGENCE" ? <input type="hidden" name="proStatut" value={proStatut} /> : null}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <button
@@ -76,30 +87,105 @@ export default function RegisterForm({
         </button>
       </div>
 
+      {type === "AGENCE" ? (
+        <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-surface p-4">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Vous êtes
+          </span>
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            {(
+              [
+                ["AGENCE", "Une agence immobilière", "Vous exercez sous votre propre carte T."],
+                ["MANDATAIRE", "Mandataire d'un réseau", "SAFTI, IAD, MeilleursBiens… agent commercial."],
+              ] as const
+            ).map(([value, label, hint]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setProStatut(value)}
+                className="rounded-xl px-3 py-3 text-left text-[13.5px] font-semibold text-ink transition-colors"
+                style={{
+                  background: proStatut === value ? "var(--pvl-blue-soft)" : "#fff",
+                  border: `1px solid ${proStatut === value ? "var(--pvl-blue)" : "var(--pvl-line)"}`,
+                }}
+              >
+                {label}
+                <span className="mt-0.5 block text-[12px] font-normal text-muted">{hint}</span>
+              </button>
+            ))}
+          </div>
+
+          {mandataire ? (
+            <>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                  Votre réseau
+                </span>
+                <select
+                  name="reseauChoice"
+                  required
+                  value={reseauChoice}
+                  onChange={(e) => setReseauChoice(e.target.value)}
+                  className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+                >
+                  <option value="">Choisir…</option>
+                  {RESEAUX.map((r) => (
+                    <option key={r.label} value={r.label}>
+                      {r.label}
+                    </option>
+                  ))}
+                  <option value={AUTRE_RESEAU}>Autre réseau…</option>
+                </select>
+              </label>
+              {reseauChoice === AUTRE_RESEAU ? (
+                <input
+                  name="reseauAutre"
+                  required
+                  value={reseauAutre}
+                  onChange={(e) => setReseauAutre(e.target.value)}
+                  placeholder="Nom du réseau"
+                  className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
+                />
+              ) : null}
+              {reseauPreview && nom.trim() ? (
+                <p className="m-0 text-[12.5px] text-muted">
+                  Vous apparaîtrez sur le site comme{" "}
+                  <b className="text-ink">{mandataireDisplayName(reseauPreview, prenom, nom)}</b>.
+                </p>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            {isPro ? "Prénom du contact" : "Prénom"}
+            {isPro && !mandataire ? "Prénom du contact" : "Prénom"}
           </span>
           <input
             name="prenom"
             required
+            value={prenom}
+            onChange={(e) => setPrenom(e.target.value)}
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-            {isPro ? "Nom du contact" : "Nom"}
+            {isPro && !mandataire ? "Nom du contact" : "Nom"}
           </span>
           <input
             name="nom"
             required
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
           />
         </label>
       </div>
 
-      {isPro ? (
+      {isPro && !mandataire ? (
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
             {type === "AGENCE"

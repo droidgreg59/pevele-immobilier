@@ -416,17 +416,23 @@ export function newCourtierSignupEmail(opts: {
  */
 export function newAgencySignupEmail(opts: {
   agencyNom: string;
+  /** Réseau du mandataire indépendant, null pour une agence. */
+  reseau?: string | null;
   email: string;
   telephone: string;
   modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
   logicielMetier: string | null;
 }): { subject: string; html: string } {
   return {
-    subject: `Nouvelle agence inscrite : ${opts.agencyNom}`,
+    subject: opts.reseau
+      ? `Nouveau mandataire inscrit : ${opts.agencyNom}`
+      : `Nouvelle agence inscrite : ${opts.agencyNom}`,
     html: layout(
-      "Nouvelle agence à vérifier",
+      opts.reseau ? "Nouveau mandataire à vérifier" : "Nouvelle agence à vérifier",
       p(
-        `<b>${opts.agencyNom}</b> vient de créer un compte agence — elle reste invisible dans l'annuaire et pour ses annonces tant qu'elle n'est pas vérifiée.`
+        opts.reseau
+          ? `<b>${esc(opts.agencyNom)}</b>, mandataire indépendant du réseau <b>${esc(opts.reseau)}</b>, vient de créer un compte — invisible dans l'annuaire et pour ses annonces tant qu'il n'est pas vérifié.`
+          : `<b>${esc(opts.agencyNom)}</b> vient de créer un compte agence — elle reste invisible dans l'annuaire et pour ses annonces tant qu'elle n'est pas vérifiée.`
       ) +
         p(`Contact : ${opts.email} · ${opts.telephone}`) +
         (opts.modeAnnonces === "AUTOMATISE"

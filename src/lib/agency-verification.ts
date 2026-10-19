@@ -3,6 +3,9 @@ import { prisma } from "./prisma";
 import type { AgencyVerificationStatus } from "@prisma/client";
 
 export type AgencyVerification = {
+  /** Mandataire d'un réseau : pas de carte T, immatriculation RSAC à la place. */
+  reseau: string | null;
+  rsacVille: string | null;
   siret: string | null;
   carteProfessionnelle: string | null;
   carteProCci: string | null;
@@ -15,6 +18,8 @@ export type AgencyVerification = {
 };
 
 const VERIF_SELECT = {
+  reseau: true,
+  rsacVille: true,
   siret: true,
   carteProfessionnelle: true,
   carteProCci: true,
@@ -62,6 +67,8 @@ export async function lookupSiretDenomination(siret: string): Promise<string | n
 export type PendingVerification = {
   id: string;
   nom: string;
+  reseau: string | null;
+  rsacVille: string | null;
   entreprise: string | null;
   email: string;
   siret: string | null;
@@ -81,6 +88,8 @@ export async function getPendingVerifications(): Promise<PendingVerification[]> 
     select: {
       id: true,
       nom: true,
+      reseau: true,
+      rsacVille: true,
       entreprise: true,
       email: true,
       siret: true,
@@ -98,6 +107,7 @@ export async function getPendingVerifications(): Promise<PendingVerification[]> 
 export type UnsubmittedAgency = {
   id: string;
   nom: string;
+  reseau: string | null;
   entreprise: string | null;
   email: string;
   telephone: string | null;
@@ -124,6 +134,7 @@ export async function getUnsubmittedAgencies(): Promise<UnsubmittedAgency[]> {
     select: {
       id: true,
       nom: true,
+      reseau: true,
       entreprise: true,
       email: true,
       telephone: true,

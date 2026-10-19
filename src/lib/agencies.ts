@@ -7,6 +7,8 @@ export type AgencySummary = {
   id: string;
   nom: string;
   entreprise: string | null;
+  /** Mandataire indépendant : son réseau (SAFTI, IAD…). */
+  reseau: string | null;
   logoUrl: string | null;
   createdAt: Date;
   listingCount: number;
@@ -26,6 +28,7 @@ export async function getAgencies(): Promise<AgencySummary[]> {
       id: true,
       nom: true,
       entreprise: true,
+      reseau: true,
       logoUrl: true,
       createdAt: true,
       verifStatut: true,
@@ -40,6 +43,7 @@ export async function getAgencies(): Promise<AgencySummary[]> {
     id: a.id,
     nom: a.nom,
     entreprise: a.entreprise,
+    reseau: a.reseau,
     logoUrl: a.logoUrl,
     createdAt: a.createdAt,
     listingCount: a._count.listings,
@@ -47,7 +51,7 @@ export async function getAgencies(): Promise<AgencySummary[]> {
   }));
 }
 
-export type PendingAgencyPlaceholder = { ville: string | null };
+export type PendingAgencyPlaceholder = { ville: string | null; reseau: string | null };
 
 /**
  * Agences réellement inscrites mais pas encore vérifiées (EN_ATTENTE ou
@@ -62,13 +66,17 @@ export async function getPendingAgencyPlaceholders(): Promise<PendingAgencyPlace
   return prisma.user.findMany({
     where: { type: "AGENCE", verifStatut: { in: ["EN_ATTENTE", "NON_SOUMISE"] } },
     orderBy: { createdAt: "asc" },
-    select: { ville: true },
+    select: { ville: true, reseau: true },
   });
 }
 
 const AGENCY_PROFILE_SELECT = {
   id: true,
   nom: true,
+  prenom: true,
+  reseau: true,
+  rsacVille: true,
+  siret: true,
   entreprise: true,
   email: true,
   contactEmail: true,
@@ -92,6 +100,11 @@ const AGENCY_PROFILE_SELECT = {
 export type AgencyProfile = {
   id: string;
   nom: string;
+  prenom: string | null;
+  /** Réseau du mandataire indépendant (SAFTI, IAD…), null pour une agence. */
+  reseau: string | null;
+  rsacVille: string | null;
+  siret: string | null;
   entreprise: string | null;
   email: string;
   /// Email de contact public — distinct de `email` (identifiant de connexion). Fiche publique : toujours `contactEmail ?? email`.
@@ -122,6 +135,13 @@ export async function getAgencyById(id: string): Promise<AgencyProfile | null> {
 
 export type AgencyProfileInput = {
   entreprise: string;
+  /** Mandataire : réseau + prénom/nom (le nom public `entreprise` en est dérivé). */
+  reseau?: string | null;
+  prenom?: string;
+  nom?: string;
+  /** Changement agence ↔ mandataire : la vérification doit être refaite. */
+  resetVerification?: boolean;
+  logoUrl?: string | null;
   contactEmail?: string;
   telephone?: string;
   adresse?: string;
@@ -129,7 +149,6 @@ export type AgencyProfileInput = {
   ville?: string;
   siteWeb?: string;
   googleAvisUrl?: string;
-  logoUrl?: string;
 };
 
 export async function updateAgencyProfile(
@@ -148,6 +167,12 @@ export async function updateAgencyProfile(
       siteWeb: input.siteWeb || null,
       googleAvisUrl: input.googleAvisUrl || null,
       ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
+      ...(input.reseau !== undefined ? { reseau: input.reseau } : {}),
+      ...(input.prenom !== undefined ? { prenom: input.prenom || null } : {}),
+      ...(input.nom ? { nom: input.nom } : {}),
+      ...(input.resetVerification
+        ? { verifStatut: "NON_SOUMISE" as const, verifSoumiseLe: null, verifTraiteeLe: null, verifRaison: null }
+        : {}),
     },
   });
 }

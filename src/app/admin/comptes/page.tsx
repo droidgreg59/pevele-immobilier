@@ -96,7 +96,9 @@ export default async function AdminComptesPage({
                     ) : null}
                   </td>
                   <td className="px-4 py-3 text-muted">{u.email}</td>
-                  <td className="px-4 py-3 text-muted">{TYPE_LABEL[u.type] ?? u.type}</td>
+                  <td className="px-4 py-3 text-muted">
+                    {u.reseau ? `Mandataire (${u.reseau})` : (TYPE_LABEL[u.type] ?? u.type)}
+                  </td>
                   <td className="px-4 py-3">
                     {badge ? (
                       <div className="flex flex-col items-start gap-1.5">

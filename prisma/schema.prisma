@@ -45,6 +45,15 @@ model User {
   /// en contactant l'agence.
   logicielMetier      String?
   xmlImportUrl        String?
+  /// Mandataire indépendant (agent commercial) d'un réseau — SAFTI, IAD,
+  /// MeilleursBiens… (voir src/data/reseaux.ts). Null = agence immobilière.
+  /// Un mandataire n'a pas de carte T : il exerce sous celle de son réseau,
+  /// immatriculé au RSAC. Son nom public (`entreprise`) est calculé :
+  /// « RÉSEAU – Prénom Nom ».
+  reseau              String?
+  /// Ville du greffe où le mandataire est immatriculé au RSAC (registre
+  /// spécial des agents commerciaux) ; le numéro RSAC est son SIREN.
+  rsacVille           String?
   /// Horodatage de la dernière TENTATIVE de synchro (succès ou échec) —
   /// écrasé à chaque passage, y compris en échec (voir recordXmlSyncResult).
   /// Ne pas utiliser seul pour une affirmation de fraîcheur publique : un

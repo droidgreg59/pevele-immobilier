@@ -17,7 +17,19 @@ import { listingRevivalFields } from "./listing-revival";
 
 export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
   include: {
-    owner: { select: { nom: true, entreprise: true, type: true, logoUrl: true, verifStatut: true } },
+    owner: {
+      select: {
+        nom: true,
+        prenom: true,
+        entreprise: true,
+        type: true,
+        logoUrl: true,
+        verifStatut: true,
+        reseau: true,
+        rsacVille: true,
+        siret: true,
+      },
+    },
     photos: { orderBy: { order: "asc" } },
     priceHistory: {
       orderBy: { changedAt: "asc" },

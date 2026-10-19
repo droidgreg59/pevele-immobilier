@@ -44,6 +44,7 @@ import OpenHouseSignupForm from "./OpenHouseSignupForm";
 import PurchaseCostBlock from "./PurchaseCostBlock";
 import BottomSheet from "./BottomSheet";
 import RiskLine from "./RiskLine";
+import { mandataireMention } from "@/data/reseaux";
 
 const EQUIPEMENT_ICON: Record<string, LucideIcon> = {
   Jardin: TreePine,
@@ -64,7 +65,14 @@ const TYPE_MAISON_LABEL_LOWER: Record<string, string> = {
 
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
   if (owner.type === "PARTICULIER") return "Entre voisins — particulier";
-  const prefix = owner.verifStatut === "VERIFIEE" ? "Agence vérifiée" : "Agence";
+  const verified = owner.verifStatut === "VERIFIEE";
+  const prefix = owner.reseau
+    ? verified
+      ? "Mandataire vérifié"
+      : "Mandataire"
+    : verified
+      ? "Agence vérifiée"
+      : "Agence";
   return `${prefix} — ${owner.entreprise ?? owner.nom}`;
 }
 
@@ -613,6 +621,19 @@ export default function ListingDetail({
             <p className="mt-3 max-w-[70ch] font-sans text-[15px] leading-[1.65] text-muted">
               {listing.description}
             </p>
+            {/* Statut d'agent commercial : mention obligatoire dans toute
+                publicité d'un mandataire indépendant (DGCCRF). */}
+            {listing.owner.reseau ? (
+              <p className="mt-3 max-w-[70ch] text-[12.5px] leading-[1.55] text-muted-2">
+                {mandataireMention({
+                  reseau: listing.owner.reseau,
+                  prenom: listing.owner.prenom,
+                  nom: listing.owner.nom,
+                  rsacVille: listing.owner.rsacVille,
+                  siret: listing.owner.siret,
+                })}
+              </p>
+            ) : null}
           </section>
 
           <CaracBlock listing={listing} />

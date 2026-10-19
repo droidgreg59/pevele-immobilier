@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { mandataireMention } from "@/data/reseaux";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, Mail, Globe, ExternalLink, Send, Calculator } from "lucide-react";
@@ -169,15 +170,26 @@ export default async function AgencyPage({
         </div>
         <div>
           <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-blue">
-            Agence
+            {agency.reseau ? `Mandataire indépendant · ${agency.reseau}` : "Agence"}
           </span>
           <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
             {agency.entreprise ?? agency.nom}
           </h1>
           {agency.verifStatut === "VERIFIEE" ? (
             <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#EAF3E8] px-3 py-1 text-[12px] font-semibold text-green">
-              ✓ Agence vérifiée
+              ✓ {agency.reseau ? "Mandataire vérifié" : "Agence vérifiée"}
             </span>
+          ) : null}
+          {agency.reseau ? (
+            <p className="m-0 mt-3 max-w-[60ch] text-[12.5px] leading-[1.55] text-muted">
+              {mandataireMention({
+                reseau: agency.reseau,
+                prenom: agency.prenom,
+                nom: agency.nom,
+                rsacVille: agency.rsacVille,
+                siret: agency.siret,
+              })}
+            </p>
           ) : null}
         </div>
       </div>
@@ -186,7 +198,7 @@ export default async function AgencyPage({
           ← Retour à l&apos;accueil
         </Link>
         <Link href="/professionnels" className="text-[13px] font-semibold text-blue">
-          ← Toutes les agences
+          ← Tous les professionnels
         </Link>
         {isOwner ? (
           <Link href="/compte/agence" className="text-[13px] font-semibold text-blue">

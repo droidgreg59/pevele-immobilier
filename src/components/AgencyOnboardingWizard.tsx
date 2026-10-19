@@ -5,13 +5,24 @@ import Link from "next/link";
 import { updateAgencyProfileAction } from "@/lib/agency-actions";
 import type { AgencyProfile } from "@/lib/agencies";
 import LogoPicker from "./LogoPicker";
+import ProIdentityFields, { initialProIdentity, type ProIdentity } from "./ProIdentityFields";
+import { AUTRE_RESEAU, mandataireDisplayName } from "@/data/reseaux";
 
 type Step = "agence" | "adresse" | "logo" | "recap";
 const STEPS: Step[] = ["agence", "adresse", "logo", "recap"];
 
 export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfile }) {
   const [step, setStep] = useState<Step>("agence");
-  const [entreprise, setEntreprise] = useState(agency.entreprise ?? agency.nom);
+  const [identity, setIdentity] = useState<ProIdentity>(() => initialProIdentity(agency));
+  const isMandataire = identity.proStatut === "MANDATAIRE";
+  const reseau =
+    identity.reseauChoice === AUTRE_RESEAU ? identity.reseauAutre.trim() : identity.reseauChoice;
+  // Nom public : « RÉSEAU – Prénom Nom » pour un mandataire, sinon nom de l'agence.
+  const entreprise = isMandataire
+    ? reseau
+      ? mandataireDisplayName(reseau, identity.prenom, identity.nom)
+      : identity.nom
+    : identity.entreprise;
   const [telephone, setTelephone] = useState(agency.telephone ?? "");
   const [adresse, setAdresse] = useState(agency.adresse ?? "");
   const [codePostal, setCodePostal] = useState(agency.codePostal ?? "");
@@ -30,7 +41,11 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
 
   function goNext() {
     setError(null);
-    if (step === "agence" && !entreprise.trim()) {
+    if (step === "agence" && isMandataire && (!reseau || !identity.nom.trim())) {
+      setError("Merci d'indiquer votre réseau et votre nom.");
+      return;
+    }
+    if (step === "agence" && !isMandataire && !identity.entreprise.trim()) {
       setError("Merci d'indiquer le nom de votre agence.");
       return;
     }
@@ -44,7 +59,12 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
 
   function handleSubmit() {
     const formData = new FormData();
-    formData.set("entreprise", entreprise);
+    formData.set("proStatut", identity.proStatut);
+    formData.set("reseauChoice", identity.reseauChoice);
+    formData.set("reseauAutre", identity.reseauAutre);
+    formData.set("prenom", identity.prenom);
+    formData.set("nom", identity.nom);
+    formData.set("entreprise", identity.entreprise);
     formData.set("telephone", telephone);
     formData.set("adresse", adresse);
     formData.set("codePostal", codePostal);
@@ -104,17 +124,8 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
               va vous contacter pour effectuer le branchement, une fois votre compte validé.
             </div>
           ) : null}
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-              Nom de l&apos;agence
-            </span>
-            <input
-              value={entreprise}
-              onChange={(e) => setEntreprise(e.target.value)}
-              required
-              className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-            />
-          </label>
+          {/* Remonté à chaque retour sur cette étape : on lui repasse l'état courant. */}
+          <ProIdentityFields initial={identity} onChange={setIdentity} />
           <label className="flex flex-col gap-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
               Téléphone
@@ -184,14 +195,20 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
             </h1>
             <p className="mt-2 text-[14.5px] text-muted">Facultatif — vous pourrez les ajouter plus tard.</p>
           </div>
-          <LogoPicker
-            currentUrl={logoPreview}
-            initial={entreprise}
-            onChange={({ file, previewUrl }) => {
-              setLogoFile(file);
-              setLogoPreview(previewUrl);
-            }}
-          />
+          {isMandataire ? (
+            <p className="m-0 text-[13.5px] text-muted">
+              En tant que mandataire, c&apos;est le logo de votre réseau qui s&apos;affiche.
+            </p>
+          ) : (
+            <LogoPicker
+              currentUrl={logoPreview}
+              initial={entreprise}
+              onChange={({ file, previewUrl }) => {
+                setLogoFile(file);
+                setLogoPreview(previewUrl);
+              }}
+            />
+          )}
           <label className="flex flex-col gap-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
               Site web

@@ -215,7 +215,10 @@ export default function ListingCard({
               )}
               {listing.owner.entreprise ?? listing.owner.nom}
               {listing.owner.verifStatut === "VERIFIEE" ? (
-                <span className="font-semibold text-green" title="Agence vérifiée">
+                <span
+                  className="font-semibold text-green"
+                  title={listing.owner.reseau ? "Mandataire vérifié" : "Agence vérifiée"}
+                >
                   ✓
                 </span>
               ) : null}

@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   updateAgencyProfileAction,
   type AgencyProfileFormState,
 } from "@/lib/agency-actions";
 import type { AgencyProfile } from "@/lib/agencies";
 import LogoPicker from "./LogoPicker";
+import ProIdentityFields, { initialProIdentity } from "./ProIdentityFields";
+import { reseauLogo } from "@/data/reseaux";
 
 const initialState: AgencyProfileFormState = {};
 
@@ -19,22 +21,25 @@ export default function AgencyProfileForm({
     updateAgencyProfileAction,
     initialState
   );
+  const [isMandataire, setIsMandataire] = useState(Boolean(agency.reseau));
 
   return (
     <form action={formAction} className="flex max-w-[640px] flex-col gap-5">
-      <LogoPicker currentUrl={agency.logoUrl} initial={agency.entreprise ?? agency.nom} />
+      <ProIdentityFields
+        initial={initialProIdentity(agency)}
+        wasVerified={agency.verifStatut !== "NON_SOUMISE"}
+        onChange={(v) => setIsMandataire(v.proStatut === "MANDATAIRE")}
+      />
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          Nom de l&apos;agence
-        </span>
-        <input
-          name="entreprise"
-          required
-          defaultValue={agency.entreprise ?? ""}
-          className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
-        />
-      </label>
+      {isMandataire ? (
+        <p className="m-0 text-[12.5px] text-muted">
+          {reseauLogo(agency.reseau)
+            ? "Le logo de votre réseau s'affiche automatiquement."
+            : "Le logo de votre réseau s'affichera automatiquement dès qu'il sera disponible sur le site."}
+        </p>
+      ) : (
+        <LogoPicker currentUrl={agency.logoUrl} initial={agency.entreprise ?? agency.nom} />
+      )}
 
       <label className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">

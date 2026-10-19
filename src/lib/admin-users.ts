@@ -7,6 +7,8 @@ export type UserSummary = {
   email: string;
   nom: string;
   entreprise: string | null;
+  /** Mandataire indépendant : son réseau. */
+  reseau: string | null;
   type: AccountType;
   isAdmin: boolean;
   createdAt: Date;
@@ -23,6 +25,7 @@ export async function getAllUsers(): Promise<UserSummary[]> {
       email: true,
       nom: true,
       entreprise: true,
+      reseau: true,
       type: true,
       isAdmin: true,
       createdAt: true,
@@ -35,6 +38,7 @@ export async function getAllUsers(): Promise<UserSummary[]> {
     email: u.email,
     nom: u.nom,
     entreprise: u.entreprise,
+    reseau: u.reseau,
     type: u.type,
     isAdmin: u.isAdmin,
     createdAt: u.createdAt,

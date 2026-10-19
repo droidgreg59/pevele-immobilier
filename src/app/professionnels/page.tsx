@@ -28,7 +28,7 @@ export default async function ProfessionnelsPage() {
           Professionnels
         </span>
         <h2 className="m-0 font-display text-[32px] text-ink sm:text-[40px]">
-          Les agences de la Pévèle
+          Les agences et mandataires de la Pévèle
         </h2>
       </div>
       <Link href="/" className="text-[13px] font-semibold text-blue">
@@ -83,11 +83,12 @@ export default async function ProfessionnelsPage() {
                   </span>
                   {a.verified ? (
                     <span className="rounded-full bg-[#EAF3E8] px-2 py-0.5 text-[10.5px] font-semibold text-green">
-                      ✓ Vérifiée
+                      ✓ {a.reseau ? "Vérifié" : "Vérifiée"}
                     </span>
                   ) : null}
                 </div>
                 <span className="text-[12.5px] font-medium text-muted">
+                  {a.reseau ? `Mandataire indépendant · ` : ""}
                   {a.listingCount} annonce{a.listingCount > 1 ? "s" : ""} en ligne
                 </span>
                 <span className="mt-auto text-[12.5px] font-semibold text-blue">
@@ -123,7 +124,8 @@ export default async function ProfessionnelsPage() {
                     <Building2 className="h-5 w-5 text-muted-2" strokeWidth={1.75} />
                   </div>
                   <span className="font-display text-lg text-muted">
-                    Agence immobilière{p.ville ? ` — ${p.ville}` : ""}
+                    {p.reseau ? `Mandataire ${p.reseau}` : "Agence immobilière"}
+                    {p.ville ? ` — ${p.ville}` : ""}
                   </span>
                   <span className="rounded-full bg-[#FBF3DC] px-2 py-0.5 text-[10.5px] font-semibold text-gold">
                     Validation en cours

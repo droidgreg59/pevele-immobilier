@@ -23,16 +23,20 @@ export default function AgencyVerificationCard({
   );
 
   const verified = v.verifStatut === "VERIFIEE";
+  const mandataire = Boolean(v.reseau);
+  const badge = mandataire ? "Mandataire vérifié" : "Agence vérifiée";
   const enAttente = v.verifStatut === "EN_ATTENTE" && !state.success;
   const showForm = !verified && !enAttente;
 
   return (
     <section className="flex max-w-[720px] flex-col gap-4 rounded-2xl border border-line bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="m-0 font-display text-[20px] text-ink">Vérification de l&apos;agence</h2>
+        <h2 className="m-0 font-display text-[20px] text-ink">
+          {mandataire ? "Vérification de votre statut" : "Vérification de l\u2019agence"}
+        </h2>
         {verified ? (
           <span className="rounded-full bg-[#EAF3E8] px-3 py-1 text-[12px] font-semibold text-green">
-            ✓ Agence vérifiée
+            ✓ {badge}
           </span>
         ) : enAttente ? (
           <span className="rounded-full bg-[#FBF3DC] px-3 py-1 text-[12px] font-semibold text-gold">
@@ -43,21 +47,33 @@ export default function AgencyVerificationCard({
 
       {verified ? (
         <p className="m-0 text-[13.5px] leading-[1.6] text-muted">
-          Votre agence est vérifiée{" "}
+          {mandataire ? "Votre compte est vérifié" : "Votre agence est vérifiée"}{" "}
           {v.verifTraiteeLe ? `depuis le ${v.verifTraiteeLe.toLocaleDateString("fr-FR")}` : ""}. Le
-          badge « Agence vérifiée » apparaît sur votre page publique, dans l&apos;annuaire des
+          badge « {badge} » apparaît sur votre page publique, dans l&apos;annuaire des
           professionnels et sur vos annonces.
         </p>
       ) : enAttente || state.success ? (
         <p className="m-0 text-[13.5px] leading-[1.6] text-muted">
-          Votre demande a été transmise. Un administrateur contrôle le SIRET et la carte
-          professionnelle sous quelques jours — vous serez prévenu par email.
+          Votre demande a été transmise. Un administrateur contrôle le SIRET et{" "}
+          {mandataire ? "votre immatriculation au RSAC" : "la carte professionnelle"} sous quelques
+          jours — vous serez prévenu par email.
         </p>
       ) : (
         <p className="m-0 text-[13.5px] leading-[1.6] text-muted">
-          Faites vérifier votre agence pour afficher le badge « Agence vérifiée ». Nous
-          contrôlons le SIRET et le numéro de carte professionnelle (carte T,
-          transactions immobilières) — obligatoire pour exercer (loi Hoguet).
+          {mandataire ? (
+            <>
+              Faites vérifier votre statut pour afficher le badge « Mandataire vérifié ». En
+              tant qu&apos;agent commercial du réseau {v.reseau}, vous exercez sous la carte
+              professionnelle de votre réseau : nous contrôlons votre SIRET et votre
+              immatriculation au RSAC (registre spécial des agents commerciaux).
+            </>
+          ) : (
+            <>
+              Faites vérifier votre agence pour afficher le badge « Agence vérifiée ». Nous
+              contrôlons le SIRET et le numéro de carte professionnelle (carte T, transactions
+              immobilières) — obligatoire pour exercer (loi Hoguet).
+            </>
+          )}
         </p>
       )}
 
@@ -80,6 +96,23 @@ export default function AgencyVerificationCard({
               className={inputCls}
             />
           </label>
+          {mandataire ? (
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                Greffe d&apos;immatriculation au RSAC
+              </span>
+              <input
+                name="rsacVille"
+                required
+                defaultValue={v.rsacVille ?? ""}
+                placeholder="ex. Lille Métropole"
+                className={inputCls}
+              />
+              <span className="text-[12px] text-muted-2">
+                Votre numéro RSAC est votre SIREN (les 9 premiers chiffres du SIRET).
+              </span>
+            </label>
+          ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
@@ -106,6 +139,7 @@ export default function AgencyVerificationCard({
               />
             </label>
           </div>
+          )}
           <label className="flex flex-col gap-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
               Zone couverte (facultatif)
