@@ -11,14 +11,14 @@
 export type Reseau = { label: string; logo: string | null };
 
 export const RESEAUX: Reseau[] = [
-  { label: "SAFTI", logo: null },
-  { label: "IAD", logo: null },
-  { label: "MeilleursBiens", logo: null },
+  { label: "SAFTI", logo: "/reseaux/safti.png" },
+  { label: "IAD", logo: "/reseaux/iad.png" },
+  { label: "MeilleursBiens", logo: "/reseaux/meilleursbiens.png" },
   { label: "Capifrance", logo: null },
   { label: "Optimhome", logo: null },
   { label: "Propriétés-privées", logo: null },
   { label: "BSK Immobilier", logo: null },
-  { label: "Efficity", logo: null },
+  { label: "Efficity", logo: "/reseaux/efficity.png" },
   { label: "Megagence", logo: null },
   { label: "Sextant France", logo: null },
   { label: "Expertimo", logo: null },
