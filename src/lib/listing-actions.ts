@@ -17,6 +17,8 @@ import { PHOTOS_FIELD } from "./import-overrides";
 import { isUserAdmin } from "./admin";
 import { parseListingFields } from "./listing-fields";
 import { logEvent } from "./events";
+import { sendEmail } from "./email";
+import { newListingToModerateEmail } from "./email-templates";
 import {
   commitStagedPhotos,
   deletePhotoFilesByUrl,
@@ -67,6 +69,27 @@ export async function createListingAction(
   if (photoKeys.length > 0) {
     const urls = await commitStagedPhotos(listing.id, photoKeys);
     await addListingPhotos(listing.id, urls);
+  }
+
+  // Alerte admin : une annonce attend la modération (sinon elle ne se voit
+  // qu'en ouvrant /admin/annonces).
+  const owner = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { nom: true, entreprise: true, type: true, verifStatut: true },
+  });
+  if (owner) {
+    const { subject, html } = newListingToModerateEmail({
+      titre: listing.titre,
+      prix: listing.prix,
+      transaction: listing.transaction,
+      typeBien: listing.typeBien,
+      commune: listing.commune,
+      ownerLabel: owner.entreprise ?? owner.nom,
+      ownerType: owner.type,
+      ownerUnverifiedAgency: owner.type === "AGENCE" && owner.verifStatut !== "VERIFIEE",
+      photos: photoKeys.length,
+    });
+    await sendEmail({ to: "contact@pevele-immobilier.fr", subject, html });
   }
 
   await logEvent("listing_submitted", {

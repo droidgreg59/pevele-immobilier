@@ -547,3 +547,46 @@ export function weeklyDigestEmail(opts: {
     }),
   };
 }
+
+/** Échappe un texte saisi par un utilisateur avant de l'insérer dans un email HTML. */
+function esc(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Alerte admin : une annonce vient d'être déposée à la main et attend la modération. */
+export function newListingToModerateEmail(opts: {
+  titre: string;
+  prix: number;
+  transaction: TransactionType;
+  typeBien: string;
+  commune: string;
+  ownerLabel: string;
+  ownerType: string;
+  /** Agence dont la vérification n'est pas faite : l'annonce restera invisible même publiée. */
+  ownerUnverifiedAgency: boolean;
+  photos: number;
+}): { subject: string; html: string } {
+  const TYPE: Record<string, string> = { MAISON: "Maison", APPARTEMENT: "Appartement", TERRAIN: "Terrain" };
+  const OWNER: Record<string, string> = { PARTICULIER: "particulier", AGENCE: "agence" };
+  return {
+    subject: `Nouvelle annonce à modérer : ${opts.titre}`,
+    html: layout(
+      "Nouvelle annonce à modérer",
+      p(`<b>${esc(opts.titre)}</b>`) +
+        p(
+          `${esc(TYPE[opts.typeBien] ?? opts.typeBien)} · ${opts.transaction === "VENTE" ? "Vente" : "Location"} · ${esc(opts.commune)} · ${formatPrix(opts.prix, opts.transaction)} · ${opts.photos} photo${opts.photos > 1 ? "s" : ""}`
+        ) +
+        p(`Déposée par <b>${esc(opts.ownerLabel)}</b> (${OWNER[opts.ownerType] ?? esc(opts.ownerType)}).`) +
+        (opts.ownerUnverifiedAgency
+          ? p(
+              "⚠️ Cette agence n'est pas encore vérifiée : même publiée, l'annonce restera invisible du public tant qu'elle ne l'est pas."
+            )
+          : ""),
+      { label: "Modérer l'annonce", href: `${SITE_URL}/admin/annonces` }
+    ),
+  };
+}
