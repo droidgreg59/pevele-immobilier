@@ -1,0 +1,16 @@
+# La CLI Vercel (`vercel deploy`) n'applique pas le .gitignore : sans ce
+# fichier, elle envoyait les médias locaux, l'ancien stockage public/uploads
+# (plus utilisé, photos sur R2) et le .env.
+# Les variables d'environnement viennent des réglages du projet Vercel.
+/media
+/public/uploads
+.env
+.env.*
+!.env.example
+/.next
+/node_modules
+/coverage
+*.tsbuildinfo
+/prisma/*.db
+/prisma/*.db-journal
+.DS_Store
