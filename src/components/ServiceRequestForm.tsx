@@ -13,12 +13,40 @@ const inputCls =
 export default function ServiceRequestForm({
   serviceId,
   defaultTelephone,
+  interet = false,
 }: {
   serviceId: string;
   defaultTelephone: string;
+  /** Service pas encore lancé : un seul bouton « Être prévenu ». */
+  interet?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(requestAgencyServiceAction, initial);
   const [open, setOpen] = useState(false);
+
+  if (interet) {
+    if (state.success) {
+      return (
+        <p className="m-0 rounded-xl bg-[#EAF3E8] px-4 py-3 text-[13.5px] leading-[1.5] text-ink">
+          ✓ C&apos;est noté : vous serez prévenu dès le lancement.
+        </p>
+      );
+    }
+    return (
+      <form action={formAction} className="flex flex-col gap-2">
+        <input type="hidden" name="service" value={serviceId} />
+        {state.error ? (
+          <p className="m-0 rounded-xl bg-[#FBEAEA] px-4 py-3 text-[13px] text-ink">{state.error}</p>
+        ) : null}
+        <button
+          type="submit"
+          disabled={pending}
+          className="self-start rounded-full border border-line bg-white px-6 py-3.5 text-[13.5px] font-semibold text-ink transition hover:bg-surface disabled:opacity-60"
+        >
+          {pending ? "Envoi…" : "Être prévenu au lancement"}
+        </button>
+      </form>
+    );
+  }
 
   if (state.success) {
     return (

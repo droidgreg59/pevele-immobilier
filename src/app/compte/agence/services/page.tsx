@@ -27,7 +27,7 @@ export default async function AgenceServicesPage() {
     <div>
       <h2 className="m-0 font-display text-[24px] text-ink">Services pour votre agence</h2>
       <p className="m-0 mt-1 max-w-[64ch] text-[14px] leading-[1.6] text-muted">
-        Deux services à prix fixe, réalisés par Galt Lab, l&apos;équipe qui a conçu
+        Des services à prix fixe, réalisés par Galt Lab, l&apos;équipe qui a conçu
         Pévèle-Immobilier.fr. Demandez un rendez-vous : nous définissons ensemble ce que vous
         voulez avant de démarrer.
       </p>
@@ -36,15 +36,19 @@ export default async function AgenceServicesPage() {
         {AGENCY_SERVICES.map((s) => (
           <section
             key={s.id}
-            className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-6 shadow-sm"
+            className={`flex flex-col gap-4 rounded-2xl border p-6 ${
+              s.bientot ? "border-dashed border-line bg-surface" : "border-line bg-white shadow-sm"
+            }`}
           >
             <div>
               <span className="text-[11px] font-semibold uppercase tracking-wide text-blue">{s.nom}</span>
               <h3 className="m-0 mt-1.5 font-display text-[22px] leading-tight text-ink">{s.accroche}</h3>
             </div>
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="font-display text-[36px] leading-none text-ink">{s.prix}</span>
-              <span className="text-[13px] font-semibold text-muted">{s.rythme}</span>
+              {s.prix ? (
+                <span className="font-display text-[36px] leading-none text-ink">{s.prix}</span>
+              ) : null}
+              {s.rythme ? <span className="text-[13px] font-semibold text-muted">{s.rythme}</span> : null}
               {s.badge ? (
                 <span className="rounded-full bg-blue-soft px-3 py-1 text-[12px] font-semibold text-blue">
                   {s.badge}
@@ -61,7 +65,11 @@ export default async function AgenceServicesPage() {
               ))}
             </ul>
             <div className="mt-auto pt-2">
-              <ServiceRequestForm serviceId={s.id} defaultTelephone={agency?.telephone ?? ""} />
+              <ServiceRequestForm
+                serviceId={s.id}
+                defaultTelephone={agency?.telephone ?? ""}
+                interet={Boolean(s.bientot)}
+              />
             </div>
           </section>
         ))}

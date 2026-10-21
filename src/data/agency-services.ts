@@ -1,15 +1,19 @@
 /**
  * Services proposés aux comptes agence (onglet « Services » de l'espace
  * agence, invisible du public). Réalisés par Galt Lab, qui a conçu le site.
- * Prix fixes ; une demande déclenche un rendez-vous de cadrage.
+ * Prix fixes ; une demande déclenche un rendez-vous de cadrage. Un service
+ * `bientot` n'a pas encore de prix : l'agence peut seulement demander à être
+ * prévenue de son lancement.
  */
 export type AgencyService = {
-  id: "site-web" | "reseaux-sociaux";
+  id: "site-web" | "reseaux-sociaux" | "retouche-photo";
   nom: string;
   accroche: string;
   pitch: string;
-  prix: string;
-  rythme: string;
+  prix: string | null;
+  rythme: string | null;
+  /** Service annoncé mais pas encore commercialisé. */
+  bientot?: boolean;
   /** Pastille affichée à côté du prix (délai, engagement…). */
   badge: string | null;
   inclus: string[];
@@ -52,6 +56,25 @@ export const AGENCY_SERVICES: AgencyService[] = [
       "Validation manuelle avant chaque publication, ou mode 100 % automatique",
       "Rapport mensuel : portée, interactions, publications les plus vues",
       "Publicité ciblée sur votre secteur en option (budget publicitaire en supplément)",
+    ],
+  },
+  {
+    id: "retouche-photo",
+    nom: "Agent IA retouche photo",
+    accroche: "Des photos d'annonce plus lumineuses, retouchées en quelques secondes",
+    pitch:
+      "Un agent IA spécialisé dans l'immobilier qui améliore vos photos d'annonce automatiquement, sans dénaturer le bien : vos biens sont mis en valeur dès la première image.",
+    prix: null,
+    rythme: null,
+    bientot: true,
+    badge: "Bientôt disponible",
+    inclus: [
+      "Lumière, contraste et couleurs corrigés automatiquement",
+      "Perspectives redressées : murs et verticales bien droits",
+      "Extérieurs et ciels ravivés",
+      "Floutage automatique des visages et des plaques d'immatriculation",
+      "Toute une série de photos retouchée en un clic",
+      "Formats prêts pour les portails et les réseaux sociaux",
     ],
   },
 ];

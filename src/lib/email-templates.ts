@@ -621,7 +621,12 @@ export function agencyServiceRequestEmail(opts: {
 }
 
 /** Accusé de réception envoyé à l'agence après sa demande de service. */
-export function agencyServiceConfirmationEmail(opts: { service: string; agence: string }): {
+export function agencyServiceConfirmationEmail(opts: {
+  service: string;
+  agence: string;
+  /** Service pas encore lancé : simple demande à être prévenu. */
+  interet?: boolean;
+}): {
   subject: string;
   html: string;
 } {
@@ -631,7 +636,9 @@ export function agencyServiceConfirmationEmail(opts: { service: string; agence: 
       "Demande bien reçue",
       p(`Bonjour,`) +
         p(
-          `Nous avons bien reçu la demande de <b>${esc(opts.agence)}</b> pour <b>${esc(opts.service)}</b>. Nous vous recontactons pour convenir d'un rendez-vous : nous ferons le point ensemble sur vos besoins avant de démarrer.`
+          opts.interet
+            ? `C'est noté : <b>${esc(opts.agence)}</b> sera prévenue dès le lancement de <b>${esc(opts.service)}</b>.`
+            : `Nous avons bien reçu la demande de <b>${esc(opts.agence)}</b> pour <b>${esc(opts.service)}</b>. Nous vous recontactons pour convenir d'un rendez-vous : nous ferons le point ensemble sur vos besoins avant de démarrer.`
         ) +
         p(`À très vite,<br>L'équipe Pévèle-Immobilier.fr`),
       { label: "Voir nos services", href: `${SITE_URL}/compte/agence/services` }

@@ -54,7 +54,7 @@ export async function requestAgencyServiceAction(
 
   const admin = agencyServiceRequestEmail({
     service: service.nom,
-    prix: `${service.prix} ${service.rythme}`,
+    prix: service.bientot ? "à venir — demande à être prévenu" : `${service.prix} ${service.rythme}`,
     agence: agenceNom,
     email: replyTo,
     telephone: telephone ?? agency.telephone,
@@ -66,7 +66,11 @@ export async function requestAgencyServiceAction(
     return { error: "L'envoi a échoué. Réessayez dans un instant, ou écrivez-nous à contact@pevele-immobilier.fr." };
   }
 
-  const confirmation = agencyServiceConfirmationEmail({ service: service.nom, agence: agenceNom });
+  const confirmation = agencyServiceConfirmationEmail({
+    service: service.nom,
+    agence: agenceNom,
+    interet: Boolean(service.bientot),
+  });
   await sendEmail({ to: replyTo, subject: confirmation.subject, html: confirmation.html });
 
   await logEvent("agency_service_requested", {
