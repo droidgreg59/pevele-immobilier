@@ -58,6 +58,7 @@ export const EVENT_LABELS: { name: EventName; label: string }[] = [
   { name: "mandate_created", label: "Mandats de recherche confiés" },
   { name: "devis_requested", label: "Demandes de devis artisan" },
   { name: "financing_requested", label: "Demandes d'étude de financement" },
+  { name: "agency_service_requested", label: "Demandes de services (site web, réseaux sociaux)" },
   { name: "review_submitted", label: "Avis déposés" },
   { name: "listing_submitted", label: "Annonces déposées" },
   { name: "listing_published", label: "Annonces publiées (modération)" },

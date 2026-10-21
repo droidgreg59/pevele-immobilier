@@ -596,3 +596,45 @@ export function newListingToModerateEmail(opts: {
     ),
   };
 }
+
+/** Alerte admin : une agence demande un service (site web, réseaux sociaux) — rendez-vous à fixer. */
+export function agencyServiceRequestEmail(opts: {
+  service: string;
+  prix: string;
+  agence: string;
+  email: string;
+  telephone: string | null;
+  message: string | null;
+  disponibilites: string | null;
+}): { subject: string; html: string } {
+  return {
+    subject: `Demande de service : ${opts.service} — ${opts.agence}`,
+    html: layout(
+      "Nouvelle demande de service",
+      p(`<b>${esc(opts.agence)}</b> souhaite un rendez-vous pour <b>${esc(opts.service)}</b> (${esc(opts.prix)}).`) +
+        p(`Contact : ${esc(opts.email)}${opts.telephone ? ` · ${esc(opts.telephone)}` : ""}`) +
+        (opts.disponibilites ? p(`Disponibilités : ${esc(opts.disponibilites)}`) : "") +
+        (opts.message ? p(`Besoin exprimé : ${esc(opts.message).replace(/\n/g, "<br>")}`) : ""),
+      { label: "Voir les comptes agence", href: `${SITE_URL}/admin/comptes?type=AGENCE` }
+    ),
+  };
+}
+
+/** Accusé de réception envoyé à l'agence après sa demande de service. */
+export function agencyServiceConfirmationEmail(opts: { service: string; agence: string }): {
+  subject: string;
+  html: string;
+} {
+  return {
+    subject: `Votre demande : ${opts.service}`,
+    html: layout(
+      "Demande bien reçue",
+      p(`Bonjour,`) +
+        p(
+          `Nous avons bien reçu la demande de <b>${esc(opts.agence)}</b> pour <b>${esc(opts.service)}</b>. Nous vous recontactons pour convenir d'un rendez-vous : nous ferons le point ensemble sur vos besoins avant de démarrer.`
+        ) +
+        p(`À très vite,<br>L'équipe Pévèle-Immobilier.fr`),
+      { label: "Voir nos services", href: `${SITE_URL}/compte/agence/services` }
+    ),
+  };
+}

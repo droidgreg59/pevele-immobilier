@@ -31,6 +31,7 @@ export type EventName =
   | "agency_verification_submitted"
   | "courtier_verification_submitted"
   | "financing_requested"
+  | "agency_service_requested"
   | "admin_impersonation_started"
   | "admin_impersonation_ended";
 

@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 
 export type AgencyNavCounts = {
@@ -29,6 +30,7 @@ const ITEMS = [
   { href: "/compte/agence/estimations", label: "Demandes d'estimation", icon: ClipboardList, key: "estimations" },
   { href: "/compte/agence/clients", label: "Mes clients", icon: Users, key: "clients" },
   { href: "/compte/agence/statistiques", label: "Statistiques", icon: BarChart3, key: null },
+  { href: "/compte/agence/services", label: "Services", icon: Sparkles, key: null },
   { href: "/compte/agence/profil", label: "Mon agence", icon: Settings, key: null },
   { href: "/compte/agence/parametres", label: "Paramètres", icon: SlidersHorizontal, key: null },
 ] as const;
