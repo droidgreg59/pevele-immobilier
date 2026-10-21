@@ -164,6 +164,16 @@ export default function BottomNav() {
             </div>
           ))}
 
+          {accountType === "AGENCE" ? (
+            <Link
+              href="/compte/agence/services"
+              onClick={() => setMenuOpen(false)}
+              className={menuLinkClass(isActive("/compte/agence/services"))}
+            >
+              Services pour votre agence
+            </Link>
+          ) : null}
+
           <Link
             href="/vendre/deposer"
             onClick={() => setMenuOpen(false)}

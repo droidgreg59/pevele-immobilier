@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, User } from "lucide-react";
+import { ChevronDown, Sparkles, User } from "lucide-react";
 import type { AccountType } from "@prisma/client";
 import ProjectPill from "./ProjectPill";
 import { MAIN_NAV, PEVELE_NAV } from "@/data/site-nav";
@@ -113,6 +113,21 @@ export default function Header() {
               <ProjectPill />
             </div>
           )}
+
+          {user?.type === "AGENCE" ? (
+            // Offres réservées aux agences (site web, réseaux sociaux) : accès direct.
+            <Link
+              href="/compte/agence/services"
+              className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition md:px-3.5 md:py-2 md:text-[13px] ${
+                isActive("/compte/agence/services")
+                  ? "bg-blue text-white"
+                  : "bg-blue-soft text-blue hover:brightness-95"
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={2} />
+              Services
+            </Link>
+          ) : null}
 
           {user ? (
             <Link
