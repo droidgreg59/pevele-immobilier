@@ -45,9 +45,9 @@ export default async function AgenceServicesPage() {
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <span className="font-display text-[36px] leading-none text-ink">{s.prix}</span>
               <span className="text-[13px] font-semibold text-muted">{s.rythme}</span>
-              {s.delai ? (
+              {s.badge ? (
                 <span className="rounded-full bg-blue-soft px-3 py-1 text-[12px] font-semibold text-blue">
-                  {s.delai}
+                  {s.badge}
                 </span>
               ) : null}
             </div>

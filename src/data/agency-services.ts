@@ -10,7 +10,8 @@ export type AgencyService = {
   pitch: string;
   prix: string;
   rythme: string;
-  delai: string | null;
+  /** Pastille affichée à côté du prix (délai, engagement…). */
+  badge: string | null;
   inclus: string[];
 };
 
@@ -21,9 +22,9 @@ export const AGENCY_SERVICES: AgencyService[] = [
     accroche: "Un site moderne, trouvé sur Google et compris par les IA",
     pitch:
       "Modernisez votre vitrine : un site rapide, élégant et pensé pour être trouvé sur Google comme pour être compris et cité par les assistants IA (ChatGPT, Gemini, Perplexity…). Conçu par l'équipe qui a construit Pévèle-Immobilier.fr.",
-    prix: "699 €",
+    prix: "699 € TTC",
     rythme: "prix fixe",
-    delai: "Livré en 15 jours",
+    badge: "Livré 15 jours après le rendez-vous de cadrage",
     inclus: [
       "Design moderne à vos couleurs, parfait sur mobile",
       "Référencement local (SEO) : pages optimisées pour votre secteur",
@@ -41,16 +42,16 @@ export const AGENCY_SERVICES: AgencyService[] = [
     accroche: "Des publications régulières à votre marque, sans y passer vos soirées",
     pitch:
       "Restez visible sur Facebook et Instagram toute l'année : vos annonces et l'actualité du marché local deviennent des publications soignées, à vos couleurs, publiées au bon rythme.",
-    prix: "99 €",
+    prix: "99 € TTC",
     rythme: "par mois",
-    delai: null,
+    badge: "Sans engagement",
     inclus: [
       "Publications à votre marque : nouvelles annonces, biens à la une",
       "Statistiques du marché local (prix de vente constatés dans vos communes)",
       "Calendrier de publication régulier, défini avec vous",
       "Validation manuelle avant chaque publication, ou mode 100 % automatique",
       "Rapport mensuel : portée, interactions, publications les plus vues",
-      "Publicité ciblée sur votre secteur en option",
+      "Publicité ciblée sur votre secteur en option (budget publicitaire en supplément)",
     ],
   },
 ];
