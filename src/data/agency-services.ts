@@ -14,6 +14,8 @@ export type AgencyService = {
   rythme: string | null;
   /** Service annoncé mais pas encore commercialisé. */
   bientot?: boolean;
+  /** Phrase mise en avant en gras sous la présentation. */
+  enAvant?: string;
   /** Pastille affichée à côté du prix (délai, engagement…). */
   badge: string | null;
   inclus: string[];
@@ -29,6 +31,8 @@ export const AGENCY_SERVICES: AgencyService[] = [
     prix: "699 € TTC",
     rythme: "prix fixe",
     badge: "Livré 15 jours après le rendez-vous de cadrage",
+    enAvant:
+      "Tout est sur mesure : on peut ajouter des cartes, des contenus, des fonctionnalités… selon vos besoins.",
     inclus: [
       "Design moderne à vos couleurs, parfait sur mobile",
       "Référencement local (SEO) : pages optimisées pour votre secteur",

@@ -56,6 +56,9 @@ export default async function AgenceServicesPage() {
               ) : null}
             </div>
             <p className="m-0 text-[14px] leading-[1.6] text-muted">{s.pitch}</p>
+            {s.enAvant ? (
+              <p className="m-0 text-[14.5px] font-bold leading-[1.55] text-ink">{s.enAvant}</p>
+            ) : null}
             <ul className="m-0 flex list-none flex-col gap-2 p-0">
               {s.inclus.map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-[13.5px] leading-[1.5] text-ink">
