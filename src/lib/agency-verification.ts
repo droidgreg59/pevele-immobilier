@@ -79,6 +79,8 @@ export type PendingVerification = {
   verifSoumiseLe: Date | null;
   modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
   logicielMetier: string | null;
+  siteWeb: string | null;
+  repriseAutoriseeLe: Date | null;
 };
 
 export async function getPendingVerifications(): Promise<PendingVerification[]> {
@@ -100,6 +102,8 @@ export async function getPendingVerifications(): Promise<PendingVerification[]> 
       verifSoumiseLe: true,
       modeAnnonces: true,
       logicielMetier: true,
+      siteWeb: true,
+      repriseAutoriseeLe: true,
     },
   });
 }
@@ -114,6 +118,8 @@ export type UnsubmittedAgency = {
   createdAt: Date;
   modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
   logicielMetier: string | null;
+  siteWeb: string | null;
+  repriseAutoriseeLe: Date | null;
 };
 
 /**
@@ -141,6 +147,8 @@ export async function getUnsubmittedAgencies(): Promise<UnsubmittedAgency[]> {
       createdAt: true,
       modeAnnonces: true,
       logicielMetier: true,
+      siteWeb: true,
+      repriseAutoriseeLe: true,
     },
   });
 }

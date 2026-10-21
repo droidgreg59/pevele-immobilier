@@ -119,9 +119,18 @@ export default function AgencyOnboardingWizard({ agency }: { agency: AgencyProfi
 
           {agency.modeAnnonces === "AUTOMATISE" ? (
             <div className="rounded-xl border border-[#C7D4F3] bg-blue-soft px-4 py-3.5 text-[13.5px] leading-[1.5] text-ink">
-              Vous avez indiqué vouloir diffuser vos annonces automatiquement
-              {agency.logicielMetier ? <> depuis <b>{agency.logicielMetier}</b></> : ""}. Notre équipe
-              va vous contacter pour effectuer le branchement, une fois votre compte validé.
+              {agency.logicielMetier ? (
+                <>
+                  Vous avez indiqué vouloir diffuser vos annonces automatiquement depuis{" "}
+                  <b>{agency.logicielMetier}</b>. Notre équipe va vous contacter pour effectuer le
+                  branchement, une fois votre compte validé.
+                </>
+              ) : (
+                <>
+                  Vous nous avez autorisés à récupérer vos annonces automatiquement sur votre site.
+                  Elles apparaîtront ici une fois votre compte validé — rien d&apos;autre à faire.
+                </>
+              )}
             </div>
           ) : null}
           {/* Remonté à chaque retour sur cette étape : on lui repasse l'état courant. */}

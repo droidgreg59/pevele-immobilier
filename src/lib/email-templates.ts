@@ -410,9 +410,9 @@ export function newCourtierSignupEmail(opts: {
  * Notification interne (contact@pevele-immobilier.fr, jamais envoyée à
  * l'agence) à l'inscription d'un nouveau compte agence — rappelle qu'elle
  * reste invisible publiquement (annuaire, annonces) tant qu'elle n'est pas
- * vérifiée depuis /admin/verifications, et transmet le logiciel métier
- * déclaré si l'agence a choisi la diffusion automatisée (voir
- * RegisterForm.tsx) pour savoir quoi préparer avant de la recontacter.
+ * vérifiée depuis /admin/verifications, et transmet le site sur lequel
+ * l'agence a autorisé la reprise de ses annonces si elle a choisi la
+ * diffusion automatisée (voir RegisterForm.tsx).
  */
 export function newAgencySignupEmail(opts: {
   agencyNom: string;
@@ -421,7 +421,7 @@ export function newAgencySignupEmail(opts: {
   email: string;
   telephone: string;
   modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
-  logicielMetier: string | null;
+  siteWeb: string | null;
 }): { subject: string; html: string } {
   return {
     subject: opts.reseau
@@ -437,7 +437,7 @@ export function newAgencySignupEmail(opts: {
         p(`Contact : ${opts.email} · ${opts.telephone}`) +
         (opts.modeAnnonces === "AUTOMATISE"
           ? p(
-              `Diffusion souhaitée : <b>automatisée</b>, via <b>${opts.logicielMetier ?? "logiciel non précisé"}</b> — à recontacter pour effectuer le branchement une fois vérifiée.`
+              `Diffusion souhaitée : <b>automatisée</b> — reprise des annonces autorisée sur <b>${esc(opts.siteWeb ?? "site non précisé")}</b>, à mettre en place une fois l'agence vérifiée.`
             )
           : p("Diffusion souhaitée : saisie manuelle.")),
       { label: "Voir les comptes agence", href: `${SITE_URL}/admin/comptes?type=AGENCE` }

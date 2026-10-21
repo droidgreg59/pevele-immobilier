@@ -14,7 +14,7 @@ import {
 } from "./email-templates";
 import { SITE_URL } from "./seo";
 import { verifyTurnstile } from "./turnstile";
-import { isValidPhoneNumber } from "./validation";
+import { isValidHttpUrl, isValidPhoneNumber, normalizeUrl } from "./validation";
 import { isLoginThrottled, recordFailedLogin, clearFailedLogins } from "./login-throttle";
 import { logEvent } from "./events";
 import { normalizeReseau, mandataireDisplayName, reseauLogo } from "@/data/reseaux";
@@ -78,7 +78,10 @@ export async function registerAction(
       : type === "AGENCE"
         ? "MANUEL"
         : null;
-  const logicielMetier = String(formData.get("logicielMetier") ?? "").trim();
+  // Diffusion automatisée : reprise des annonces depuis le site de l'agence,
+  // avec son accord explicite (case à cocher, horodatée).
+  const siteWeb = modeAnnonces === "AUTOMATISE" ? normalizeUrl(String(formData.get("siteWeb") ?? "")) : "";
+  const repriseAutorisee = formData.get("repriseAutorisee") === "on";
   // Mandataire indépendant d'un réseau : pas d'agence, nom public calculé.
   const isMandataire = type === "AGENCE" && formData.get("proStatut") === "MANDATAIRE";
   const reseau = isMandataire
@@ -109,8 +112,14 @@ export async function registerAction(
   if (type === "COURTIER" && !entreprise) {
     return { error: "Merci d'indiquer le nom de votre société de courtage." };
   }
-  if (modeAnnonces === "AUTOMATISE" && !logicielMetier) {
-    return { error: "Merci d'indiquer le logiciel métier utilisé pour vos annonces." };
+  if (modeAnnonces === "AUTOMATISE" && !(isValidHttpUrl(siteWeb) && new URL(siteWeb).hostname.includes("."))) {
+    return { error: "Merci d'indiquer l'adresse du site où figurent vos annonces." };
+  }
+  if (modeAnnonces === "AUTOMATISE" && !repriseAutorisee) {
+    return {
+      error:
+        "Merci de cocher l'autorisation de récupérer vos annonces sur votre site, ou de choisir la saisie manuelle.",
+    };
   }
 
   if (!(await verifyTurnstile(formData, "register"))) {
@@ -138,7 +147,8 @@ export async function registerAction(
       logoUrl: reseauLogo(reseau),
       type,
       modeAnnonces,
-      logicielMetier: modeAnnonces === "AUTOMATISE" ? logicielMetier : null,
+      siteWeb: siteWeb || null,
+      repriseAutoriseeLe: modeAnnonces === "AUTOMATISE" ? new Date() : null,
     },
   });
 
@@ -159,7 +169,7 @@ export async function registerAction(
       email,
       telephone,
       modeAnnonces,
-      logicielMetier: modeAnnonces === "AUTOMATISE" ? logicielMetier : null,
+      siteWeb: siteWeb || null,
     });
     await sendEmail({ to: "contact@pevele-immobilier.fr", subject, html });
   }

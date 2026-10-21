@@ -44,6 +44,12 @@ model User {
   /// interne sur /admin/verifications pour que l'admin sache quoi demander
   /// en contactant l'agence.
   logicielMetier      String?
+  /// Date à laquelle l'agence a coché, à l'inscription (diffusion
+  /// automatisée), « J'autorise Pévèle-Immobilier.fr à récupérer mes annonces
+  /// automatiquement sur mon site » — preuve de son accord pour la reprise de
+  /// ses annonces depuis `siteWeb` (voir scripts/scrape-4m.ts). Remplace la
+  /// question du logiciel métier depuis le 2026-10-21 ; null sinon.
+  repriseAutoriseeLe  DateTime?
   xmlImportUrl        String?
   /// Mandataire indépendant (agent commercial) d'un réseau — SAFTI, IAD,
   /// MeilleursBiens… (voir src/data/reseaux.ts). Null = agence immobilière.

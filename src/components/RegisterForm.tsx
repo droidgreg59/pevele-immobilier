@@ -233,7 +233,7 @@ export default function RegisterForm({
             >
               Diffusion automatisée
               <span className="mt-0.5 block text-[12px] font-normal text-muted">
-                Vos annonces sont synchronisées depuis votre logiciel métier.
+                Nous récupérons vos annonces automatiquement sur votre site.
               </span>
             </button>
           </div>
@@ -242,18 +242,32 @@ export default function RegisterForm({
             <>
               <label className="flex flex-col gap-1.5">
                 <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-                  Quel logiciel métier utilisez-vous ?
+                  Adresse du site où figurent vos annonces
                 </span>
                 <input
-                  name="logicielMetier"
+                  name="siteWeb"
                   required
-                  placeholder="ex. AC3, Immofacile, Netty…"
+                  inputMode="url"
+                  autoComplete="url"
+                  placeholder="www.mon-agence.fr"
                   className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
                 />
               </label>
+              <label className="flex cursor-pointer items-start gap-2.5 text-[13.5px] leading-[1.45] text-ink">
+                <input
+                  type="checkbox"
+                  name="repriseAutorisee"
+                  required
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--pvl-blue)]"
+                />
+                <span>
+                  J&apos;autorise Pévèle-Immobilier.fr à récupérer mes annonces automatiquement sur
+                  mon site.
+                </span>
+              </label>
               <p className="m-0 text-[12.5px] leading-[1.5] text-muted">
-                Nous vous contacterons pour effectuer le branchement automatisé de vos
-                annonces une fois votre compte validé.
+                Rien à installer ni à configurer : vos annonces apparaissent sur le site une fois
+                votre compte validé, et restent à jour automatiquement.
               </p>
             </>
           ) : null}

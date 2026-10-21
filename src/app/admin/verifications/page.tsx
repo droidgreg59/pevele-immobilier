@@ -15,6 +15,20 @@ export const metadata: Metadata = {
   title: "Vérifications professionnelles",
 };
 
+/** Diffusion choisie à l'inscription — logiciel métier pour les comptes antérieurs au 2026-10-21. */
+function diffusionLabel(a: {
+  modeAnnonces: "MANUEL" | "AUTOMATISE" | null;
+  logicielMetier: string | null;
+  siteWeb: string | null;
+  repriseAutoriseeLe: Date | null;
+}): string {
+  if (a.modeAnnonces !== "AUTOMATISE") return "manuelle";
+  if (a.repriseAutoriseeLe) {
+    return `automatisée — reprise autorisée le ${a.repriseAutoriseeLe.toLocaleDateString("fr-FR")} sur ${a.siteWeb ?? "site non précisé"}`;
+  }
+  return `automatisée (${a.logicielMetier ?? "logiciel non précisé"}) — à recontacter pour le branchement`;
+}
+
 export default async function AdminVerificationsPage() {
   await requireAdmin();
   const [pending, unsubmitted, pendingCourtiers, unsubmittedCourtiers] = await Promise.all([
@@ -94,9 +108,7 @@ export default async function AdminVerificationsPage() {
               <span className="text-muted">Contact : {a.email}</span>
               <span className="text-muted">
                 Diffusion :{" "}
-                {a.modeAnnonces === "AUTOMATISE"
-                  ? `automatisée (${a.logicielMetier ?? "logiciel non précisé"}) — à recontacter pour le branchement`
-                  : "manuelle"}
+                {diffusionLabel(a)}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-[12.5px] font-semibold text-blue">
@@ -180,9 +192,7 @@ export default async function AdminVerificationsPage() {
                 <span className="text-muted">Contact : {a.email}{a.telephone ? ` · ${a.telephone}` : ""}</span>
                 <span className="text-muted">
                   Diffusion :{" "}
-                  {a.modeAnnonces === "AUTOMATISE"
-                    ? `automatisée (${a.logicielMetier ?? "logiciel non précisé"}) — à recontacter pour le branchement`
-                    : "manuelle"}
+                  {diffusionLabel(a)}
                 </span>
               </div>
 
