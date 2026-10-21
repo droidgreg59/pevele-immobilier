@@ -1,6 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
+import type { Prisma } from "@prisma/client";
 import { getSession, type SessionPayload } from "./session";
 
 export async function isUserAdmin(userId: string): Promise<boolean> {
@@ -28,7 +29,8 @@ const PENDING_LISTING_SELECT = {
   commune: true,
   createdAt: true,
   owner: { select: { nom: true, entreprise: true, type: true } },
-  photos: { orderBy: { order: "asc" as const }, take: 1 },
+  // Plans en dernier : la vignette n'est jamais un plan.
+  photos: { orderBy: [{ isPlan: "asc" }, { order: "asc" }] as Prisma.ListingPhotoOrderByWithRelationInput[], take: 1 },
 } as const;
 
 export type PendingListing = {

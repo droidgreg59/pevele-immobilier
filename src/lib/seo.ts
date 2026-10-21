@@ -1,5 +1,6 @@
 import { getVillageBySlug } from "@/data/villages";
 import { villageCoords } from "@/data/village-coords";
+import { galleryPhotos } from "./photo-classify";
 
 // www est l'URL réellement servie (l'apex fait une redirection 308 vers
 // celle-ci, configurée au niveau du domaine/Vercel — jamais l'inverse) :
@@ -133,7 +134,7 @@ export function listingJsonLd(listing: {
   pieces: number;
   chambres: number;
   createdAt: Date;
-  photos: { url: string }[];
+  photos: { url: string; isPlan?: boolean }[];
   owner: { nom: string; entreprise: string | null; type: "PARTICULIER" | "AGENCE" | "ARTISAN" | "COURTIER" };
 }) {
   const path = listing.transaction === "VENTE" ? "acheter" : "louer";
@@ -157,7 +158,9 @@ export function listingJsonLd(listing: {
     name: listing.titre,
     description: listing.description,
     datePosted: listing.createdAt.toISOString(),
-    image: listing.photos.map((p) => (p.url.startsWith("http") ? p.url : `${SITE_URL}${p.url}`)),
+    image: galleryPhotos(listing.photos).map((p) =>
+      p.url.startsWith("http") ? p.url : `${SITE_URL}${p.url}`
+    ),
     numberOfRooms: listing.pieces,
     numberOfBedrooms: listing.chambres,
     floorSize: {

@@ -9,6 +9,7 @@ import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
 import { isRecentListing } from "@/lib/listing-filters";
 import { useViewedListingIds } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
+import { galleryPhotos } from "@/lib/photo-classify";
 
 const TYPE_BIEN_LABEL: Record<string, string> = {
   MAISON: "Maison",
@@ -33,7 +34,8 @@ export default function ListingCard({
 
   const particulier = listing.owner.type === "PARTICULIER";
   const detailHref = `/${listing.transaction === "VENTE" ? "acheter" : "louer"}/${listing.id}`;
-  const photos = listing.photos;
+  // Les plans ne défilent pas dans la vignette (voir photo-classify.ts).
+  const photos = galleryPhotos(listing.photos);
   const enBaisse = (listing.priceHistory[0]?.prix ?? listing.prix) > listing.prix;
   const isNew = isRecentListing(listing);
   const prixM2 = listing.transaction === "VENTE" ? formatPrixM2(listing.prix, listing.surface) : null;

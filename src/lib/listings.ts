@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createHash } from "node:crypto";
 import { intentKeysFromListings } from "./intent-keys";
+import { classifyListingPhotos } from "./photo-plan-detect";
 import {
   detectManualOverrides,
   mergeOverrides,
@@ -30,7 +31,8 @@ export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
         siret: true,
       },
     },
-    photos: { orderBy: { order: "asc" } },
+    // Plans en dernier : la première photo (couverture) n'est jamais un plan.
+    photos: { orderBy: [{ isPlan: "asc" }, { order: "asc" }] },
     priceHistory: {
       orderBy: { changedAt: "asc" },
       take: 1,
@@ -566,6 +568,8 @@ export async function addListingPhotos(listingId: string, urls: string[]) {
   await prisma.listingPhoto.createMany({
     data: urls.map((url, i) => ({ listingId, url, order: startOrder + i })),
   });
+  // Les plans sont repérés à l'ajout et présentés à part (voir photo-classify.ts).
+  await classifyListingPhotos(listingId, urls);
 }
 
 export async function removeListingPhotos(ids: string[]) {

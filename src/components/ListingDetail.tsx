@@ -39,6 +39,7 @@ import FavoriteButton from "./FavoriteButton";
 import ListingCard from "./ListingCard";
 import CommuneMiniMap from "./CommuneMiniMap";
 import PhotoGallery from "./PhotoGallery";
+import { galleryPhotos, planPhotos } from "@/lib/photo-classify";
 import VisitRequestForm, { type ExistingVisitRequestInfo } from "./VisitRequestForm";
 import OpenHouseSignupForm from "./OpenHouseSignupForm";
 import PurchaseCostBlock from "./PurchaseCostBlock";
@@ -486,6 +487,9 @@ export default function ListingDetail({
   }, [listing.id]);
 
   const particulier = listing.owner.type === "PARTICULIER";
+  // Les plans sont présentés à part, comme sur les grands portails.
+  const photos = galleryPhotos(listing.photos);
+  const plans = planPhotos(listing.photos);
   const enVerification = listing.statut === "EN_VERIFICATION";
   const refusee = listing.statut === "REFUSEE";
   const village = getVillageBySlug(listing.villageSlug);
@@ -533,7 +537,7 @@ export default function ListingDetail({
       <div className="mt-5 grid grid-cols-1 gap-9 lg:grid-cols-[1.4fr_1fr] lg:items-start">
         <div>
           <PhotoGallery
-            photos={listing.photos}
+            photos={photos}
             alt={`${listing.titre} — ${listing.commune}`}
             overlay={
               <>
@@ -564,6 +568,20 @@ export default function ListingDetail({
               </>
             }
           />
+          {plans.length > 0 ? (
+            <section className="mt-6">
+              <h2 className="m-0 font-display text-2xl text-ink">
+                {plans.length > 1 ? `Plans (${plans.length})` : "Plan"}
+              </h2>
+              <div className="mt-3">
+                <PhotoGallery
+                  photos={plans}
+                  alt={`Plan — ${listing.titre}`}
+                  variant="plans"
+                />
+              </div>
+            </section>
+          ) : null}
           {listing.videoUrl || listing.visiteVirtuelleUrl ? (
             <div className="mt-3 flex flex-col gap-3">
               {listing.videoUrl && videoEmbedUrl ? (

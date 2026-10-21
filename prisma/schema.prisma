@@ -277,6 +277,9 @@ model ListingPhoto {
   listingId String
   url       String
   order     Int     @default(0)
+  /// Plan (2D/3D) détecté automatiquement à l'ajout (voir photo-classify.ts) :
+  /// présenté à part, dans « Plans », jamais comme photo de couverture.
+  isPlan    Boolean @default(false)
 
   @@index([listingId])
 }

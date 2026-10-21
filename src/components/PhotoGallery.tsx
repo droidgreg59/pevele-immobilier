@@ -9,11 +9,15 @@ export default function PhotoGallery({
   photos,
   alt,
   overlay,
+  variant = "photos",
 }: {
   photos: { url: string }[];
   alt: string;
   overlay?: ReactNode;
+  /** « plans » : image entière sur fond blanc (jamais recadrée), libellés adaptés. */
+  variant?: "photos" | "plans";
 }) {
+  const isPlans = variant === "plans";
   const [active, setActive] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const current = photos[active];
@@ -28,16 +32,20 @@ export default function PhotoGallery({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative h-[360px] overflow-hidden rounded-2xl border border-line bg-surface">
+      <div
+        className={`relative overflow-hidden rounded-2xl border border-line ${
+          isPlans ? "h-[320px] bg-white" : "h-[360px] bg-surface"
+        }`}
+      >
         {current ? (
           <Image
             src={current.url}
             alt={alt}
             fill
             sizes="(max-width: 1024px) 100vw, 60vw"
-            priority
+            priority={!isPlans}
             onClick={() => setLightboxOpen(true)}
-            className="cursor-zoom-in object-cover"
+            className={`cursor-zoom-in ${isPlans ? "object-contain p-2" : "object-cover"}`}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center px-4 text-center text-[12px] text-muted-2">
@@ -51,7 +59,7 @@ export default function PhotoGallery({
             style={{ background: "var(--pvl-overlay)" }}
           >
             <Images className="h-3.5 w-3.5" strokeWidth={1.75} />
-            {photos.length} photos
+            {photos.length} {isPlans ? "plans" : "photos"}
           </span>
         ) : null}
       </div>
@@ -67,7 +75,13 @@ export default function PhotoGallery({
                 borderColor: i === active ? "var(--pvl-blue)" : "transparent",
               }}
             >
-              <Image src={p.url} alt="" fill sizes="64px" className="object-cover" />
+              <Image
+                src={p.url}
+                alt=""
+                fill
+                sizes="64px"
+                className={isPlans ? "bg-white object-contain" : "object-cover"}
+              />
             </button>
           ))}
         </div>
@@ -109,7 +123,7 @@ export default function PhotoGallery({
                       e.stopPropagation();
                       prev();
                     }}
-                    aria-label="Photo précédente"
+                    aria-label={isPlans ? "Plan précédent" : "Photo précédente"}
                     className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
                   >
                     <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />
@@ -120,7 +134,7 @@ export default function PhotoGallery({
                       e.stopPropagation();
                       next();
                     }}
-                    aria-label="Photo suivante"
+                    aria-label={isPlans ? "Plan suivant" : "Photo suivante"}
                     className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
                   >
                     <ChevronRight className="h-5 w-5" strokeWidth={1.75} />
