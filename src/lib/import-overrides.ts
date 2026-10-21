@@ -33,6 +33,24 @@ export const FEED_MANAGED_FIELDS = [
   "dpeEmissions",
   "videoUrl",
   "visiteVirtuelleUrl",
+  // Frais et caractéristiques détaillées : fournis par la reprise du site 4M
+  // (src/lib/site-4m.ts), absents du flux AC3.
+  "honoraires",
+  "honorairesCharge",
+  "chargesCopro",
+  "taxeFonciere",
+  "chargesLoc",
+  "depotGarantie",
+  "meuble",
+  "anneeConstruction",
+  "etat",
+  "exposition",
+  "etage",
+  "ascenseur",
+  "nbSallesDeBain",
+  "stationnement",
+  "chauffageType",
+  "assainissement",
 ] as const;
 
 /** Pseudo-champ : la liste de photos (ajout/retrait manuel). */
@@ -59,6 +77,22 @@ export const OVERRIDE_LABEL: Record<string, string> = {
   dpeEmissions: "DPE",
   videoUrl: "vidéo",
   visiteVirtuelleUrl: "visite virtuelle",
+  honoraires: "honoraires",
+  honorairesCharge: "honoraires",
+  chargesCopro: "charges de copropriété",
+  taxeFonciere: "taxe foncière",
+  chargesLoc: "charges",
+  depotGarantie: "dépôt de garantie",
+  meuble: "ameublement",
+  anneeConstruction: "année de construction",
+  etat: "état général",
+  exposition: "exposition",
+  etage: "étage",
+  ascenseur: "ascenseur",
+  nbSallesDeBain: "salles de bain",
+  stationnement: "stationnement",
+  chauffageType: "chauffage",
+  assainissement: "assainissement",
   photos: "photos",
 };
 

@@ -51,7 +51,7 @@ export type SkippedAc3Listing = {
   reason: string;
 };
 
-function normalizeName(value: string): string {
+export function normalizeName(value: string): string {
   return value
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")

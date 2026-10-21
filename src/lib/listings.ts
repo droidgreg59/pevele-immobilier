@@ -13,7 +13,7 @@ import {
 import { Prisma } from "@prisma/client";
 import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 import { prisma } from "./prisma";
-import { saveRemotePhotos, deletePhotoFilesByUrl } from "./photo-upload";
+import { saveRemotePhotos, deletePhotoFilesByUrl, type PhotoFetcher } from "./photo-upload";
 import { listingRevivalFields } from "./listing-revival";
 
 export const listingWithOwner = Prisma.validator<Prisma.ListingDefaultArgs>()({
@@ -419,7 +419,8 @@ function photoSourceKey(urls: string[]): string {
 
 export async function upsertImportedListing(
   ownerId: string,
-  input: ImportedListingInput
+  input: ImportedListingInput,
+  options: { fetchPhoto?: PhotoFetcher } = {}
 ): Promise<{ id: string; created: boolean }> {
   const { externalRef, importSource, photoUrls, ...fields } = input;
   const fieldsData = {
@@ -447,7 +448,7 @@ export async function upsertImportedListing(
         priceHistory: { create: [{ prix: fields.prix }] },
       },
     });
-    const savedUrls = await saveRemotePhotos(created.id, photoUrls);
+    const savedUrls = await saveRemotePhotos(created.id, photoUrls, options.fetchPhoto);
     await addListingPhotos(created.id, savedUrls);
     if (savedUrls.length === photoUrls.length) {
       await prisma.listing.update({
@@ -499,7 +500,7 @@ export async function upsertImportedListing(
     (await prisma.listingPhoto.count({ where: { listingId: existing.id } })) > 0;
   if (photosUnchanged) return { id: existing.id, created: false };
 
-  const savedUrls = await saveRemotePhotos(existing.id, photoUrls);
+  const savedUrls = await saveRemotePhotos(existing.id, photoUrls, options.fetchPhoto);
   if (savedUrls.length > 0) {
     const oldPhotos = await prisma.listingPhoto.findMany({ where: { listingId: existing.id } });
     await prisma.listingPhoto.deleteMany({ where: { listingId: existing.id } });

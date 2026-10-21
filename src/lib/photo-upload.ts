@@ -77,9 +77,17 @@ const EXT_BY_CONTENT_TYPE: Record<string, string> = {
  * qui échouent ou ne renvoient pas une image reconnue sont ignorées
  * (best-effort — un flux agence peut contenir des liens morts).
  */
+/**
+ * Téléchargeur des photos distantes — `fetch` par défaut ; injectable quand
+ * les images ne sont accessibles qu'à travers une session navigateur (site
+ * d'agence protégé par un pare-feu applicatif, voir scripts/scrape-4m.ts).
+ */
+export type PhotoFetcher = (url: string) => Promise<Response>;
+
 export async function saveRemotePhotos(
   listingId: string,
-  urls: string[]
+  urls: string[],
+  fetchPhoto: PhotoFetcher = fetch
 ): Promise<string[]> {
   if (urls.length === 0) return [];
 
@@ -91,7 +99,7 @@ export async function saveRemotePhotos(
     const batch = await Promise.all(
       urls.slice(i, i + CONCURRENCY).map(async (url) => {
         try {
-          const res = await fetch(url);
+          const res = await fetchPhoto(url);
           if (!res.ok) return null;
           const contentType = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
           const ext =
