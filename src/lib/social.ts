@@ -111,6 +111,15 @@ export async function processSocialPost(id: string, budgetMs = 45_000): Promise<
     const message = e instanceof Error ? e.message : String(e);
     // Erreur passagère (contenu Instagram pas encore prêt, limite de débit…) :
     // on reste EN_COURS, le passage suivant (15 min) reprendra là où on en est.
+    // Accès bloqué par Meta : la publication reste validée et repartira
+    // d'elle-même une fois l'accès rétabli (rien n'a été publié à cette étape
+    // si l'API refuse tout appel).
+    if (e instanceof MetaError && e.accessBlocked) {
+      const p = await prisma.socialPost.findUniqueOrThrow({ where: { id }, select: { fbVideoId: true, fbPublishedAt: true, igContainerId: true } });
+      const statut = p.fbVideoId || p.fbPublishedAt || p.igContainerId ? "EN_COURS" : "VALIDEE";
+      await prisma.socialPost.update({ where: { id }, data: { statut, error: `Meta : accès API bloqué — en attente de déblocage (${new Date().toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}).` } });
+      return { id, statut, error: "ACCES_BLOQUE" };
+    }
     const retry = e instanceof MetaError && e.transient;
     const statut = retry ? "EN_COURS" : "ECHEC";
     await prisma.socialPost.update({ where: { id }, data: { statut, error: message.slice(0, 1000) } });
@@ -132,7 +141,10 @@ export async function runDueSocialPosts(now = new Date()): Promise<ProcessResult
   for (const p of candidates.filter((c) => isDue(c, now))) {
     const left = deadline - Date.now();
     if (left < 15_000) break;
-    results.push(await processSocialPost(p.id, Math.min(40_000, left)));
+    const r = await processSocialPost(p.id, Math.min(40_000, left));
+    results.push(r);
+    // Accès bloqué : inutile d'insister sur les publications suivantes.
+    if (r.error === "ACCES_BLOQUE") break;
   }
   return results;
 }

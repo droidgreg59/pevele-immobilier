@@ -30,6 +30,15 @@ export class MetaError extends Error {
    * échec. Ex. Instagram « le contenu n'est pas prêt à être publié » (code
    * 9007, sous-code 2207027), limites de débit, indisponibilité temporaire.
    */
+  /**
+   * Accès API bloqué par Meta (application ou portefeuille restreint, code
+   * 200 « API access blocked ») : rien ne passera tant que le blocage n'est
+   * pas levé côté Meta — inutile d'échouer les publications une par une.
+   */
+  get accessBlocked(): boolean {
+    return this.code === 200 && /access blocked/i.test(this.message);
+  }
+
   get transient(): boolean {
     return this.code === 9007 || this.subcode === 2207027 || this.code === 4 || this.code === 17 || this.code === 2 || this.code === 1;
   }
