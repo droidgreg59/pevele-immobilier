@@ -268,6 +268,7 @@ export default function EditListingForm({
         {typeBien !== "TERRAIN" ? (
           <FraisFields
             transaction={transaction}
+            showHonoraires={listing.owner.type !== "PARTICULIER"}
             defaults={{
               honoraires: listing.honoraires,
               honorairesCharge: listing.honorairesCharge,

@@ -218,7 +218,7 @@ export async function verifyEmailToken(token: string): Promise<VerifyEmailOutcom
 }
 
 /** Renvoie l'email de vérification à l'utilisateur connecté s'il n'est pas encore vérifié. */
-export async function resendEmailVerificationAction(): Promise<void> {
+export async function resendEmailVerificationAction(): Promise<"sent" | null> {
   const session = await getSession();
   if (!session) redirect("/connexion");
 
@@ -226,7 +226,17 @@ export async function resendEmailVerificationAction(): Promise<void> {
   if (user && !user.emailVerifiedAt) {
     await sendEmailVerification(user.id, user.email);
   }
-  redirect("/compte?verif=renvoye");
+  // Confirmation affichée sur place (ResendVerificationButton) — la redirection
+  // vers /compte?verif=renvoye perdait le paramètre, sans aucun retour visible.
+  return "sent";
+}
+
+/** Espace /compte/* propre à chaque type de compte (voir src/app/compte/page.tsx). */
+function accountHomePath(type: AccountType): string {
+  if (type === "AGENCE") return "/compte/agence";
+  if (type === "PARTICULIER") return "/compte/particulier";
+  if (type === "COURTIER") return "/compte/courtier";
+  return "/compte/artisan";
 }
 
 /** Active / désactive le digest hebdomadaire du marché pour l'utilisateur connecté. */
@@ -237,7 +247,7 @@ export async function toggleDigestOptInAction(formData: FormData): Promise<void>
     where: { id: session.userId },
     data: { digestOptIn: formData.get("optIn") === "true" },
   });
-  redirect("/compte");
+  redirect(`${accountHomePath(session.type)}/parametres`);
 }
 
 export async function loginAction(

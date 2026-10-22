@@ -440,6 +440,7 @@ export default function ListingDetail({
   amenities,
   similar = [],
   viewerNom = "",
+  viewerPrenom = "",
   defaultTelephone = null,
   existingVisitRequest = null,
 }: {
@@ -463,6 +464,8 @@ export default function ListingDetail({
   amenities: VillageAmenities | null;
   similar?: ListingWithOwner[];
   viewerNom?: string;
+  /** Prénom du particulier connecté, pour pré-remplir l'inscription aux portes ouvertes. */
+  viewerPrenom?: string;
   /** Téléphone du compte connecté, pour pré-remplir la demande de visite. */
   defaultTelephone?: string | null;
   /** Dernière demande de visite déjà envoyée par le visiteur pour ce bien, s'il y en a une. */
@@ -906,7 +909,9 @@ export default function ListingDetail({
                     note={openHouse.note}
                     isLoggedIn={isLoggedIn}
                     loginHref={`/connexion?next=${encodeURIComponent(`${listHref}/${listing.id}`)}`}
+                    defaultPrenom={viewerPrenom}
                     defaultNom={viewerNom}
+                    defaultTelephone={defaultTelephone ?? ""}
                   />
                 ) : (
                   <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">

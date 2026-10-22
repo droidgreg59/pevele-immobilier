@@ -124,6 +124,7 @@ export default async function AcheterListingPage({
         amenities={village ? villageAmenities[village.insee] ?? null : null}
         similar={similar}
         viewerNom={session?.nom ?? ""}
+        viewerPrenom={visitFormContext?.prenom ?? ""}
         defaultTelephone={visitFormContext?.telephone ?? null}
         existingVisitRequest={
           visitFormContext?.existingRequest

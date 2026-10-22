@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { sendEmail } from "./email";
@@ -41,7 +42,9 @@ export async function sendMandateAction(formData: FormData) {
   });
   await logEvent("mandate_created", { userId: session.userId, path: "/compte" });
 
-  redirect("/compte");
+  // Retour sur « Mes recherches », où la recherche apparaît « en attente ».
+  revalidatePath("/compte", "layout");
+  redirect("/compte/particulier/recherches");
 }
 
 export async function respondToMandateAction(formData: FormData) {
@@ -76,9 +79,10 @@ export async function respondToMandateAction(formData: FormData) {
     await sendPushNotification(existing.clientId, {
       title: accepted ? "Recherche confiée acceptée" : "Recherche confiée déclinée",
       body: `${agencyNom} ${accepted ? "a accepté" : "a décliné"} votre recherche.`,
-      url: "/compte",
+      url: "/compte/particulier/recherches",
     });
   }
 
+  revalidatePath("/compte", "layout");
   redirect("/compte/agence/clients");
 }

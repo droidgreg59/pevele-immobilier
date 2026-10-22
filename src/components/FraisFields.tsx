@@ -22,9 +22,12 @@ export type FraisDefaults = {
 export default function FraisFields({
   transaction,
   defaults = {},
+  showHonoraires = true,
 }: {
   transaction: "VENTE" | "LOCATION";
   defaults?: FraisDefaults;
+  /** Faux pour un particulier : pas d'honoraires d'agence sur une vente entre voisins. */
+  showHonoraires?: boolean;
 }) {
   return (
     <fieldset className="m-0 flex flex-col gap-4 rounded-2xl border border-line bg-white p-4">
@@ -34,31 +37,33 @@ export default function FraisFields({
 
       {transaction === "VENTE" ? (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5">
-              <span className={labelCls}>Honoraires d&apos;agence (€ TTC)</span>
-              <input
-                type="number"
-                name="honoraires"
-                min={1}
-                defaultValue={defaults.honoraires ?? ""}
-                placeholder="ex. 12 000"
-                className={fieldCls}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className={labelCls}>Honoraires à la charge de</span>
-              <select
-                name="honorairesCharge"
-                defaultValue={defaults.honorairesCharge ?? ""}
-                className={fieldCls}
-              >
-                <option value="">Non précisé</option>
-                <option value="acquereur">l&apos;acquéreur</option>
-                <option value="vendeur">le vendeur</option>
-              </select>
-            </label>
-          </div>
+          {showHonoraires ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5">
+                <span className={labelCls}>Honoraires d&apos;agence (€ TTC)</span>
+                <input
+                  type="number"
+                  name="honoraires"
+                  min={1}
+                  defaultValue={defaults.honoraires ?? ""}
+                  placeholder="ex. 12 000"
+                  className={fieldCls}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className={labelCls}>Honoraires à la charge de</span>
+                <select
+                  name="honorairesCharge"
+                  defaultValue={defaults.honorairesCharge ?? ""}
+                  className={fieldCls}
+                >
+                  <option value="">Non précisé</option>
+                  <option value="acquereur">l&apos;acquéreur</option>
+                  <option value="vendeur">le vendeur</option>
+                </select>
+              </label>
+            </div>
+          ) : null}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5">
               <span className={labelCls}>Charges de copropriété (€ / mois)</span>
@@ -83,10 +88,12 @@ export default function FraisFields({
               />
             </label>
           </div>
-          <p className="m-0 text-[12px] leading-[1.5] text-muted-2">
-            Si les honoraires sont à la charge de l&apos;acquéreur, la loi impose de
-            les afficher (montant et prix hors honoraires).
-          </p>
+          {showHonoraires ? (
+            <p className="m-0 text-[12px] leading-[1.5] text-muted-2">
+              Si les honoraires sont à la charge de l&apos;acquéreur, la loi impose de
+              les afficher (montant et prix hors honoraires).
+            </p>
+          ) : null}
         </>
       ) : (
         <>

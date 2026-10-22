@@ -156,7 +156,7 @@ export async function deleteListingAction(formData: FormData) {
     await deleteListingUploadDir(listingId);
   }
 
-  redirect("/compte");
+  redirect(session.type === "AGENCE" ? "/compte/agence/annonces" : "/compte/particulier/annonces");
 }
 
 /** « Rétablir la synchronisation » : l'annonce importée reprend tous ses champs du flux au prochain passage. */

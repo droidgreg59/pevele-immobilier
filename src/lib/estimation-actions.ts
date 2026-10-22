@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { isValidPhoneNumber, isDateAfterToday } from "./validation";
@@ -116,9 +117,10 @@ export async function respondToEstimationRequestAction(formData: FormData) {
     await sendPushNotification(existing.authorId, {
       title: accepted ? "Estimation acceptée" : "Estimation déclinée",
       body: `${agencyNom} ${accepted ? "a accepté" : "a décliné"} votre demande d'estimation.`,
-      url: "/compte",
+      url: "/compte/particulier/mes-demarches",
     });
   }
 
-  redirect("/compte");
+  revalidatePath("/compte", "layout");
+  redirect("/compte/agence/estimations");
 }

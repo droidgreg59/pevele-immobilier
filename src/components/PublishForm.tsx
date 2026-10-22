@@ -15,8 +15,10 @@ const initialState: ListingFormState = {};
 export default function PublishForm({
   accountLabel,
   maxPhotos,
+  isParticulier = false,
 }: {
   accountLabel: string;
+  isParticulier?: boolean;
   /** Limite de photos du compte connecté (voir maxPhotosFor). */
   maxPhotos: number;
 }) {
@@ -194,7 +196,7 @@ export default function PublishForm({
 
       <DpeFields />
 
-      {typeBien !== "TERRAIN" ? <FraisFields transaction={transaction} /> : null}
+      {typeBien !== "TERRAIN" ? <FraisFields transaction={transaction} showHonoraires={!isParticulier} /> : null}
 
       {typeBien !== "TERRAIN" ? <CaracFields typeBien={typeBien} /> : null}
 

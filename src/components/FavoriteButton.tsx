@@ -37,7 +37,8 @@ export default function FavoriteButton({
           await toggleFavoriteAction(listingId, pathname);
         });
       }}
-      aria-label="Ajouter aux favoris"
+      aria-label={favorited ? "Retirer des favoris" : "Ajouter aux favoris"}
+      aria-pressed={favorited}
       className={`${
         className ??
         "flex items-center justify-center rounded-full border border-line bg-white text-[16px] leading-none text-blue shadow-sm"

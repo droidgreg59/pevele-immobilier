@@ -302,6 +302,28 @@ export function proposalReceivedEmail(opts: {
   };
 }
 
+/** À l'agence : son client répond à un bien proposé dans le cadre d'une recherche confiée. */
+export function proposalRespondedEmail(opts: {
+  clientNom: string;
+  listingTitre: string;
+  interesse: boolean;
+}): { subject: string; html: string } {
+  return {
+    subject: opts.interesse
+      ? `${opts.clientNom} est intéressé(e) par « ${opts.listingTitre} »`
+      : `${opts.clientNom} a décliné « ${opts.listingTitre} »`,
+    html: layout(
+      opts.interesse ? "Votre client est intéressé" : "Proposition déclinée",
+      p(
+        opts.interesse
+          ? `<b>${esc(opts.clientNom)}</b> est intéressé(e) par « ${esc(opts.listingTitre)} », que vous lui avez proposé. C'est le moment de le recontacter pour organiser une visite.`
+          : `<b>${esc(opts.clientNom)}</b> a indiqué que « ${esc(opts.listingTitre)} » ne lui correspond pas.`
+      ),
+      { label: "Voir mes clients", href: `${SITE_URL}/compte/agence/clients` }
+    ),
+  };
+}
+
 export function listingModeratedEmail(opts: {
   listingTitre: string;
   listingHref: string;

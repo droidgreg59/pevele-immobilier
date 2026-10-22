@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getSession } from "./session";
 import { prisma } from "./prisma";
 import { logEvent } from "./events";
@@ -55,5 +56,6 @@ export async function deleteSavedSearchAction(formData: FormData) {
     where: { id, userId: session.userId },
   });
 
-  redirect("/compte");
+  revalidatePath("/compte", "layout");
+  redirect("/compte/particulier/recherches");
 }

@@ -38,6 +38,7 @@ export default function OpenHouseSignupForm({
   note,
   isLoggedIn,
   loginHref,
+  defaultPrenom = "",
   defaultNom = "",
   defaultTelephone = "",
 }: {
@@ -45,6 +46,7 @@ export default function OpenHouseSignupForm({
   note: string | null;
   isLoggedIn: boolean;
   loginHref: string;
+  defaultPrenom?: string;
   defaultNom?: string;
   defaultTelephone?: string;
 }) {
@@ -160,6 +162,7 @@ export default function OpenHouseSignupForm({
               <input
                 name="prenom"
                 required
+                defaultValue={defaultPrenom}
                 className="rounded-xl border border-line bg-white px-3.5 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/15"
               />
             </label>

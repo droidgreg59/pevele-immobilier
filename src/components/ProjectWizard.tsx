@@ -715,10 +715,6 @@ export default function ProjectWizard({
               );
             })}
           </div>
-          <p className="m-0 text-[11.5px] text-muted-2">
-            Évolution future : pas encore utilisé pour trier les annonces — le tri retombe sur la
-            date ou le prix.
-          </p>
           <button
             type="button"
             onClick={() => goTo("recap")}
@@ -812,7 +808,11 @@ export default function ProjectWizard({
               href={resultUrl()}
               className="rounded-full bg-yellow px-6 py-3.5 text-center text-[14px] font-bold text-ink shadow-sm transition hover:brightness-95"
             >
-              Découvrir mes {matchCount} bien{matchCount > 1 ? "s" : ""} →
+              {matchCount > 1
+                ? `Découvrir les ${matchCount} biens →`
+                : matchCount === 1
+                  ? "Découvrir le bien →"
+                  : "Voir les annonces →"}
             </Link>
             <Link href="/compte" className="text-center text-[13px] font-semibold text-white">
               Retour à mon compte →

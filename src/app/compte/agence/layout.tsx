@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { logoutAction, resendEmailVerificationAction } from "@/lib/auth-actions";
+import { logoutAction } from "@/lib/auth-actions";
+import ResendVerificationButton from "@/components/ResendVerificationButton";
 import { getVisitRequestsForOwner } from "@/lib/visits";
 import { getPendingOpenHouseRegistrationsForOwner } from "@/lib/open-house";
 import { getEstimationRequestsForAgency } from "@/lib/estimations";
@@ -124,14 +125,7 @@ export default async function AgenceLayout({ children }: { children: React.React
               l&apos;exigent.
             </span>
           </div>
-          <form action={resendEmailVerificationAction}>
-            <button
-              type="submit"
-              className="rounded-full border border-line bg-white px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-surface"
-            >
-              Renvoyer l&apos;email
-            </button>
-          </form>
+          <ResendVerificationButton />
         </div>
       ) : null}
 

@@ -44,7 +44,11 @@ export default async function DeposerPage() {
       </Link>
 
       <div className="mt-6.5">
-        <PublishForm accountLabel={accountLabel} maxPhotos={maxPhotosFor(session.type)} />
+        <PublishForm
+          accountLabel={accountLabel}
+          maxPhotos={maxPhotosFor(session.type)}
+          isParticulier={session.type === "PARTICULIER"}
+        />
       </div>
     </div>
   );
