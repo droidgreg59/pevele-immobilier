@@ -18,6 +18,17 @@ const SMALL_COMMUNE_AREA = 1800;
  * position inventée à l'intérieur d'un village.
  */
 
+/**
+ * Prix plancher affiché sur une commune : en milliers d'euros pour une vente
+ * (« dès 289k€ »), en euros pour un loyer mensuel (« dès 450 €/mois ») —
+ * arrondi en milliers, un loyer s'affichait « dès 0k€ ».
+ */
+export function minPriceLabel(prix: number, transaction: "VENTE" | "LOCATION"): string {
+  return transaction === "LOCATION"
+    ? `dès ${prix.toLocaleString("fr-FR")} €/mois`
+    : `dès ${Math.round(prix / 1000)}k€`;
+}
+
 type VillageShape = {
   slug: string;
   nom: string;
@@ -31,12 +42,14 @@ type VillageShape = {
 };
 
 export default function MapPanel({
+  transaction,
   aggregates,
   hoveredVillageSlug,
   onHoverVillage,
   onSelectVillage,
   selectedVillageSlugs = [],
 }: {
+  transaction: "VENTE" | "LOCATION";
   aggregates: BrowseMapAggregate[];
   hoveredVillageSlug: string | null;
   onHoverVillage: (slug: string | null) => void;
@@ -133,7 +146,7 @@ export default function MapPanel({
                   fill={hovered ? "#fff" : "var(--pvl-blue)"}
                   className="pointer-events-none select-none transition-all duration-150"
                 >
-                  dès {Math.round((s.minPrix ?? 0) / 1000)}k€
+                  {minPriceLabel(s.minPrix ?? 0, transaction)}
                 </text>
               ) : selected ? (
                 <circle
@@ -163,19 +176,20 @@ export default function MapPanel({
             </g>
           );
         })}
-        {/* Nom complet de la commune sans annonce survolée, agrandi et
+        {/* Nom complet de la commune survolée, agrandi et
             haloté de blanc — remplace l'abrégé labelCourt (« CAPPELLE-EN-
             PÉV. », « AUCHY-LEZ-ORCH. »...) qui restait tronqué au survol.
             Rendu en dernier pour ne jamais être masqué par une commune
-            voisine quand le texte déborde du polygone. Les communes avec
-            annonces gardent leur prix affiché ci-dessus, inchangé. */}
+            voisine quand le texte déborde du polygone. Sur une commune avec
+            annonces, le nom s'affiche au-dessus de son prix. */}
         {(() => {
           const s = shapes.find((s) => s.slug === hoveredVillageSlug);
-          if (!s || s.count > 0) return null;
+          if (!s) return null;
           return (
             <text
               x={s.cx}
-              y={s.cy}
+              // Commune avec annonces : nom au-dessus de son prix, pour savoir où l'on est.
+              y={s.count > 0 ? s.cy - 10 : s.cy}
               textAnchor="middle"
               dominantBaseline="middle"
               fontSize={9}

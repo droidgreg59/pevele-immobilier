@@ -179,8 +179,19 @@ export default function ListingCard({
           ) : null}
         </div>
         <p className="m-0 truncate text-[14px] font-semibold text-ink">
-          {TYPE_BIEN_LABEL[listing.typeBien] ?? listing.typeBien} · {listing.surface} m² ·{" "}
-          {listing.chambres} ch. · {listing.exterieur}
+          {[
+            TYPE_BIEN_LABEL[listing.typeBien] ?? listing.typeBien,
+            `${listing.surface} m²`,
+            // Studio : 0 chambre → nombre de pièces plutôt que « 0 ch. ».
+            listing.chambres > 0
+              ? `${listing.chambres} ch.`
+              : listing.pieces > 0
+                ? `${listing.pieces} p.`
+                : null,
+            listing.exterieur && listing.exterieur !== "—" ? listing.exterieur : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
         <p className="m-0 text-[13px] text-muted">
           {listing.commune}{" "}

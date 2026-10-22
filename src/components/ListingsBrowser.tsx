@@ -231,6 +231,7 @@ export default function ListingsBrowser({
 
   const mapPanel = (
     <MapPanel
+      transaction={transaction}
       aggregates={mapAggregates}
       hoveredVillageSlug={hoveredVillageSlug}
       onHoverVillage={setHoveredVillageSlug}
