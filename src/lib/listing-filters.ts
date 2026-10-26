@@ -72,6 +72,8 @@ export function isRecentListing(
   listing: ListingWithOwner,
   withinMs: number = 7 * 24 * 60 * 60 * 1000
 ): boolean {
+  // Stock repris au premier import d'une agence : déjà sur le marché, pas « nouveau ».
+  if (listing.importInitial) return false;
   return Date.now() - new Date(listing.createdAt).getTime() < withinMs;
 }
 

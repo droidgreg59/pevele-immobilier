@@ -251,6 +251,11 @@ model Listing {
   /// pas — contrairement à un simple RETIREE, que le flux ressuscite.
   hiddenByAdminAt    DateTime?
   importSource       String?
+  /// Créée par le tout premier import d'une agence (flux XML ou reprise de
+  /// son site) : son stock existant, pas un bien nouveau sur le marché — pas
+  /// de badge « Nouveau » (voir isRecentListing). `createdAt` reste la date
+  /// d'apparition sur le site, inchangée.
+  importInitial      Boolean           @default(false)
   photos             ListingPhoto[]
   priceHistory       PriceHistory[]
   lifecycleEvents    ListingLifecycleEvent[]

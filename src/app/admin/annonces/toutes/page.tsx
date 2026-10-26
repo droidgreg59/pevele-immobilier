@@ -179,7 +179,7 @@ export default async function AdminToutesAnnoncesPage({
               >
                 Modifier →
               </Link>
-              <DeleteListingButton listingId={l.id} titre={l.titre} />
+              <DeleteListingButton listingId={l.id} titre={l.titre} imported={l.importSource !== null} />
             </div>
           </div>
         ))}

@@ -11,7 +11,7 @@ import {
   PHOTOS_FIELD,
 } from "./import-overrides";
 import { Prisma } from "@prisma/client";
-import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
+import type { ListingStatus, TransactionType, TypeBien, TypeMaison } from "@prisma/client";
 import { prisma } from "./prisma";
 import { saveRemotePhotos, deletePhotoFilesByUrl, type PhotoFetcher } from "./photo-upload";
 import { listingRevivalFields } from "./listing-revival";
@@ -379,25 +379,48 @@ export async function adminUpdateListing(id: string, input: ListingFieldsInput) 
 }
 
 /** Renvoie `null` si l'annonce n'existe pas ou n'appartient pas à `ownerId`. */
-export async function deleteListing(id: string, ownerId: string) {
-  const existing = await prisma.listing.findUnique({
-    where: { id },
-    include: { photos: true },
+/**
+ * Suppression d'une annonce. Une annonce importée (flux XML, site d'agence)
+ * n'est jamais effacée : la synchro suivante la recréerait tant qu'elle reste
+ * chez l'agence (ex. bien sous compromis signalé seulement par un bandeau sur
+ * ses photos, supprimé à la main le 2026-10-26 puis recréé par la reprise du
+ * site 4M). Elle est retirée et masquée (`hiddenByAdminAt`), ce que la synchro
+ * respecte — et ses photos sont gardées, au cas où elle serait rétablie.
+ * Renvoie "hidden", "deleted" ou null (introuvable / pas au propriétaire).
+ */
+async function removeListing(
+  existing: { id: string; statut: ListingStatus; importSource: string | null }
+): Promise<"hidden" | "deleted"> {
+  if (!existing.importSource) {
+    await prisma.listing.delete({ where: { id: existing.id } });
+    return "deleted";
+  }
+  const now = new Date();
+  await prisma.listing.update({
+    where: { id: existing.id },
+    data: {
+      statut: "RETIREE",
+      hiddenByAdminAt: now,
+      ...(existing.statut === "RETIREE" ? {} : { retiredAt: now }),
+    },
   });
+  if (existing.statut === "PUBLIEE") {
+    await prisma.listingLifecycleEvent.create({ data: { listingId: existing.id, type: "RETIRED" } });
+  }
+  return "hidden";
+}
+
+export async function deleteListing(id: string, ownerId: string) {
+  const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing || existing.ownerId !== ownerId) return null;
-  await prisma.listing.delete({ where: { id } });
-  return existing;
+  return removeListing(existing);
 }
 
 /** Comme `deleteListing`, mais sans vérification de propriétaire — réservé au back-office admin. */
 export async function adminDeleteListing(id: string) {
-  const existing = await prisma.listing.findUnique({
-    where: { id },
-    include: { photos: true },
-  });
+  const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) return null;
-  await prisma.listing.delete({ where: { id } });
-  return existing;
+  return removeListing(existing);
 }
 
 export type ImportedListingInput = ListingFieldsInput & {
@@ -413,6 +436,20 @@ export type ImportedListingInput = ListingFieldsInput & {
  * vérifié et le flux est sa propre source officielle, donc la vérification
  * manuelle habituelle ne s'applique pas ici.
  */
+/**
+ * Vrai tant qu'on est encore dans le premier import (une heure après la toute
+ * première annonce importée de cette source) — le premier import crée les
+ * annonces une à une, la première seule verrait sinon un compteur à zéro.
+ */
+async function isInitialImportBatch(ownerId: string, importSource: string): Promise<boolean> {
+  const first = await prisma.listing.findFirst({
+    where: { ownerId, importSource },
+    orderBy: { createdAt: "asc" },
+    select: { createdAt: true },
+  });
+  return first != null && Date.now() - first.createdAt.getTime() < 60 * 60 * 1000;
+}
+
 function photoSourceKey(urls: string[]): string {
   return createHash("sha1").update(urls.join("\n")).digest("hex");
 }
@@ -437,12 +474,17 @@ export async function upsertImportedListing(
   });
 
   if (!existing) {
+    // Premier import de cette source pour l'agence : stock existant, pas des nouveautés.
+    const importInitial =
+      (await prisma.listing.count({ where: { ownerId, importSource } })) === 0 ||
+      (await isInitialImportBatch(ownerId, importSource));
     const created = await prisma.listing.create({
       data: {
         ...fieldsData,
         statut: "PUBLIEE",
         externalRef,
         importSource,
+        importInitial,
         lastSeenAt: new Date(),
         owner: { connect: { id: ownerId } },
         priceHistory: { create: [{ prix: fields.prix }] },

@@ -477,8 +477,9 @@ export default function EditListingForm({
           Zone sensible
         </span>
         <p className="m-0 mt-2 text-[13px] text-muted">
-          Supprimer cette annonce est définitif : elle disparaît des annonces
-          et de votre compte.
+          {imported
+            ? "Supprimer cette annonce la retire définitivement du site : elle ne sera plus reprise de votre flux, même si elle y figure encore (bien sous compromis, par exemple)."
+            : "Supprimer cette annonce est définitif : elle disparaît des annonces et de votre compte."}
         </p>
         <form
           action={deleteAction}

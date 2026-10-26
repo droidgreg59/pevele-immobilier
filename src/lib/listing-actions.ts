@@ -151,8 +151,8 @@ export async function deleteListingAction(formData: FormData) {
   if (!session) redirect("/connexion");
 
   const listingId = String(formData.get("listingId") ?? "");
-  const deleted = await deleteListing(listingId, session.userId);
-  if (deleted) {
+  const result = await deleteListing(listingId, session.userId);
+  if (result === "deleted") {
     await deleteListingUploadDir(listingId);
   }
 

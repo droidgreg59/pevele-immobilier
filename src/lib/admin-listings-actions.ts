@@ -68,8 +68,8 @@ export async function adminDeleteListingAction(formData: FormData) {
   await requireAdmin();
 
   const listingId = String(formData.get("listingId") ?? "");
-  const deleted = await adminDeleteListing(listingId);
-  if (deleted) {
+  const result = await adminDeleteListing(listingId);
+  if (result === "deleted") {
     await deleteListingUploadDir(listingId);
   }
 

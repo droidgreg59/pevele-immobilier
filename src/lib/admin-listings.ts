@@ -13,6 +13,7 @@ const LISTING_SUMMARY_SELECT = {
   commune: true,
   createdAt: true,
   hiddenByAdminAt: true,
+  importSource: true,
   owner: { select: { nom: true, entreprise: true, type: true } },
 } as const;
 
@@ -27,6 +28,7 @@ export type ListingSummary = {
   commune: string;
   createdAt: Date;
   hiddenByAdminAt: Date | null;
+  importSource: string | null;
   ownerLabel: string;
 };
 
@@ -46,6 +48,7 @@ export async function getAllListingsSummary(): Promise<ListingSummary[]> {
     commune: l.commune,
     createdAt: l.createdAt,
     hiddenByAdminAt: l.hiddenByAdminAt,
+    importSource: l.importSource,
     ownerLabel: l.owner.entreprise ?? l.owner.nom,
   }));
 }
