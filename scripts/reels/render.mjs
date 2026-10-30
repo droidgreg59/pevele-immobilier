@@ -14,7 +14,7 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 const frames = buildTimeline(sp, nom);
 
-const b = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ["--allow-file-access-from-files"] });
+const b = await puppeteer.launch({ executablePath: CHROME, headless: true, protocolTimeout: 900_000, args: ["--allow-file-access-from-files"] }); // tuiles IGN parfois très lentes
 const p = await b.newPage();
 await p.setViewport({ width: 540, height: 960, deviceScaleFactor: 2 });
 await p.goto("file://" + path.join(here, "harness.html"));
