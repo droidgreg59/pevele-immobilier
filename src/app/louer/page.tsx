@@ -61,7 +61,7 @@ export default async function LouerPage({ searchParams }: PageProps<"/louer">) {
       mapAggregates={mapAggregates}
       facets={facets}
       pieceBadge="LOCATION"
-      titre="LOUER EN PÉVÈLE"
+      titre="Louer en Pévèle"
       transaction="LOCATION"
       initialQuery={criteria.querySlug}
       initialBudgetMin={criteria.budgetMin}

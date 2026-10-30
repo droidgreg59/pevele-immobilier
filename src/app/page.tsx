@@ -56,12 +56,15 @@ export default async function Home() {
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.05fr_1fr] lg:items-start">
         <div className="animate-fade-up flex flex-col gap-5">
           <div>
-            <h1 className="m-0 font-display text-[36px] font-extrabold leading-[1.05] text-ink sm:text-[44px]">
+            {/* Le H1 porte la requête visée (« immobilier Pévèle ») ; la question
+                d'accroche reste en tête visuellement, au-dessus. */}
+            <p className="m-0 font-display text-[36px] font-extrabold leading-[1.05] text-ink sm:text-[44px]">
               Quel est votre projet ?
-            </h1>
-            <p className="mt-2 text-[15px] text-muted">
-              Toutes les annonces de la Pévèle — agences et particuliers, 44 communes.
             </p>
+            <h1 className="mt-2 text-[15px] font-normal text-muted">
+              Annonces et prix immobiliers dans les 44 communes de la Pévèle — agences et
+              particuliers.
+            </h1>
           </div>
 
           <div className="flex flex-col gap-3">

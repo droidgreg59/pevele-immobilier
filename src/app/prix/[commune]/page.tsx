@@ -14,7 +14,7 @@ import { getCronLastRun } from "@/lib/freshness";
 import { formatDvfStreet } from "@/lib/market-summary";
 import MarketSummary from "@/components/MarketSummary";
 import JsonLd from "@/components/JsonLd";
-import { breadcrumbJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { breadcrumbJsonLd, SITE_BRAND, SITE_URL } from "@/lib/seo";
 
 // Page de contenu (DVF) : rendu ISR, pré-générée pour les 44 communes. Le
 // cache des lectures DVF est invalidé par le cron d'import.
@@ -35,8 +35,8 @@ export async function generateMetadata({
   const stats = await getDvfMarketStatsForVillage(village.slug, "Maison");
 
   const title = stats
-    ? `Prix immobilier à ${village.nom} — ${stats.medianPrixM2.toLocaleString("fr-FR")} €/m² (médiane)`
-    : `Prix immobilier à ${village.nom}`;
+    ? `Prix immobilier au m² à ${village.nom} : ${stats.medianPrixM2.toLocaleString("fr-FR")} €/m² (médiane DVF)`
+    : `Prix immobilier au m² à ${village.nom}`;
   const description = stats
     ? `Prix médian des maisons à ${village.nom} : ${stats.medianPrixM2.toLocaleString("fr-FR")} €/m², sur ${stats.retainedCount} vente${stats.retainedCount > 1 ? "s" : ""} DVF retenues (${stats.minAnnee}–${stats.maxAnnee}). Évolution, détail par type de bien, dernières ventes et comparaison aux communes voisines.`
     : `Prix de l'immobilier à ${village.nom} d'après les transactions DVF (data.gouv.fr).`;
@@ -46,7 +46,7 @@ export async function generateMetadata({
     description,
     alternates: { canonical: `/prix/${village.slug}` },
     robots: stats ? undefined : { index: false, follow: true },
-    openGraph: { title: `${title} — ${SITE_NAME}`, description },
+    openGraph: { title: `${title} — ${SITE_BRAND}`, description },
   };
 }
 

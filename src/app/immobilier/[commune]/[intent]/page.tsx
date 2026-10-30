@@ -10,7 +10,7 @@ import { getSession, isParticulierSession } from "@/lib/session";
 import { getFavoriteListingIds } from "@/lib/favorites";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
-import { breadcrumbJsonLd, itemListJsonLd, SITE_NAME } from "@/lib/seo";
+import { breadcrumbJsonLd, itemListJsonLd, SITE_BRAND } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export async function generateMetadata({
   const listings = await getListingsForIntent(village.slug, cfg.typeBien, cfg.transaction);
   const description =
     listings.length > 0
-      ? `${listings.length} ${cfg.singulier}${listings.length > 1 ? "s" : ""} ${cfg.action} à ${village.nom} — annonces d'agences et de particuliers, prix au m² constatés, sur ${SITE_NAME}.`
+      ? `${listings.length} ${cfg.singulier}${listings.length > 1 ? "s" : ""} ${cfg.action} à ${village.nom} — annonces d'agences et de particuliers, prix au m² constatés, sur ${SITE_BRAND}.`
       : `Annonces de ${cfg.singulier}s ${cfg.action} à ${village.nom} : aucune en ligne actuellement. Créez une alerte pour être prévenu dès qu'un bien correspond.`;
 
   return {
@@ -60,7 +60,7 @@ export async function generateMetadata({
       listings.length === 0
         ? { index: false, follow: true }
         : undefined,
-    openGraph: { title: `${cfg.label} à ${village.nom} — ${SITE_NAME}`, description },
+    openGraph: { title: `${cfg.label} à ${village.nom} — ${SITE_BRAND}`, description },
   };
 }
 

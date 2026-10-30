@@ -13,7 +13,7 @@ import { getSession, isParticulierSession } from "@/lib/session";
 import ListingCard from "@/components/ListingCard";
 import ResumeBanner from "@/components/ResumeBanner";
 import JsonLd from "@/components/JsonLd";
-import { breadcrumbJsonLd, SITE_NAME } from "@/lib/seo";
+import { breadcrumbJsonLd, SITE_BRAND } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -25,17 +25,23 @@ export async function generateMetadata({
   if (!village) return {};
   const dvfStats = await getDvfMarketStatsForVillage(village.slug, "Maison");
   const priceLine = dvfStats
-    ? `Prix médian constaté (maisons) : ${dvfStats.medianPrixM2.toLocaleString("fr-FR")} €/m² (${dvfStats.retainedCount} vente${dvfStats.retainedCount > 1 ? "s" : ""} DVF retenues). `
+    ? `Maisons : ${dvfStats.medianPrixM2.toLocaleString("fr-FR")} €/m² (médiane DVF). `
     : "";
+  // La fiche commune vise « immobilier <commune> » (annonces + vie locale) ;
+  // « prix immobilier <commune> » appartient à /prix/<commune>. Ne plus mettre
+  // « Prix immobilier » en tête du titre ici : les deux pages se disputaient
+  // la même requête (audit SEO 2026-10-30).
+  const title = `Immobilier à ${village.nom} : annonces et vie locale`;
+  const description = `Maisons, appartements et terrains à vendre ou à louer à ${village.nom}, commerces, écoles et transports. ${priceLine}${village.description}`;
   return {
-    title: `Prix immobilier et annonces à ${village.nom}`,
-    description: `${priceLine}Annonces immobilières à vendre et à louer à ${village.nom} : ${village.description}`,
+    title,
+    description,
     alternates: {
       canonical: `/villages/${village.slug}`,
     },
     openGraph: {
-      title: `Prix immobilier et annonces à ${village.nom} — ${SITE_NAME}`,
-      description: priceLine || village.description,
+      title: `${title} — ${SITE_BRAND}`,
+      description,
     },
   };
 }
@@ -94,7 +100,10 @@ export default async function VillagePage({
       <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold text-green">
         Fiche village
       </span>
-      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">{village.nom}</h1>
+      <h1 className="mt-3 font-display text-[36px] text-ink sm:text-[48px]">
+        <span className="block text-[15px] font-semibold text-muted sm:text-[17px]">Immobilier à</span>
+        {village.nom}
+      </h1>
       <div className="flex flex-wrap gap-4">
         <Link href="/" className="text-[13px] font-semibold text-blue">
           ← Retour à l&apos;accueil
@@ -180,7 +189,7 @@ export default async function VillagePage({
               href={`/prix/${village.slug}`}
               className="rounded-full border border-line bg-white px-4 py-2 text-[12.5px] font-semibold text-blue transition hover:bg-surface"
             >
-              Voir l&apos;observatoire complet de {village.nom} →
+              Prix immobilier au m² à {village.nom} : observatoire complet →
             </Link>
           </div>
         ) : (

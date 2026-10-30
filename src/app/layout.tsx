@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
 import JsonLd from "@/components/JsonLd";
-import { SITE_URL, SITE_NAME, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
+import { SITE_URL, SITE_NAME, SITE_BRAND, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -24,8 +24,8 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Pévèle Immobilier — Annonces et prix immobiliers dans toute la Pévèle",
-    template: `%s — ${SITE_NAME}`,
+    default: `${SITE_BRAND} — Annonces et prix immobiliers dans toute la Pévèle`,
+    template: `%s — ${SITE_BRAND}`,
   },
   description:
     "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 44 communes, agences et particuliers réunis.",
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    siteName: SITE_NAME,
+    siteName: SITE_BRAND,
     url: SITE_URL,
-    title: "Pévèle Immobilier — Annonces et prix immobiliers dans toute la Pévèle",
+    title: `${SITE_BRAND} — Annonces et prix immobiliers dans toute la Pévèle`,
     description:
       "Le portail de référence des annonces et des prix immobiliers de la Pévèle : maisons, appartements et terrains à vendre ou à louer dans les 44 communes.",
     // Générée à la volée (voir opengraph-image.tsx + src/lib/og.tsx), jamais
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pévèle Immobilier — Annonces et prix immobiliers dans toute la Pévèle",
+    title: `${SITE_BRAND} — Annonces et prix immobiliers dans toute la Pévèle`,
     description:
       "Le portail de référence des annonces et des prix immobiliers de la Pévèle, agences et particuliers réunis.",
     images: ["/opengraph-image"],

@@ -12,7 +12,7 @@ import type { VillageComparisonSide } from "@/components/VillageComparison";
 import GuideByline from "@/components/GuideByline";
 import DataFreshnessNote from "@/components/DataFreshnessNote";
 import JsonLd from "@/components/JsonLd";
-import { articleJsonLd, breadcrumbJsonLd, SITE_NAME } from "@/lib/seo";
+import { articleJsonLd, breadcrumbJsonLd, SITE_BRAND } from "@/lib/seo";
 
 // Guides éditoriaux (Sprint 4) : evergreen, ISR — même fraîcheur que /prix,
 // le cache DVF sous-jacent est déjà invalidé à chaque import.
@@ -124,7 +124,7 @@ export async function generateMetadata({
     title: guide.metadata.title,
     description: guide.metadata.description,
     alternates: { canonical: `/guides/${slug}` },
-    openGraph: { title: `${guide.metadata.title} — ${SITE_NAME}`, description: guide.metadata.description },
+    openGraph: { title: `${guide.metadata.title} — ${SITE_BRAND}`, description: guide.metadata.description },
   };
 }
 

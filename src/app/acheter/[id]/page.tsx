@@ -21,7 +21,7 @@ import ListingDetail from "@/components/ListingDetail";
 import RisquesSection from "@/components/RisquesSection";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbJsonLd, listingJsonLd } from "@/lib/seo";
-import { formatPrix } from "@/lib/format";
+import { listingMetaDescription, listingSeoTitle } from "@/lib/listing-seo";
 
 export const dynamic = "force-dynamic";
 
@@ -34,17 +34,18 @@ export async function generateMetadata({
   const { id } = await params;
   const listing = await getListingById(id);
   if (!listing || listing.transaction !== "VENTE" || listing.hiddenByAdminAt) return {};
-  const title = `${listing.titre} à vendre à ${listing.commune} — ${formatPrix(listing.prix, listing.transaction)}`;
+  const title = listingSeoTitle(listing);
+  const description = listingMetaDescription(listing);
   return {
     title,
-    description: listing.description,
+    description,
     robots: isListingIndexable(listing) ? undefined : { index: false, follow: true },
     alternates: {
       canonical: `/acheter/${listing.id}`,
     },
     openGraph: {
       title,
-      description: listing.description,
+      description,
       // L'image de partage est la carte de marque générée par opengraph-image.tsx.
     },
   };

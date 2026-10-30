@@ -66,7 +66,7 @@ export default async function AcheterPage({ searchParams }: PageProps<"/acheter"
       mapAggregates={mapAggregates}
       facets={facets}
       pieceBadge="ACHAT"
-      titre="ACHETER EN PÉVÈLE"
+      titre="Acheter en Pévèle"
       transaction="VENTE"
       initialQuery={criteria.querySlug}
       initialBudgetMin={criteria.budgetMin}

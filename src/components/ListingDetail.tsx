@@ -34,6 +34,7 @@ import {
 import { getVideoEmbedUrl } from "@/lib/video-embed";
 import { getVillageBySlug } from "@/data/villages";
 import { formatPrix, formatPrixM2, dpeClassColor } from "@/lib/format";
+import { listingHeading } from "@/lib/listing-seo";
 import { markListingViewed } from "@/lib/viewed-listings";
 import FavoriteButton from "./FavoriteButton";
 import ListingCard from "./ListingCard";
@@ -56,12 +57,6 @@ const EQUIPEMENT_ICON: Record<string, LucideIcon> = {
   Cave: Archive,
   Piscine: Waves,
   Cheminée: Flame,
-};
-
-const TYPE_MAISON_LABEL_LOWER: Record<string, string> = {
-  INDIVIDUELLE: "individuelle",
-  SEMI_INDIVIDUELLE: "semi-individuelle",
-  MITOYENNE: "mitoyenne",
 };
 
 function sourceLabel(owner: ListingWithOwner["owner"]): string {
@@ -774,19 +769,16 @@ export default function ListingDetail({
 
         <aside className="flex flex-col gap-5 lg:sticky lg:top-[88px] lg:self-start">
           <div className="relative rounded-2xl border border-line bg-white p-6 shadow-sm">
-            <span className="text-[11px] font-semibold text-muted">
-              ◉ {listing.commune} ·{" "}
-              {listing.typeBien === "MAISON"
-                ? "Maison"
-                : listing.typeBien === "APPARTEMENT"
-                  ? "Appartement"
-                  : "Terrain"}
-              {listing.typeBien === "MAISON" && listing.typeMaison
-                ? ` ${TYPE_MAISON_LABEL_LOWER[listing.typeMaison]}`
-                : ""}
-            </span>
-            <h1 className="m-0 mt-1 font-display text-[28px] leading-tight text-ink">
-              {listing.titre}
+            {/* Le H1 commence par le type, la transaction et la commune (requête
+                visée) ; le titre libre de l'annonceur reste la ligne principale. */}
+            <h1 className="m-0">
+              <span className="block text-[11px] font-semibold text-muted">
+                <span aria-hidden="true">◉ </span>
+                {listingHeading(listing)}
+              </span>
+              <span className="mt-1 block font-display text-[28px] leading-tight text-ink">
+                {listing.titre}
+              </span>
             </h1>
             <div className="mt-4 font-display text-[34px] tracking-[.02em] text-ink">
               {formatPrix(listing.prix, listing.transaction)}

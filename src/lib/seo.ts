@@ -9,10 +9,13 @@ import { galleryPhotos } from "./photo-classify";
 // supplémentaire (audité et aligné le 2026-09-22).
 export const SITE_URL = "https://www.pevele-immobilier.fr";
 export const SITE_NAME = "Pévèle Immobilier";
-/** Nom d'organisation dans les données structurées (JSON-LD) uniquement —
- * forme alignée sur le domaine, distincte du nom d'affichage SITE_NAME
- * (titres de page, en-tête, pied de page), qui reste "Pévèle Immobilier". */
-export const SITE_NAME_STRUCTURED_DATA = "Pévèle-Immobilier.fr";
+/** Nom de marque vu par les moteurs : suffixe des balises <title>, titres
+ * OpenGraph, `og:site_name` et nom d'organisation des données structurées
+ * (JSON-LD). Forme alignée sur le domaine, volontairement distincte de
+ * SITE_NAME (en-tête, pied de page, textes) : « Pévèle Immobilier » tout court
+ * se confond avec l'Agence du Pévèle Immobilier (Cappelle-en-Pévèle,
+ * pevele-immo.com), une entité sans lien avec le site (audit SEO 2026-10-30). */
+export const SITE_BRAND = "Pévèle-Immobilier.fr";
 
 export type BreadcrumbItem = { name: string; url: string };
 
@@ -47,7 +50,7 @@ export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: SITE_NAME_STRUCTURED_DATA,
+    name: SITE_BRAND,
     url: SITE_URL,
     description:
       "Le portail local des annonces et des prix immobiliers de la Pévèle : agences, particuliers et artisans réunis pour les 44 communes.",
@@ -85,8 +88,8 @@ export function articleJsonLd(article: {
     },
     datePublished: article.publishedAt,
     dateModified: article.updatedAt,
-    author: { "@type": "Organization", name: SITE_NAME_STRUCTURED_DATA, url: SITE_URL },
-    publisher: { "@type": "Organization", name: SITE_NAME_STRUCTURED_DATA, url: SITE_URL },
+    author: { "@type": "Organization", name: SITE_BRAND, url: SITE_URL },
+    publisher: { "@type": "Organization", name: SITE_BRAND, url: SITE_URL },
   };
 }
 
@@ -109,7 +112,7 @@ export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: SITE_NAME_STRUCTURED_DATA,
+    name: SITE_BRAND,
     url: SITE_URL,
     potentialAction: {
       "@type": "SearchAction",

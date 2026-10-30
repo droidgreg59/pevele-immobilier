@@ -15,7 +15,7 @@ import {
 import ComparateurTable from "@/components/ComparateurTable";
 import VillageAmenitiesSummary from "@/components/VillageAmenitiesSummary";
 import JsonLd from "@/components/JsonLd";
-import { breadcrumbJsonLd, webPageJsonLd, SITE_NAME } from "@/lib/seo";
+import { breadcrumbJsonLd, webPageJsonLd, SITE_BRAND } from "@/lib/seo";
 
 // Outil evergreen, même fraîcheur que /prix et les guides — le cache DVF est
 // déjà invalidé à chaque import.
@@ -100,7 +100,7 @@ export async function generateMetadata({
     // bloqué par robots.txt pour autant, l'outil reste utilisable et la
     // directive noindex doit rester lisible par les robots.
     robots: guide || !indexable ? { index: false, follow: true } : undefined,
-    openGraph: { title: `${title} — ${SITE_NAME}`, description },
+    openGraph: { title: `${title} — ${SITE_BRAND}`, description },
   };
 }
 
