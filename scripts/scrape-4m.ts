@@ -184,7 +184,28 @@ async function main() {
       urls.forEach((u) => ficheUrls.add(u));
     }
 
+    // Annonces supprimées à la main (ex. bien sous compromis, signalé seulement
+    // par un bandeau sur les photos) : masquées, jamais reprises — inutile
+    // même d'ouvrir leur fiche.
+    const hidden = new Set(
+      (
+        await prisma.listing.findMany({
+          where: {
+            ownerId: SITE_4M_AGENCY_ID,
+            importSource: SITE_4M_IMPORT_SOURCE,
+            hiddenByAdminAt: { not: null },
+          },
+          select: { externalRef: true },
+        })
+      ).map((l) => l.externalRef)
+    );
+
     for (const url of ficheUrls) {
+      const ref = affIdFromFicheUrl(url);
+      if (ref && hidden.has(ref)) {
+        console.log(`  × ${ref} supprimée à la main — ignorée`);
+        continue;
+      }
       await pause();
       if (!(await openWithRetry(page, url, ".product-criteres"))) {
         complete = false;
