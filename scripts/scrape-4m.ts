@@ -268,13 +268,18 @@ async function main() {
       `\nImport : ${created} créée(s), ${updated} mise(s) à jour, ${retired.length} retirée(s), ${skipped.length} écartée(s)` +
         (complete ? "" : " — collecte incomplète, aucun retrait effectué")
     );
+    // Code 2 : à retenter plus tard (voir scripts/scrape-4m-daily.sh).
+    if (!complete) process.exitCode = 2;
   } finally {
     await browser.close();
     await prisma.$disconnect();
   }
 }
 
+// Codes de sortie lus par scripts/scrape-4m-daily.sh : 0 collecte complète,
+// 2 incomplète (réseau, page en échec — à retenter), 3 CAPTCHA (on n'insiste
+// pas de la journée), 1 autre erreur.
 main().catch((e) => {
   console.error(e instanceof Error ? e.message : e);
-  process.exit(1);
+  process.exit(e instanceof Blocked && /CAPTCHA/.test(e.message) ? 3 : 1);
 });
