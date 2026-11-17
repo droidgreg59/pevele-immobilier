@@ -8,7 +8,7 @@ import type { TransactionType, TypeBien, TypeMaison } from "@prisma/client";
  * (meilleursbiens.com/site/<id>-<nom>), avec son autorisation — le réseau ne
  * fournit pas de flux XML à ses mandataires. Pas de pare-feu : un simple
  * fetch suffit (contrairement au site 4M), donc la reprise tourne dans le
- * cron quotidien (src/lib/meilleursbiens-sync.ts).
+ * cron quotidien (src/lib/network-site-sync.ts).
  *
  * Chaque fiche (/annonce/<uuid>) est une page Next.js : l'objet `property`
  * complet (celui de leur logiciel NEO) est dans le flux RSC embarqué

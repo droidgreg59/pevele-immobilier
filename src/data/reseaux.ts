@@ -17,7 +17,7 @@ export const RESEAUX: Reseau[] = [
   { label: "Capifrance", logo: null },
   { label: "Optimhome", logo: null },
   { label: "Propriétés-privées", logo: null },
-  { label: "BSK Immobilier", logo: null },
+  { label: "BSK Immobilier", logo: "/reseaux/bsk.png" },
   { label: "Efficity", logo: "/reseaux/efficity.png" },
   { label: "Megagence", logo: null },
   { label: "Sextant France", logo: null },
