@@ -17,7 +17,7 @@ const CREAM = "#fbfaf8";
 const LINE = "#e7e5e0";
 const YELLOW = "#f0b429";
 
-function layout(title: string, bodyHtml: string, cta?: { label: string; href: string }): string {
+export function layout(title: string, bodyHtml: string, cta?: { label: string; href: string }): string {
   return `<!doctype html>
 <html lang="fr">
   <body style="margin:0;padding:0;background:${CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
@@ -56,7 +56,7 @@ function layout(title: string, bodyHtml: string, cta?: { label: string; href: st
 </html>`;
 }
 
-function p(text: string): string {
+export function p(text: string): string {
   return `<p style="margin:0 0 10px;">${text}</p>`;
 }
 
