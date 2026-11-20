@@ -9,7 +9,7 @@ export const maxDuration = 60;
 /**
  * Resynchronise le flux XML (AC3/Immofacile) de toutes les agences qui en
  * ont configuré un, puis reprend les pages des mandataires de réseau
- * (MeilleursBiens, BSK) qui l'ont autorisé — même effet que le bouton « Synchroniser maintenant »
+ * (MeilleursBiens, BSK, SAFTI) qui l'ont autorisé — même effet que le bouton « Synchroniser maintenant »
  * sur /compte/agence, rejoué pour chaque agence. À appeler périodiquement
  * (ex. quotidien) par un ordonnanceur externe — voir CRON_SECRET dans
  * .env.example pour la configuration.
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   }
 
   const results = await syncAllAgencyFeeds();
-  // Puis les mandataires de réseau (MeilleursBiens, BSK) repris depuis leur
+  // Puis les mandataires de réseau (MeilleursBiens, BSK, SAFTI) repris depuis leur
   // page publique — pas de flux XML chez ces réseaux. Voir network-site-sync.ts.
   const siteResults = await syncAllNetworkAgents();
   const failed = [...results, ...siteResults].filter((r) => "error" in r.result).length;

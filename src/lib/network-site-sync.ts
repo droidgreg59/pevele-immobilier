@@ -18,10 +18,19 @@ import {
   isBskAgentPage,
   parseBskListing,
 } from "./site-bsk";
+import {
+  SAFTI_IMPORT_SOURCE,
+  isSaftiAgentPage,
+  parseSaftiListing,
+  saftiDetailUrl,
+  saftiListingUrls,
+  saftiRefFromUrl,
+} from "./site-safti";
+import type { TransactionType } from "@prisma/client";
 
 /**
  * Reprise quotidienne des annonces des mandataires de réseau (MeilleursBiens,
- * BSK…) depuis leur page publique — ces réseaux ne fournissent pas de flux
+ * BSK, SAFTI…) depuis leur page publique — ces réseaux ne fournissent pas de flux
  * XML à leurs mandataires. Seulement pour les comptes qui l'ont autorisée
  * (`repriseAutoriseeLe`, case cochée à l'inscription) et dont le `siteWeb`
  * est leur page sur le site du réseau. Appelée par la route cron
@@ -33,18 +42,27 @@ type ParseResult = { listing: Parsed4mListing } | { externalRef: string; reason:
 type NetworkAdapter = {
   importSource: string;
   matches: (siteWeb: string | null) => boolean;
-  /** URLs des fiches de l'agent, à partir de sa page. */
-  listingUrls: (pageUrl: string, pageHtml: string) => Promise<string[]>;
+  /** URLs des fiches de l'agent, à partir de sa page ; null = page illisible. */
+  listingUrls: (pageUrl: string, pageHtml: string) => Promise<string[] | null>;
   refFromUrl: (url: string) => string | null;
   /** null = page illisible (la collecte est alors incomplète). */
   parse: (html: string, url: string) => ParseResult;
+  /**
+   * Fiche d'une annonce déjà importée, quand la page de l'agent n'en montre
+   * qu'une partie (SAFTI : 25 annonces) : avant de retirer une annonce
+   * absente de la page, on vérifie sur sa fiche qu'elle n'est plus disponible.
+   */
+  detailUrlForRef?: (ref: string, transaction: TransactionType) => string;
 };
 
 const ADAPTERS: NetworkAdapter[] = [
   {
     importSource: MB_IMPORT_SOURCE,
     matches: isMeilleursBiensAgentPage,
-    listingUrls: async (_url, html) => annonceIdsFromAgentPage(html).map((id) => `${MB_ORIGIN}/annonce/${id}`),
+    listingUrls: async (_url, html) => {
+      const ids = annonceIdsFromAgentPage(html);
+      return ids.length > 0 ? ids.map((id) => `${MB_ORIGIN}/annonce/${id}`) : null;
+    },
     refFromUrl: (url) => /\/annonce\/([0-9a-f-]{36})/.exec(url)?.[1] ?? null,
     parse: (html) => {
       const property = propertyFromHtml(html);
@@ -59,10 +77,20 @@ const ADAPTERS: NetworkAdapter[] = [
     listingUrls: async (_url, html) => {
       const biens = bskBiensPageUrl(html);
       const more = biens ? bskListingUrls(await getHtml(biens)) : [];
-      return [...new Set([...bskListingUrls(html), ...more])];
+      const urls = [...new Set([...bskListingUrls(html), ...more])];
+      return urls.length > 0 ? urls : null;
     },
     refFromUrl: bskRefFromUrl,
     parse: parseBskListing,
+  },
+  {
+    importSource: SAFTI_IMPORT_SOURCE,
+    matches: isSaftiAgentPage,
+    // Déjà filtrée (Pévèle, ni vendue ni sous compromis) : peut être vide.
+    listingUrls: async (_url, html) => saftiListingUrls(html),
+    refFromUrl: saftiRefFromUrl,
+    parse: parseSaftiListing,
+    detailUrlForRef: (ref, transaction) => saftiDetailUrl(ref, transaction),
   },
 ];
 
@@ -92,8 +120,8 @@ export async function syncNetworkAgent(agencyId: string, pageUrl: string): Promi
 
   try {
     const urls = await adapter.listingUrls(pageUrl, await getHtml(pageUrl));
-    // Page vide (panne, refonte du site) : surtout ne rien retirer.
-    if (urls.length === 0) return { error: "Aucune annonce trouvée sur la page du mandataire." };
+    // Page vide ou illisible (panne, refonte du site) : surtout ne rien retirer.
+    if (!urls) return { error: "Aucune annonce lisible sur la page du mandataire." };
 
     // Annonces supprimées à la main (ex. sous compromis) : jamais reprises.
     const hidden = new Set(
@@ -134,11 +162,45 @@ export async function syncNetworkAgent(agencyId: string, pageUrl: string): Promi
       else updated += 1;
     }
 
+    // Page partielle (SAFTI) : une annonce en ligne absente de la page n'est
+    // retirée que si sa fiche confirme qu'elle n'est plus disponible.
+    if (adapter.detailUrlForRef && complete) {
+      const absentes = await prisma.listing.findMany({
+        where: {
+          ownerId: agencyId,
+          importSource: adapter.importSource,
+          statut: "PUBLIEE",
+          externalRef: { notIn: seen },
+        },
+        select: { externalRef: true, transaction: true },
+      });
+      for (const l of absentes) {
+        if (!l.externalRef) continue;
+        await new Promise((r) => setTimeout(r, PAUSE_MS));
+        let parsed: ParseResult;
+        try {
+          const url = adapter.detailUrlForRef(l.externalRef, l.transaction);
+          parsed = adapter.parse(await getHtml(url), url);
+        } catch {
+          parsed = null;
+        }
+        if (!parsed) complete = false;
+        else if ("listing" in parsed) {
+          await upsertImportedListing(agencyId, { ...parsed.listing, importSource: adapter.importSource });
+          seen.push(parsed.listing.externalRef);
+          updated += 1;
+        }
+      }
+    }
+
     // Une collecte partielle ne doit jamais retirer des annonces peut-être encore en ligne.
-    const removed =
-      complete && seen.length > 0
-        ? (await retireStaleImportedListings(agencyId, adapter.importSource, seen)).length
-        : 0;
+    // Collecte complète sans aucune annonce reprise (tout vendu, tout hors
+    // Pévèle) : tout ce qui était en ligne est retiré — « ∅ » contourne le
+    // garde-fou « liste vide » de retireStaleImportedListings, pensé pour un
+    // flux en panne (ici, une page illisible a déjà arrêté la reprise plus haut).
+    const removed = complete
+      ? (await retireStaleImportedListings(agencyId, adapter.importSource, seen.length > 0 ? seen : ["∅"])).length
+      : 0;
     return { created, updated, removed, skipped, complete };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Échec de la reprise." };

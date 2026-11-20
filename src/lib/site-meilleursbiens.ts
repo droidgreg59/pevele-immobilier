@@ -85,11 +85,19 @@ export type MbProperty = Record<string, unknown> & {
   pictures?: { file_cache?: string; file?: string; order?: number; is_main_picture?: number }[];
 };
 
-/** Objet `property` d'une fiche, références `"$id"` vers des textes résolues. */
-export function propertyFromHtml(html: string): MbProperty | null {
+/**
+ * Premier objet `"<key>":{…}` du flux RSC d'une page, avec ses champs
+ * `refKeys` qui pointent vers une ligne texte (`"$id"`) résolus. Sert aussi
+ * à la reprise SAFTI (site-safti.ts), même technologie.
+ */
+export function rscObjectFromHtml<T extends Record<string, unknown>>(
+  html: string,
+  key: string,
+  refKeys: string[]
+): T | null {
   const rows = parseRscRows(flightFromHtml(html));
   for (const line of rows.values()) {
-    const i = line.indexOf('"property":{');
+    const i = line.indexOf(`"${key}":{`);
     if (i < 0) continue;
     let depth = 0;
     let inStr = false;
@@ -106,17 +114,22 @@ export function propertyFromHtml(html: string): MbProperty | null {
       if (c === '"') inStr = true;
       else if (c === "{") depth++;
       else if (c === "}" && --depth === 0) {
-        const property = JSON.parse(line.slice(start, j + 1)) as MbProperty;
-        for (const key of ["description", "property_fields", "title"]) {
-          const v = property[key];
+        const obj = JSON.parse(line.slice(start, j + 1)) as T;
+        for (const k of refKeys) {
+          const v = obj[k];
           const ref = typeof v === "string" ? /^\$([0-9a-f]+)$/.exec(v)?.[1] : undefined;
-          if (ref && rows.has(ref)) property[key] = rows.get(ref);
+          if (ref && rows.has(ref)) (obj as Record<string, unknown>)[k] = rows.get(ref);
         }
-        return property;
+        return obj;
       }
     }
   }
   return null;
+}
+
+/** Objet `property` d'une fiche, références `"$id"` vers des textes résolues. */
+export function propertyFromHtml(html: string): MbProperty | null {
+  return rscObjectFromHtml<MbProperty>(html, "property", ["description", "property_fields", "title"]);
 }
 
 /** `property_fields` (JSON en texte) → code → valeur. */
