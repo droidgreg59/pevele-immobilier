@@ -34,7 +34,7 @@ import type { TransactionType } from "@prisma/client";
  * XML à leurs mandataires. Seulement pour les comptes qui l'ont autorisée
  * (`repriseAutoriseeLe`, case cochée à l'inscription) et dont le `siteWeb`
  * est leur page sur le site du réseau. Appelée par la route cron
- * /api/cron/sync-agencies, à la suite des flux XML.
+ * /api/cron/sync-networks (5 h 10).
  */
 
 type ParseResult = { listing: Parsed4mListing } | { externalRef: string; reason: string } | null;
@@ -215,11 +215,15 @@ export async function syncAllNetworkAgents(): Promise<AllSiteSyncResult[]> {
     where: { type: "AGENCE", repriseAutoriseeLe: { not: null }, siteWeb: { not: null } },
     select: { id: true, nom: true, entreprise: true, siteWeb: true },
   });
-  const results: AllSiteSyncResult[] = [];
-  for (const a of agents) {
-    if (!ADAPTERS.some((ad) => ad.matches(a.siteWeb))) continue;
-    const result = await syncNetworkAgent(a.id, a.siteWeb!);
-    results.push({ agencyId: a.id, agencyNom: a.entreprise ?? a.nom, result });
-  }
-  return results;
+  // En parallèle : un site différent par mandataire (ou presque), chacun
+  // parcouru une fiche à la fois — la durée totale reste celle du plus long.
+  return Promise.all(
+    agents
+      .filter((a) => ADAPTERS.some((ad) => ad.matches(a.siteWeb)))
+      .map(async (a) => ({
+        agencyId: a.id,
+        agencyNom: a.entreprise ?? a.nom,
+        result: await syncNetworkAgent(a.id, a.siteWeb!),
+      }))
+  );
 }
