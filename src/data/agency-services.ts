@@ -50,7 +50,7 @@ export const AGENCY_SERVICES: AgencyService[] = [
     accroche: "Des publications régulières à votre marque, sans y passer vos soirées",
     pitch:
       "Restez visible sur Facebook et Instagram toute l'année : vos annonces et l'actualité du marché local deviennent des publications soignées, à vos couleurs, publiées au bon rythme.",
-    prix: "99 € TTC",
+    prix: "30 € TTC",
     rythme: "par mois",
     badge: "Sans engagement",
     inclus: [
